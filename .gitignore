@@ -3,3 +3,4 @@
 *.sh.e*
 *.sh.o*
 *.pyc
+*.pickle.gz
