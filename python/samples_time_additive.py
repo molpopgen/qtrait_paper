@@ -1,3 +1,6 @@
+#Track samples of size n at regular intervals,
+#and write to a "pickled" archive
+
 import fwdpy as fp
 import fwdpy.qtrait as qt
 import numpy as np
@@ -8,17 +11,16 @@ except ImportError:
 
 import gzip,getopt,sys,warnings,math
 
-"""
-Track samples of size n at regular intervals,
-and write to a "pickled" archive
-"""
+##import local functions
+from single_region_common import *
+
 
 def usage():
     print "something went wrong"
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:")
+        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:",["theta=","rho="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -36,6 +38,8 @@ def main():
     ofile=None
     seed = 0
     ssize = 50 #sample size
+    theta = 100 # mutational size of region where neutral mutations occur
+    rho = 100   # recombination size of region where neutral mutations occur
     for o,a in opts:
         if o == '-m':
             m = float(a)
@@ -59,6 +63,10 @@ def main():
             r = float(a)
         elif o == '-n':
             ssize = int(a)
+        elif o == '--theta':
+            theta=float(a)
+        elif o == '--rho':
+            rho=float(a)
 
     if t is None:
         t = 0
@@ -73,27 +81,23 @@ def main():
         sys.exit(2)
 
     ##Figure out sigma_E from params
-    EVG = 4.0*m*S*S
-    EVE = EVG*(1.0-H)/H
-    sigE = math.sqrt(EVE)
+    sigE = get_sigE_additive(m,S,H)
 
     rng = fp.GSLrng(seed)
 
     PIK=gzip.open(ofile,"wb")
     #16 batches of 64 runs = 1024 replicates
-
-    mun=0.01
-    littler=0.01
-    rest=r-littler
-    ratio=rest/r
     
-    nreg=[fp.Region(0,1,1)]
-    sreg=[fp.GaussianS(-ratio,1+ratio,1,e)]
-    rrg= [fp.Region(-ratio,1+ratio,1)]
+    mun = theta/float(4*N)
+    littler = rho/float(4*N)
+
+    nreg=make_neutral_region()
+    recstuff=make_buried_rec_region(littler)
+    sreg=make_Gaussian_sregion(recstuff['beg'],recstuff['end'],sigma=e)
+    rrg=recstuff['region']
 
     nlist = np.array([N]*(10*N),dtype=np.uint32)
     for i in range(16):
-
         #Evolve to equilibrium
         pops = qt.evolve_qtrait(rng,
                                 64,
