@@ -1,7 +1,7 @@
 #This file defines some common functions for the following cases
 # * simulations of "single genomic regions"
 
-import fwdpy as fp
+import fwdpy as fp,math
 
 def make_neutral_region():
     return [fp.Region(0,1,1)]
@@ -25,3 +25,9 @@ def make_Gaussian_sregion(beg=0,end=1,weight=1,sigma = None):
         raise RuntimeError("sigma cannot be None")
     return [fp.GaussianS(beg,end,weight,sigma)]
 
+def get_sigE_additive(m,VS,H):
+    ##Figure out sigma_E from params
+    EVG = 4.0*m*VS*VS
+    EVE = EVG*(1.0-H)/H
+    sigE = math.sqrt(EVE)
+    return sigE
