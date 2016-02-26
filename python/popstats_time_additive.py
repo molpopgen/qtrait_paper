@@ -50,7 +50,7 @@ def main():
             r = float(a)
 
     if t is None:
-        t = 0
+        t = int(0.1*float(N))
     if H is None:
         usage()
         sys.exit(2)
