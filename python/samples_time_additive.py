@@ -91,14 +91,14 @@ def main():
     sreg=[fp.GaussianS(-ratio,1+ratio,1,e)]
     rrg= [fp.Region(-ratio,1+ratio,1)]
 
+    nlist = np.array([N]*(10*N),dtype=np.uint32)
     for i in range(16):
-        #Simulate 10N-1 generations to equilbrium with optimum of 0
-        nlist = np.array([N]*(10*N - 1),dtype=np.uint32)
+
         #Evolve to equilibrium
         pops = qt.evolve_qtrait(rng,
                                 64,
                                 N,
-                                nlist[0:],
+                                nlist[0:((10*N)-1)],
                                 mun,
                                 m,
                                 r,
@@ -107,25 +107,22 @@ def main():
                                 VS=S) ##Do not track popstats during "burn-in"
 
         #simulate another 2*N generations, sampling stats every 't' generations
-        nlist = np.array([N]*(2*N),dtype=np.uint32)
-
         samples = qt.evolve_qtrait_sample(rng,pops,
-                              nlist[0:],
-                              mun,
-                              m,
-                              r,
-                                            nreg,sreg,rrg,
-                              sigmaE=sigE,
+                                          nlist[0:(2*N)],
+                                          mun,
+                                          m,
+                                          r,
+                                          nreg,sreg,rrg,
+                                          sigmaE=sigE,
                                           trackSamples=t,nsam=ssize,
-                              VS=S)
+                                          VS=S)
         for j in samples:
             pickle.dump(j,PIK)
 
-        #We shift the optimim and sample immediately, so that we get
+        #We shift the optimum and sample immediately, so that we get
         #any "spikes" in VG, etc.
-        nlist = np.array([N]*1,dtype=np.uint32)
         samples =qt.evolve_qtrait_sample(rng,pops,
-                                         nlist[0:],
+                                         nlist[0:1],
                                          0,
                                          m,
                                          r,
@@ -138,16 +135,14 @@ def main():
             pickle.dump(j,PIK)
  
         #evolve for another 3N generations post optimum-shift
-        nlist = np.array([N]*(3*N),dtype=np.uint32)
-
         samples=qt.evolve_qtrait_sample(rng,pops,
-                                        nlist[0:],
+                                        nlist[0:(3*N)],
                                         mun,
                                         m,
                                         r,
                                         nreg,sreg,rrg,
                                         sigmaE=sigE,
-                                        VS=S,optimum=Opt,trackSamples=t,nsam=50)
+                                        VS=S,optimum=Opt,trackSamples=t,nsam=ssize)
         for j in samples:
             pickle.dump(j,PIK)
 

@@ -69,15 +69,16 @@ def main():
     rng = fp.GSLrng(seed)
     hdf = pd.HDFStore(ofile,'w',complevel=6,complib='zlib')
     hdf.open()
-    #16 batches of 64 runs = 1024 replicates
+    
+    #population size over time -- constant & we re-use this over and over
+    nlist = np.array([N]*(10*N),dtype=np.uint32)
+    #16 batches of 64 runs = 1024 replicates    
     for i in range(16):
-        #Simulate 10N-1 generations to equilbrium with optimum of 0
-        nlist = np.array([N]*(10*N - 1),dtype=np.uint32)
         #Evolve to equilibrium
         pops = qt.evolve_qtrait(rng,
                                 64,
                                 N,
-                                nlist[0:],
+                                nlist[0:((10*N)-1)],
                                 0,
                                 m,
                                 r,
@@ -88,10 +89,8 @@ def main():
                                 VS=S) ##Do not track popstats during "burn-in"
 
         #simulate another 2*N generations, sampling stats every 't' generations
-        nlist = np.array([N]*(2*N),dtype=np.uint32)
-
         stats = qt.evolve_qtrait_popstats(rng,pops,
-                                          nlist[0:],
+                                          nlist[0:(2*N)],
                                           0,
                                           m,
                                           r,
@@ -107,11 +106,10 @@ def main():
         #Now, shift the optimum, and evolve for another 3N generations,
         #sampling every t generations
 
-        #We shift the optimim and sample immediately, so that we get
+        #We shift the optimum and sample immediately, so that we get
         #any "spikes" in VG, etc.
-        nlist = np.array([N]*1,dtype=np.uint32)
         stats=qt.evolve_qtrait_popstats(rng,pops,
-                              nlist[0:],
+                              nlist[0:1],
                               0,
                               m,
                               r,
@@ -125,10 +123,8 @@ def main():
             hdf.append('popstats',pd.DataFrame(stats[j]))
 
         #evolve for another 3N generations post optimum-shift
-        nlist = np.array([N]*(3*N),dtype=np.uint32)
-
         stats=qt.evolve_qtrait_popstats(rng,pops,
-                                  nlist[0:],
+                                  nlist[0:(3*N)],
                                   0,
                                   m,
                                   r,
