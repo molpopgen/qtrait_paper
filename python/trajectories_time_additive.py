@@ -13,7 +13,7 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:s:r:",["fixed=","lost="]))
+        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:s:r:",["fixed=","ages="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -49,16 +49,13 @@ def main():
             r = float(a)
         elif o == '--fixed':
             fixationsFile=a
-        elif o == '--lost':
+        elif o == '--ages':
             lostFile=a
 
     if H is None:
         usage()
         sys.exit(2)
     if m is None:
-        usage()
-        sys.exit(2)
-    if ofile is None:
         usage()
         sys.exit(2)
     if fixationsFile is None or lostFile is None:
@@ -69,7 +66,7 @@ def main():
     hdf_fixed = pd.HDFStore(fixationsFile,'w',complevel=6,complib='zlib')
     hdf_fixed.open()
     hdf_lost = pd.HDFStore(lostFile,'w',complevel=6,complib='zlib')
-    hdf_list.open()
+    hdf_lost.open()
     
     sigE = get_sigE_additive(m,S,H)
 
@@ -82,7 +79,7 @@ def main():
     REPLICATE=0
     for i in range(16):
         #set up populations
-        pop=fp.popvec(64,N)
+        pops=fp.popvec(64,N)
         #Evolve to equilibrium
         traj1 = qt.evolve_qtrait_track(rng,
                                       pops,
@@ -95,8 +92,6 @@ def main():
                                       track=1,
                                       VS=S) ##Do not track popstats during "burn-in"
 
-
-
         #evolve for another 3N generations at new optimum
         traj2=qt.evolve_qtrait_track(rng,pops,
                                      nlist[0:(3*N)],
@@ -108,11 +103,10 @@ def main():
                                      VS=S,optimum=Opt,track=1)
         AGES=[]
         FIXATIONS=[]
-        for j in range(len(pop)):
+        for j in range(len(pops)):
             #Merge all trajectories for this replicate
             df = pd.concat([pd.DataFrame(traj1[j]),
-                            pd.DataFrame(traj2[j]),
-                            pd.DataFrame(traj3[j])])
+                            pd.DataFrame(traj2[j])])
             for name,group in df.groupby(['pos','esize']):
                 if group.freq.max() < 1:  #mutation did not reach fixation...
                     if group.generation.max()-group.generation.min()>1: #... and it lived > 1 generation ...
