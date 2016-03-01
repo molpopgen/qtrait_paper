@@ -77,6 +77,7 @@ def main():
     nlist = np.array([N]*(10*N),dtype=np.uint32)
     #16 batches of 64 runs = 1024 replicates  
     REPLICATE=0
+
     for i in range(16):
         #set up populations
         pops=fp.popvec(64,N)
@@ -103,28 +104,37 @@ def main():
                                      VS=S,optimum=Opt,track=1)
         AGES=[]
         FIXATIONS=[]
-        for j in range(len(pops)):
-            #Merge all trajectories for this replicate
-            df = pd.concat([pd.DataFrame(traj1[j]),
-                            pd.DataFrame(traj2[j])])
-            for name,group in df.groupby(['pos','esize']):
-                if group.freq.max() < 1:  #mutation did not reach fixation...
-                    if group.generation.max()-group.generation.min()>1: #... and it lived > 1 generation ...
-                       AGES.append({'rep':REPLICATE,
-                                    'esize':name[1],
-                                    'origin':group.generation.min(),
-                                    'final_g':group.generation.max(),
-                                    'max_q':group.freq.max(),
-                                    'last_q':group.freq.iloc[-1]})
-                else: #mutation did reach fixation!
-                    FIXATIONS.append({'rep':REPLICATE,
-                                      'esize':name[1],
-                                      'origin':group.generation.min(),
-                                      'final_g':group.generation.max()})
+        #merge trajectories and get allele ages (parallelized via open MP)
+        traj1=fp.merge_trajectories(traj1,traj2)
+        ages = fp.allele_ages(traj1)
+        for ai in ages:
+            dfi=pd.DataFrame(ai)
+            dfi['rep']=[REPLICATE]*len(dfi.index)
+            FIXATIONS.append(dfi[dfi['max_freq']==1.0])
+            AGES.append(dfi[dfi['max_freq']<1.0])
             REPLICATE+=1
+        # for j in range(len(pops)):
+        #     #Merge all trajectories for this replicate
+        #     df = pd.concat([pd.DataFrame(traj1[j]),
+        #                     pd.DataFrame(traj2[j])])
+        #     for name,group in df.groupby(['pos','esize']):
+        #         if group.freq.max() < 1:  #mutation did not reach fixation...
+        #             if group.generation.max()-group.generation.min()>1: #... and it lived > 1 generation ...
+        #                AGES.append({'rep':REPLICATE,
+        #                             'esize':name[1],
+        #                             'origin':group.generation.min(),
+        #                             'final_g':group.generation.max(),
+        #                             'max_q':group.freq.max(),
+        #                             'last_q':group.freq.iloc[-1]})
+        #         else: #mutation did reach fixation!
+        #             FIXATIONS.append({'rep':REPLICATE,
+        #                               'esize':name[1],
+        #                               'origin':group.generation.min(),
+        #                               'final_g':group.generation.max()})
+        #     REPLICATE+=1
 
-        hdf_fixed.append('fixations',pd.DataFrame(FIXATIONS))
-        hdf_lost.append('allele_ages',pd.DataFrame(AGES))
+        hdf_fixed.append('fixations',pd.concat(FIXATIONS))
+        hdf_lost.append('allele_ages',pd.concat(AGES))
 
     hdf_fixed.close()
     hdf_lost.close()
