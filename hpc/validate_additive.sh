@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #$ -pe openmp 64
-#$ -q krt
+#$ -q krt,krti
 
 cd $SGE_O_WORKDIR
 
