@@ -48,7 +48,6 @@ for i in range(nbatches):
         #Basic stats
             stats=[makeDF(k,l[0]) for k,l in zip(ss,data)]
             SUMMSTATS=pd.concat([SUMMSTATS,pd.concat([pd.DataFrame(k) for k in stats])])
-            print SUMMSTATS
 
 MEANS=SUMMSTATS.groupby(['gen','stats']).mean()
 MEANS.reset_index(inplace=True)
