@@ -1,5 +1,6 @@
 ##Basic diversity stats
-##Outputs a 'tidy' pandas.DataFrame to an H5 file
+##Outputs a 'tidy' pandas.DataFrame to an H5 file,
+##With mean of each summary statistic as function of generation
 
 import libsequence.polytable as polyt
 import libsequence.summstats as sstats
@@ -12,43 +13,47 @@ except ImportError:
 import gzip,sys,glob
 import pandas as pd
 
-ifiles=sys.argv[1]
+ifile=sys.argv[1]
 nbatches=int(sys.argv[2])
 ofile=sys.argv[3]
 
 PIK=gzip.open(ifile,"rb")
 
 statNames=['tajd','thetaw','thetapi',"nd1",
-           'hprime']
+           'hprime','nSL','iHS','H12','H1','H2H1']
 
 #Collect all results here
 
 def makeDF(i,j):
-    values=[i.tajimasd(),
-            i.thetaw(),
-            i.thetapi(),
-            i.numexternalmutations(),
-            i.hprime()]
-    print len(values)," ",len(statNames)
+    ps=sstats.polySIM(i)
+    x=sstats.std_nSLiHS(i)
+    g=sstats.garudStats(i)
+    values=[ps.tajimasd(),
+            ps.thetaw(),
+            ps.thetapi(),
+            ps.numexternalmutations(),
+            ps.hprime(),x[0],x[1],
+            g['H12'],g['H1'],g['H2H1']]
     return pd.DataFrame({'gen':[j]*len(values),'stats':statNames,'values':values})
 
-hdf=pd.HDFStore(ofile,'w',complevel=6,complib='zlib')
-hdf.open()    
+SUMMSTATS=pd.DataFrame()
 
 for i in range(nbatches):
     #There are 3 data objects dumped per sample
     for I in range(3):
         for j in range(64):
             data=pickle.load(PIK)
-            print len(data)
         #Get "SimData" objects for all neutral sites
             ss=[polyt.simData(k[1]['genotypes'][0]) for k in data]
-        #Now, "PolySIM"
-            ps=[sstats.polySIM(k) for k in ss]
-        #Basic diversity stats
-            stats=[makeDF(k,l[0]) for k,l in zip(ps,data)]
-            hdf.append('stats',pd.concat([pd.DataFrame(k) for k in stats]))
+        #Basic stats
+            stats=[makeDF(k,l[0]) for k,l in zip(ss,data)]
+            SUMMSTATS=pd.concat([SUMMSTATS,pd.concat([pd.DataFrame(k) for k in stats])])
+            print SUMMSTATS
 
+MEANS=SUMMSTATS.groupby(['gen','stats']).mean()
+MEANS.reset_index(inplace=True)
+
+hdf=pd.HDFStore(ofile,'w',complevel=6,complib='zlib')
+hdf.open()  
+hdf.append('stats',MEANS)
 hdf.close()
-
-
