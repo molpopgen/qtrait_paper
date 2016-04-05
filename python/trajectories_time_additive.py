@@ -75,10 +75,10 @@ def main():
     sregions = [fp.GaussianS(0,1,1,e)]
     #population size over time -- constant & we re-use this over and over
     nlist = np.array([N]*(10*N),dtype=np.uint32)
-    #16 batches of 64 runs = 1024 replicates  
-    REPLICATE=0
 
-    for i in range(16):
+    REPLICATE=0
+    #160 batches of 64 runs = 10240 replicates
+    for i in range(160):
         #set up populations
         pops=fp.popvec(64,N)
         #Evolve to equilibrium
@@ -93,9 +93,9 @@ def main():
                                       track=1,
                                       VS=S) ##Do not track popstats during "burn-in"
 
-        #evolve for another 3N generations at new optimum
+        #evolve for another 10N generations at new optimum
         traj2=qt.evolve_qtrait_track(rng,pops,
-                                     nlist[0:(3*N)],
+                                     nlist[0:],
                                      0,
                                      m,
                                      r,
