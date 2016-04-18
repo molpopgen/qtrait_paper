@@ -94,7 +94,7 @@ def main():
                                          VS=S) 
         RTEMP=REPLICATE
         for si in stats:
-            t=pd.DataFrame(i)
+            t=pd.DataFrame(si)
             t['rep']=[RTEMP]*len(t.index)
             RTEMP+=1
             hdf.append('popstats',t)
@@ -109,7 +109,7 @@ def main():
                                           trackStats=t,
                                           VS=S,optimum=Opt)
         for si in stats:
-            t=pd.DataFrame(i)
+            t=pd.DataFrame(si)
             t['rep']=[REPLICATE]*len(t.index)
             hdf.append('popstats',t)
             REPLICATE+=1
