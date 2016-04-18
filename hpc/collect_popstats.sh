@@ -2,7 +2,7 @@
 
 #$ -q krt,krti
 #Not sure how much RAM this needs.
-#$ -pe openmp 64  
+# $ -pe openmp 64  
 
 cd $SGE_O_WORKDIR
 

@@ -1,20 +1,30 @@
+# Read in the popstats files,
+# calculate mean of each stat per
+# generation, collate, and output 
+# for plotting in R
+
 import glob
 import pandas as pd
 import feather
 
 ifiles=glob.glob('*.popstats.h5')
 
-data = [pd.read_hdf(i) for i in ifiles]
+means=[]
 
 for i in range(len(ifiles)):
+    data=pd.read_hdf(ifiles[i])
     fi=ifiles[i].split('_')
 #1,3,5
+    data=data.groupby(['generation','stat']).mean()
+    data.reset_index(inplace=True)
     mu=float("0."+str(fi[5].split('.')[1]))
-    data[i]['H2']=[fi[1]]*len(data[i].index)
-    data[i]['opt']=[fi[3]]*len(data[i].index)
-    data[i]['mu']=[mu]*len(data[i].index)
+    data['H2']=[fi[1]]*len(data.index)
+    data['opt']=[fi[3]]*len(data.index)
+    data['mu']=[mu]*len(data.index)
+    means.append(data)
 
-data=pd.concat(data)
+means=pd.concat(means)
+feather.write_dataframe(means,'popstats.feather')
 
-feather.write_dataframe(data,'popstats.feather')
+
     

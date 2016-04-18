@@ -77,59 +77,44 @@ def main():
     sregions = [fp.GaussianS(0,1,1,e)]
     #population size over time -- constant & we re-use this over and over
     nlist = np.array([N]*(10*N),dtype=np.uint32)
-    #16 batches of 64 runs = 1024 replicates    
+    #16 batches of 64 runs = 1024 replicates   
+    REPLICATE=0 
     for i in range(16):
-        #Evolve to equilibrium
-        pops = qt.evolve_qtrait(rng,
-                                64,
-                                N,
-                                nlist[0:((10*N)-1)],
-                                0,
-                                m,
-                                r,
-                                nregions,sregions,recregions,
-                                sigmaE=sigE,
-                                VS=S) ##Do not track popstats during "burn-in"
-
-        #simulate another 2*N generations, sampling stats every 't' generations
+        pops=fp.popvec(64,N)
+        #Evolve to equilibrium, tracking along the way
+        stats = qt.evolve_qtrait_popstats(rng,
+                                         pops,
+                                         nlist[0:],
+                                         0,
+                                         m,
+                                         r,
+                                         nregions,sregions,recregions,
+                                         sigmaE=sigE,
+                                         trackStats=t,
+                                         VS=S) 
+        RTEMP=REPLICATE
+        for si in stats:
+            t=pd.DataFrame(i)
+            t['rep']=[RTEMP]*len(t.index)
+            RTEMP+=1
+            hdf.append('popstats',t)
+        #simulate another 10*N generations, sampling stats every 't' generations
         stats = qt.evolve_qtrait_popstats(rng,pops,
-                                          nlist[0:(2*N)],
+                                          nlist[0:],
                                           0,
                                           m,
                                           r,
                                           nregions,sregions,recregions,
                                           sigmaE=sigE,
                                           trackStats=t,
-                                          VS=S)
-        for j in range(len(pops)):
-            hdf.append('popstats',pd.DataFrame(stats[j]))
-
-        #We shift the optimum and sample immediately, so that we get
-        #any "spikes" in VG, etc.
-        stats=qt.evolve_qtrait_popstats(rng,pops,
-                                        nlist[0:1],
-                                        0,
-                                        m,
-                                        r,
-                                        nregions,sregions,recregions,
-                                        sigmaE=sigE,
-                                        VS=S,optimum=Opt,trackStats=t)
-
-        for j in range(len(pops)):
-            hdf.append('popstats',pd.DataFrame(stats[j]))
-
-        #evolve for another 3N generations post optimum-shift
-        stats=qt.evolve_qtrait_popstats(rng,pops,
-                                        nlist[0:(3*N)],
-                                        0,
-                                        m,
-                                        r,
-                                        nregions,sregions,recregions,
-                                        sigmaE=sigE,
-                                        VS=S,optimum=Opt,trackStats=t)
-
-        for j in range(len(pops)):
-            hdf.append('popstats',pd.DataFrame(stats[j]))
+                                          VS=S,optimum=Opt)
+        for si in stats:
+            t=pd.DataFrame(i)
+            t['rep']=[REPLICATE]*len(t.index)
+            hdf.append('popstats',t)
+            REPLICATE+=1
+        #for j in range(len(pops)):
+        #    hdf.append('popstats',pd.DataFrame(stats[j]))
 
     hdf.close()
 

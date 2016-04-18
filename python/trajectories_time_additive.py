@@ -2,7 +2,8 @@ import fwdpy as fp
 import fwdpy.qtrait as qt
 import numpy as np
 import pandas as pd,getopt,sys,warnings,math
-
+import copy
+import feather
 ##import local functions
 from single_region_common import *
 
@@ -13,7 +14,7 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:s:r:",["fixed=","ages="])
+        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:s:r:",["fixed=","ages=","traj="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -29,6 +30,7 @@ def main():
     Opt = 0.0  # Value of optimum after 10N gens
     fixationsFile=None
     lostFile=None
+    trajFile=None
     seed = 0
     for o,a in opts:
         if o == '-m':
@@ -51,6 +53,8 @@ def main():
             fixationsFile=a
         elif o == '--ages':
             lostFile=a
+        elif o == '--traj':
+            trajFile=a
 
     if H is None:
         usage()
@@ -58,7 +62,7 @@ def main():
     if m is None:
         usage()
         sys.exit(2)
-    if fixationsFile is None or lostFile is None:
+    if fixationsFile is None or lostFile is None or trajFile is None:
         usage()
         sys.exit(2)
 
@@ -67,7 +71,8 @@ def main():
     hdf_fixed.open()
     hdf_lost = pd.HDFStore(lostFile,'w',complevel=6,complib='zlib')
     hdf_lost.open()
-    
+    hdf_traj = pd.HDFStore(trajFile,'w',complevel=6,complib='zlib')
+    hdf_traj.open()
     sigE = get_sigE_additive(m,S,H)
 
     nregions = []
@@ -77,8 +82,8 @@ def main():
     nlist = np.array([N]*(10*N),dtype=np.uint32)
 
     REPLICATE=0
-    #160 batches of 64 runs = 10240 replicates
-    for i in range(160):
+    #16 batches of 64 runs = 1024 replicates
+    for i in range(16):
         #set up populations
         pops=fp.popvec(64,N)
         #Evolve to equilibrium
@@ -106,13 +111,15 @@ def main():
         FIXATIONS=[]
         #merge trajectories and get allele ages (parallelized via open MP)
         traj1=fp.merge_trajectories(traj1,traj2)
+
         ages = fp.allele_ages(traj1)
-        for ai in ages:
-            dfi=pd.DataFrame(ai)
-            dfi['rep']=[REPLICATE]*len(dfi.index)
+        REPTEMP=REPLICATE
+        for ai in range(len(ages)):
+            dfi=pd.DataFrame(ages[ai])
+            dfi['rep']=[REPTEMP]*len(dfi.index)
             FIXATIONS.append(dfi[dfi['max_freq']==1.0])
             AGES.append(dfi[dfi['max_freq']<1.0])
-            REPLICATE+=1
+            REPTEMP+=1
         # for j in range(len(pops)):
         #     #Merge all trajectories for this replicate
         #     df = pd.concat([pd.DataFrame(traj1[j]),
@@ -133,11 +140,28 @@ def main():
         #                               'final_g':group.generation.max()})
         #     REPLICATE+=1
 
+        ##Add more info into the trajectories
+        for t in traj1:
+            LD=[]
+            for i in t:
+                I=int(0)
+                for j in i[1]:
+                    x=copy.deepcopy(i[0])
+                    x['freq']=j
+                    x['generation']=i[0]['origin']+I
+                    I+=1
+                    LD.append(x)
+            d=pd.DataFrame(LD)
+            d['rep']=[REPLICATE]*len(d.index)
+            REPLICATE+=1
+            hdf_traj.append('trajectories',d)
+
         hdf_fixed.append('fixations',pd.concat(FIXATIONS))
         hdf_lost.append('allele_ages',pd.concat(AGES))
 
     hdf_fixed.close()
     hdf_lost.close()
+    hdf_traj.close()
 
 if __name__ == "__main__":
     main()
