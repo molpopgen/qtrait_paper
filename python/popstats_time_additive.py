@@ -83,23 +83,24 @@ def main():
         pops=fp.popvec(64,N)
         #Evolve to equilibrium, tracking along the way
         stats = qt.evolve_qtrait_popstats(rng,
-                                         pops,
-                                         nlist[0:],
-                                         0,
-                                         m,
-                                         r,
-                                         nregions,sregions,recregions,
-                                         sigmaE=sigE,
-                                         trackStats=t,
-                                         VS=S) 
+                                          pops,
+                                          nlist[0:],
+                                          0,
+                                          m,
+                                          r,
+                                          nregions,sregions,recregions,
+                                          sigmaE=sigE,
+                                          trackStats=t,
+                                          VS=S,optimum=0) 
         RTEMP=REPLICATE
         for si in stats:
-            t=pd.DataFrame(si)
-            t['rep']=[RTEMP]*len(t.index)
+            ti=pd.DataFrame(si)
+            ti['rep']=[RTEMP]*len(ti.index)
             RTEMP+=1
-            hdf.append('popstats',t)
+            hdf.append('popstats',ti)
         #simulate another 10*N generations, sampling stats every 't' generations
-        stats = qt.evolve_qtrait_popstats(rng,pops,
+        stats = qt.evolve_qtrait_popstats(rng,
+                                          pops,
                                           nlist[0:],
                                           0,
                                           m,
@@ -109,9 +110,9 @@ def main():
                                           trackStats=t,
                                           VS=S,optimum=Opt)
         for si in stats:
-            t=pd.DataFrame(si)
-            t['rep']=[REPLICATE]*len(t.index)
-            hdf.append('popstats',t)
+            ti=pd.DataFrame(si)
+            ti['rep']=[REPLICATE]*len(ti.index)
+            hdf.append('popstats',ti)
             REPLICATE+=1
         #for j in range(len(pops)):
         #    hdf.append('popstats',pd.DataFrame(stats[j]))
