@@ -16,7 +16,7 @@ posterFigure1 = ggplot(y) + geom_line(aes(x=(generation-10000)/1e3,y=value,color
     facet_wrap(~opt,nrow=2,scales="free") +
         xlab("Time since optimum shift (units of N generations)") +
             ylab("Mean value of statistic") +
-                scale_color_discrete(labels=c(expression(paste("max[2p(1-p",e^2,"]")),expression(VG))) +
+                scale_color_discrete(labels=c(expression(paste("max[2p(1-p)",e^2,"]")),expression(VG))) +
                 theme_bw(base_size=14) +
                     theme(legend.position="top") +
                         coord_cartesian(xlim=c(-1,1.5))
