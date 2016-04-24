@@ -18,6 +18,7 @@ R --no-save --args popstats.csv popstats.pdf < Rscripts/plot_validate_H2_output.
 * How does $\sigma_\mu$ affect things?
 * I should probably do a "track everything" simulation, so that I can track pop-gen stats for interesting replicates.  Alternately, I should require that the tracking API use a diferernt RNG, which is probably way more efficient.  How, though, w/o breaking things?
 * How does linkage affect things?
+* TFL2013/GBR model
 
 ### The question of linkage
 
