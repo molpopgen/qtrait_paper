@@ -114,8 +114,6 @@ def main():
             ti['rep']=[REPLICATE]*len(ti.index)
             hdf.append('popstats',ti)
             REPLICATE+=1
-        #for j in range(len(pops)):
-        #    hdf.append('popstats',pd.DataFrame(stats[j]))
 
     hdf.close()
 
