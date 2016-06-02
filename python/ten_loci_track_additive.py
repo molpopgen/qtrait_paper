@@ -11,7 +11,7 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:s:r:",["fixed=","ages=","traj="])
+        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:s:r:",["traj="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -46,10 +46,6 @@ def main():
             seed = int(a)
         elif o == '-r':
             r = float(a)
-        elif o == '--fixed':
-            fixationsFile=a
-        elif o == '--ages':
-            lostFile=a
         elif o == '--traj':
             trajFile=a
 
@@ -66,6 +62,7 @@ def main():
     #Constants:
     NLOCI=10
     NREPS=64
+    ##The next 2 are the 'sizes' of each locus in scaled params.  Roughly 100kb in 'humans' in terms of pi.
     theta=100.0
     rho=100.0
 
