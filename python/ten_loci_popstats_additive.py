@@ -91,7 +91,7 @@ def main():
         RTMP=REP
         for si in stats:
             tdf=pd.DataFrame([i for i in si if i['generation'] != 10*N])
-            tdf['rep']=[RTMP]*len(t.index)
+            tdf['rep']=[RTMP]*len(tdf.index)
             out.append('popstats',tdf)
             RTMP+=1
 
@@ -105,7 +105,7 @@ def main():
         
         for si in stats:
             tdf=pd.DataFrame(si)
-            tdf['rep']=[REP]*len(t.index)
+            tdf['rep']=[REP]*len(tdf.index)
             out.append('popstats',tdf)
             REP+=1
 
