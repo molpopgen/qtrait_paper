@@ -90,9 +90,9 @@ def main():
 
         RTMP=REP
         for si in stats:
-            t=pd.DataFrame([i for i in si if i['generation'] != 10*N])
-            t['rep']=[RTMP]*len(t.index)
-            out.append('popstats',t)
+            tdf=pd.DataFrame([i for i in si if i['generation'] != 10*N])
+            tdf['rep']=[RTMP]*len(t.index)
+            out.append('popstats',tdf)
             RTMP+=1
 
         stats = qtm.evolve_qtraits_mloc_popstats(rnge,x,nlist,
@@ -104,9 +104,9 @@ def main():
                                                  sample=t,VS=S,optimum=Opt)
         
         for si in stats:
-            t=pd.DataFrame(si)
-            t['rep']=[REP]*len(t.index)
-            out.append('popstats',t)
+            tdf=pd.DataFrame(si)
+            tdf['rep']=[REP]*len(t.index)
+            out.append('popstats',tdf)
             REP+=1
 
     out.close()
