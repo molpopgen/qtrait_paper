@@ -60,7 +60,7 @@ def main():
         usage()
         sys.exit(2)
     if t is None:
-        t=0.1*float(N)
+        t=int(0.1*float(N))
     #Constants:
     NLOCI=10
     NREPS=64
