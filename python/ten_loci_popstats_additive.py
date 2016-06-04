@@ -70,7 +70,7 @@ def main():
 
     #Can start working now:
     REP=0
-    out=pd.HDFStore(ofile,"w")
+    out=pd.HDFStore(ofile,"w",complevel=6,complib='zlib')
 
     little_r_per_locus = rho/(4.0*float(N))
     mu_n_region=theta/(4.0*float(N))
@@ -81,12 +81,12 @@ def main():
         x = fp.popvec_mloc(NREPS,N,NLOCI)
 
         stats = qtm.evolve_qtraits_mloc_popstats(rnge,x,nlist,
-                                              [mu_n_region]*NLOCI,
-                                              [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                              [e]*NLOCI,
-                                              [little_r_per_locus]*NLOCI,
-                                              [0.5]*(NLOCI-1),#loci unlinked
-                                              sample=t,VS=S)
+                                                 [mu_n_region]*NLOCI,
+                                                 [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                                 [e]*NLOCI,
+                                                 [little_r_per_locus]*NLOCI,
+                                                 [0.5]*(NLOCI-1),#loci unlinked
+                                                 sample=t,VS=S)
 
         RTMP=REP
         for si in stats:
@@ -96,12 +96,12 @@ def main():
             RTMP+=1
 
         stats = qtm.evolve_qtraits_mloc_popstats(rnge,x,nlist,
-                                              [mu_n_region]*NLOCI,
-                                              [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                              [e]*NLOCI,
-                                              [little_r_per_locus]*NLOCI,
-                                              [0.5]*(NLOCI-1),#loci unlinked
-                                              sample=t,VS=S,optimum=Opt)
+                                                 [mu_n_region]*NLOCI,
+                                                 [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                                 [e]*NLOCI,
+                                                 [little_r_per_locus]*NLOCI,
+                                                 [0.5]*(NLOCI-1),#loci unlinked
+                                                 sample=t,VS=S,optimum=Opt)
         
         for si in stats:
             t=pd.DataFrame(si)
