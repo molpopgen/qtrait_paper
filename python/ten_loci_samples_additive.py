@@ -99,7 +99,7 @@ def main():
 
     #Can start working now:
     REP=0
-    out=pd.HDFStore(ofile,"w")
+    out=pd.HDFStore(ofile,"w",complevel=6,complib='zlib')
 
     little_r_per_locus = rho/(4.0*float(N))
     mu_n_region=theta/(4.0*float(N))

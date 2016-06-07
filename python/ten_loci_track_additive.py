@@ -68,7 +68,7 @@ def main():
 
     #Can start working now:
     REP=0
-    out=pd.HDFStore(trajFile,"w")
+    out=pd.HDFStore(trajFile,"w",complevel=6,complib='zlib')
 
     little_r_per_locus = rho/(4.0*float(N))
     mu_n_region=theta/(4.0*float(N))
