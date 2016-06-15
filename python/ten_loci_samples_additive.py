@@ -141,7 +141,7 @@ def main():
                                                  [0.5]*(NLOCI-1),#loci unlinked
                                                  sample=t,nsam=nsam,VS=S)
  
-        DF = get_summstats_parallel(samples,REP,out)
+        get_summstats_parallel(samples,REP,out)
         #for si in samples:
         #    ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
         #    out.append('summstats',ti)
@@ -159,7 +159,7 @@ def main():
         #    ti=pd.concat([get_summstats(i) for i in si])
         #    out.append('summstats',ti)
         #    REP+=1
-        DF = get_summstats_parallel(samples,REP,out)
+        get_summstats_parallel(samples,REP,out)
         REP += NREPS
     out.close()
 
