@@ -3,31 +3,13 @@ from libsequence.polysitevector cimport polySiteVector,psite_vec_itr,psite_vec_c
 
 from libsequence.summstats cimport PolySIM,GarudStats,H1H12,snSL
 from libsequence.polytable cimport SimData,PolyTable
+from libsequence.extensions cimport SimDataVec
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 from libcpp.utility cimport pair
 from libcpp.string cimport string as cppstring
 from libcpp.memory cimport unique_ptr
 from cython.operator cimport dereference as deref
-
-cdef class simDataVec:
-    """
-    Wrapper for std::vector<Sequence::SimData>    
-    """
-    cdef vector[SimData] vec
-    def __cinit__(self):
-        self.vec = vector[SimData]()
-    def __dealloc__(self):
-        self.vec.clear()
-    def __init__(self,const vector[polySiteVector] & p):
-        cdef int i=0
-        cdef int n = p.size()
-        cdef vector[pair[double,cppstring]].iterator a,b
-        while i<n:
-            a=p[i].begin()
-            b=p[i].end()
-            self.vec.push_back(SimData(a,b))
-            i+=1
         
 cdef map[cppstring,double] get_stats_details(const SimData & d, double minfreq, double binsize ) nogil:
     cdef map[cppstring,double] rv
@@ -60,7 +42,7 @@ cdef vector[map[cppstring,double]] get_stats_parallel( const vector[SimData] & v
         rv[i] = get_stats_details(v[i],minfreq,binsize)
     return rv
         
-def getSummStatsParallel( simDataVec p, double minfreq = 0.05, double binsize = 0.10 ):
+def getSummStatsParallel( SimDataVec p, double minfreq = 0.05, double binsize = 0.10 ):
     """
     For the length of p, use that many threads to get summary stats.
 
