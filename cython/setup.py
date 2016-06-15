@@ -14,8 +14,8 @@ for i in modules:
     extensions.append(Extension("KRT_qtrait_paper."+i,
                                 sources=["KRT_qtrait_paper/"+i+".pyx"],
                                 language="c++",                  
-                                extra_compile_args=["-std=c++11"],  
-                                extra_link_args=["-std=c++11"],
+                                extra_compile_args=["-std=c++11","-fopenmp"],  
+                                extra_link_args=["-std=c++11","-fopenmp"],
                                 libraries=["sequence"])
                                 )
     provided.append("KRT_qtrait_paper."+i)
