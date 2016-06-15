@@ -16,7 +16,7 @@ def usage():
 statNames=['tajd','thetaw','thetapi',"nd1",
            'hprime','nSL','iHS','H12','H1','H2H1']
 
-def get_summstats_parallel(x):
+def get_summstats_parallel(x,REPID):
     rv=[]
     for REP in x:
         for LOCUS in range(10):
@@ -26,7 +26,10 @@ def get_summstats_parallel(x):
             stats = sstats.getSummStatsParallel(v)
             DF=pd.DataFrame(stats)
             DF['gen']=gen
+            DF['locus']=[LOCUS]*len(DF.index)
+            DF['replicate']=[REPID]*len(DF.index)
             rv.append(DF)
+        REPID+=1
     return pd.concat(rv)
 #    for GEN in range(len(x[0])):
 #        for LOCUS in range(10):
@@ -137,9 +140,9 @@ def main():
                                                  [0.5]*(NLOCI-1),#loci unlinked
                                                  sample=t,nsam=nsam,VS=S)
 
-        RTMP=REP
         print "done"
-        print get_summstats_parallel(samples)
+        DF = get_summstats_parallel(samples,REP)
+        out.append('summstats',DF)
         #for si in samples:
         #    ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
         #    out.append('summstats',ti)
@@ -157,7 +160,9 @@ def main():
         #    ti=pd.concat([get_summstats(i) for i in si])
         #    out.append('summstats',ti)
         #    REP+=1
-
+        DF = get_summstats_parallel(samples,REP)
+        out.append('summstats',DF)
+        REP += NREPS
     out.close()
 
 if __name__ == "__main__":
