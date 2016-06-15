@@ -16,7 +16,7 @@ def usage():
 statNames=['tajd','thetaw','thetapi',"nd1",
            'hprime','nSL','iHS','H12','H1','H2H1']
 
-def get_summstats_parallel(x,REPID):
+def get_summstats_parallel(x,REPID,out):
     rv=[]
     for REP in x:
         for LOCUS in range(10):
@@ -24,13 +24,14 @@ def get_summstats_parallel(x,REPID):
             locus=[i[1][LOCUS]['genotypes'][0] for i in REP]
             v=sstats.simDataVec(locus)
             stats = sstats.getSummStatsParallel(v)
-            DF=pd.DataFrame(stats)
-            DF['gen']=gen
-            DF['locus']=[LOCUS]*len(DF.index)
-            DF['replicate']=[REPID]*len(DF.index)
-            rv.append(DF)
+            DF=[pd.DataFrame(i.items(),columns=['stat','value']) for i in stats]
+            for i in range(len(DF)):
+                DF[i]['gen']=[gen[i]]*len(DF[i].index)
+                DF[i]['locus']=[LOCUS]*len(DF[i].index)
+                DF[i]['replicate']=[REPID]*len(DF[i].index)
+            rv.append(pd.concat(DF))
         REPID+=1
-    return pd.concat(rv)
+    out.append('summstats',pd.concat(rv))
 #    for GEN in range(len(x[0])):
 #        for LOCUS in range(10):
 #        for GEN in range
@@ -139,10 +140,8 @@ def main():
                                                  [little_r_per_locus]*NLOCI,
                                                  [0.5]*(NLOCI-1),#loci unlinked
                                                  sample=t,nsam=nsam,VS=S)
-
-        print "done"
-        DF = get_summstats_parallel(samples,REP)
-        out.append('summstats',DF)
+ 
+        DF = get_summstats_parallel(samples,REP,out)
         #for si in samples:
         #    ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
         #    out.append('summstats',ti)
@@ -160,8 +159,7 @@ def main():
         #    ti=pd.concat([get_summstats(i) for i in si])
         #    out.append('summstats',ti)
         #    REP+=1
-        DF = get_summstats_parallel(samples,REP)
-        out.append('summstats',DF)
+        DF = get_summstats_parallel(samples,REP,out)
         REP += NREPS
     out.close()
 
