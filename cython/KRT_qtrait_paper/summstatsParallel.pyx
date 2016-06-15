@@ -66,5 +66,4 @@ def getSummStatsParallel( simDataVec p, double minfreq = 0.05, double binsize = 
 
     The return value is a list of dicts.  Output order = input order
     """
-    if isinstance(simDataVec,p):
-        return get_stats_parallel(p.vec,minfreq,binsize)
+    return get_stats_parallel(p.vec,minfreq,binsize)
