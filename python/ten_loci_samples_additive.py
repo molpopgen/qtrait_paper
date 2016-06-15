@@ -18,13 +18,23 @@ statNames=['tajd','thetaw','thetapi',"nd1",
 
 def get_summstats_parallel(x):
     rv=[]
-    LOCUS=9
-    print len(x[0])
-    for LOCUS in range(10):
-        locus1=[i[0][1][LOCUS]['genotypes'][0] for i in x]
-        v=sstats.simDataVec(locus1)
-        stats = sstats.getSummStatsParallel(v)
-#        print stats
+    for REP in x:
+        for LOCUS in range(10):
+            gen=[i[0] for i in REP]
+            locus=[i[1][LOCUS]['genotypes'][0] for i in REP]
+            v=sstats.simDataVec(locus)
+            stats = sstats.getSummStatsParallel(v)
+            DF=pd.DataFrame(stats)
+            DF['gen']=gen
+            rv.append(DF)
+    return pd.concat(rv)
+#    for GEN in range(len(x[0])):
+#        for LOCUS in range(10):
+#        for GEN in range
+#            locus1=[i[0][1][LOCUS]['genotypes'][0] for i in x[GEN]]
+#            v=sstats.simDataVec(locus1)
+#            stats = sstats.getSummStatsParallel(v)
+#            print stats
 # def get_summstats(x):
 #     gen=x[0] #This is the generation
 #     rv=[]
@@ -115,7 +125,7 @@ def main():
     
     rnge=fp.GSLrng(seed)
     rngs=fp.GSLrng(seed)
-    nlist=np.array([N]*(10*N),dtype=np.uint32)
+    nlist=np.array([N]*(100),dtype=np.uint32)
     for BATCH in range(16): #16*64=1024
         x = fp.popvec_mloc(NREPS,N,NLOCI)
 
@@ -129,7 +139,7 @@ def main():
 
         RTMP=REP
         print "done"
-        get_summstats_parallel(samples)
+        print get_summstats_parallel(samples)
         #for si in samples:
         #    ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
         #    out.append('summstats',ti)
