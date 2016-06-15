@@ -4,7 +4,7 @@
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import libsequence.polytable as polyt
-import libsequence.summstats as sstats
+import KRT_qtrait_paper.summstatsParallel as sstats
 import numpy as np
 import pandas as pd
 import getopt
@@ -16,24 +16,33 @@ def usage():
 statNames=['tajd','thetaw','thetapi',"nd1",
            'hprime','nSL','iHS','H12','H1','H2H1']
 
-def get_summstats(x):
-    gen=x[0] #This is the generation
+def get_summstats_parallel(x):
     rv=[]
-    LOCUS=0
-    for i in x[1]:
-        sd=polyt.simData(i['genotypes'][0])
-        ps=sstats.polySIM(sd)
-        nSL=sstats.std_nSLiHS(sd)
-        g=sstats.garudStats(sd)
-        values=[ps.tajimasd(),
-                ps.thetaw(),
-                ps.thetapi(),
-                ps.numexternalmutations(),
-                ps.hprime(),nSL[0],nSL[1],
-                g['H12'],g['H1'],g['H2H1']]
-        rv.append(pd.DataFrame({'gen':[gen]*len(values),'locus':[LOCUS]*len(values),'stats':statNames,'values':values}))
-        LOCUS += 1
-    return pd.concat(rv)
+    LOCUS=9
+    print len(x[0])
+    for LOCUS in range(10):
+        locus1=[i[0][1][LOCUS]['genotypes'][0] for i in x]
+        v=sstats.simDataVec(locus1)
+        stats = sstats.getSummStatsParallel(v)
+#        print stats
+# def get_summstats(x):
+#     gen=x[0] #This is the generation
+#     rv=[]
+#     LOCUS=0
+#     for i in x[1]:
+#         sd=polyt.simData(i['genotypes'][0])
+#         ps=sstats.polySIM(sd)
+#         nSL=sstats.std_nSLiHS(sd)
+#         g=sstats.garudStats(sd)
+#         values=[ps.tajimasd(),
+#                 ps.thetaw(),
+#                 ps.thetapi(),
+#                 ps.numexternalmutations(),
+#                 ps.hprime(),nSL[0],nSL[1],
+#                 g['H12'],g['H1'],g['H2H1']]
+#         rv.append(pd.DataFrame({'gen':[gen]*len(values),'locus':[LOCUS]*len(values),'stats':statNames,'values':values}))
+#         LOCUS += 1
+#     return pd.concat(rv)
 
 def main():
     try:
@@ -119,10 +128,12 @@ def main():
                                                  sample=t,nsam=nsam,VS=S)
 
         RTMP=REP
-        for si in samples:
-            ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
-            out.append('summstats',ti)
-            RTMP+=1
+        print "done"
+        get_summstats_parallel(samples)
+        #for si in samples:
+        #    ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
+        #    out.append('summstats',ti)
+        #    RTMP+=1
 
         samples = qtm.evolve_qtraits_mloc_sample(rnge,rngs,x,nlist,
                                                  [mu_n_region]*NLOCI,
@@ -132,10 +143,10 @@ def main():
                                                  [0.5]*(NLOCI-1),#loci unlinked
                                                  sample=t,nsam=nsam,VS=S,optimum=Opt)
         
-        for si in samples:
-            ti=pd.concat([get_summstats(i) for i in si])
-            out.append('summstats',ti)
-            REP+=1
+        #for si in samples:
+        #    ti=pd.concat([get_summstats(i) for i in si])
+        #    out.append('summstats',ti)
+        #    REP+=1
 
     out.close()
 
