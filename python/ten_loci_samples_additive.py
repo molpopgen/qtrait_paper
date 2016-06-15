@@ -1,6 +1,9 @@
 #This script runs simulations and outputs various
 #summaries of variability @ neutral markers
 
+#Note: this script depends on KT_qtrait_paper.summstatsParallel,
+#which is a Cython extension module extending pylibseq.
+
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import libsequence.polytable as polyt
