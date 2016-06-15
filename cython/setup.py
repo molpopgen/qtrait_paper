@@ -56,6 +56,7 @@ setup(name='KRT_qtrait_paper',
       packages=['KRT_qtrait_paper'],
       py_modules=[],
       scripts=[],
+      requires=['pylibseq'],
       package_data=pdata,
       ext_modules=extensions
 )
