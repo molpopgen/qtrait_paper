@@ -32,31 +32,6 @@ def get_summstats_parallel(x,REPID,out):
             rv.append(pd.concat(DF))
         REPID+=1
     out.append('summstats',pd.concat(rv))
-#    for GEN in range(len(x[0])):
-#        for LOCUS in range(10):
-#        for GEN in range
-#            locus1=[i[0][1][LOCUS]['genotypes'][0] for i in x[GEN]]
-#            v=sstats.simDataVec(locus1)
-#            stats = sstats.getSummStatsParallel(v)
-#            print stats
-# def get_summstats(x):
-#     gen=x[0] #This is the generation
-#     rv=[]
-#     LOCUS=0
-#     for i in x[1]:
-#         sd=polyt.simData(i['genotypes'][0])
-#         ps=sstats.polySIM(sd)
-#         nSL=sstats.std_nSLiHS(sd)
-#         g=sstats.garudStats(sd)
-#         values=[ps.tajimasd(),
-#                 ps.thetaw(),
-#                 ps.thetapi(),
-#                 ps.numexternalmutations(),
-#                 ps.hprime(),nSL[0],nSL[1],
-#                 g['H12'],g['H1'],g['H2H1']]
-#         rv.append(pd.DataFrame({'gen':[gen]*len(values),'locus':[LOCUS]*len(values),'stats':statNames,'values':values}))
-#         LOCUS += 1
-#     return pd.concat(rv)
 
 def main():
     try:
@@ -142,10 +117,6 @@ def main():
                                                  sample=t,nsam=nsam,VS=S)
  
         get_summstats_parallel(samples,REP,out)
-        #for si in samples:
-        #    ti=pd.concat([get_summstats(i) for i in si if i[0] != 10*N])
-        #    out.append('summstats',ti)
-        #    RTMP+=1
 
         samples = qtm.evolve_qtraits_mloc_sample(rnge,rngs,x,nlist,
                                                  [mu_n_region]*NLOCI,
@@ -154,11 +125,7 @@ def main():
                                                  [little_r_per_locus]*NLOCI,
                                                  [0.5]*(NLOCI-1),#loci unlinked
                                                  sample=t,nsam=nsam,VS=S,optimum=Opt)
-        
-        #for si in samples:
-        #    ti=pd.concat([get_summstats(i) for i in si])
-        #    out.append('summstats',ti)
-        #    REP+=1
+ 
         get_summstats_parallel(samples,REP,out)
         REP += NREPS
     out.close()
