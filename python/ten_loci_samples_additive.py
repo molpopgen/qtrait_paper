@@ -7,6 +7,7 @@
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import libsequence.polytable as polyt
+import libsequence.extensions as ext
 import KRT_qtrait_paper.summstatsParallel as sstats
 import numpy as np
 import pandas as pd
@@ -25,7 +26,7 @@ def get_summstats_parallel(x,REPID,out):
         for LOCUS in range(10):
             gen=[i[0] for i in REP]
             locus=[i[1][LOCUS]['genotypes'][0] for i in REP]
-            v=sstats.simDataVec(locus)
+            v=ext.SimDataVec(locus)
             stats = sstats.getSummStatsParallel(v)
             DF=[pd.DataFrame(i.items(),columns=['stat','value']) for i in stats]
             for i in range(len(DF)):
@@ -107,7 +108,7 @@ def main():
     
     rnge=fp.GSLrng(seed)
     rngs=fp.GSLrng(seed)
-    nlist=np.array([N]*(100),dtype=np.uint32)
+    nlist=np.array([N]*(10*N),dtype=np.uint32)
     for BATCH in range(16): #16*64=1024
         x = fp.popvec_mloc(NREPS,N,NLOCI)
 
