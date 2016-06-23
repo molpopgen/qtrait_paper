@@ -84,7 +84,7 @@ def main():
     sigE = get_sigE_additive(m,S,H)
 
     rng = fp.GSLrng(seed)
-
+    rng2 = fp.GSLrng(seed*100)
     PIK=gzip.open(ofile,"wb")
     #16 batches of 64 runs = 1024 replicates
     
@@ -99,56 +99,33 @@ def main():
     nlist = np.array([N]*(10*N),dtype=np.uint32)
     for i in range(16):
         #Evolve to equilibrium
-        pops = qt.evolve_qtrait(rng,
-                                64,
-                                N,
-                                nlist[0:((10*N)-1)],
-                                mun,
-                                m,
-                                r,
-                                nreg,sreg,rrg,
-                                sigmaE=sigE,
-                                VS=S) ##Do not track popstats during "burn-in"
-
-        #simulate another 2*N generations, sampling stats every 't' generations
-        samples = qt.evolve_qtrait_sample(rng,pops,
-                                          nlist[0:(2*N)],
-                                          mun,
-                                          m,
-                                          r,
-                                          nreg,sreg,rrg,
-                                          sigmaE=sigE,
-                                          trackSamples=t,nsam=ssize,
-                                          VS=S)
-        for j in samples:
-            pickle.dump(j,PIK)
-
-        #We shift the optimum and sample immediately, so that we get
-        #any "spikes" in VG, etc.
-        samples =qt.evolve_qtrait_sample(rng,pops,
-                                         nlist[0:1],
-                                         0,
-                                         m,
-                                         r,
-                                         [],
-                                         [fp.GaussianS(0,1,e,1)],
-                                         [fp.Region(0,1,1)],
-                                         sigmaE=sigE,
-                                         VS=S,optimum=Opt,trackSamples=t,nsam=ssize)
-        for j in samples:
-            pickle.dump(j,PIK)
- 
-        #evolve for another 3N generations post optimum-shift
-        samples=qt.evolve_qtrait_sample(rng,pops,
-                                        nlist[0:(3*N)],
+        pops = qt.evolve_regions_qtrait(rng,
+                                        64,
+                                        N,
+                                        nlist[0:],
                                         mun,
                                         m,
                                         r,
                                         nreg,sreg,rrg,
-                                        sigmaE=sigE,
-                                        VS=S,optimum=Opt,trackSamples=t,nsam=ssize)
+                                        sigmaE=sigE,f=0.,
+                                        VS=S,optimum=0) ##Do not track popstats during "burn-in"
+
+        #simulate another 2*N generations, sampling stats every 't' generations
+        sampler = fp.PopSampler(len(pops),ssize,rng2)
+        qt.evolve_regions_qtrait_sampler(rng,pops,sampler,
+                                         nlist[0:],
+                                         mun,
+                                         m,
+                                         r,
+                                         nreg,sreg,rrg,
+                                         sigmaE=sigE,
+                                         sample=t,
+                                         VS=S,optimum=Opt)
+        samples = sampler.get()
+        print samples
         for j in samples:
             pickle.dump(j,PIK)
+
 
     PIK.close()
 
