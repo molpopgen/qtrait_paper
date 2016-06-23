@@ -80,18 +80,21 @@ def main():
     #16 batches of 64 runs = 1024 replicates   
     REPLICATE=0 
     for i in range(16):
-        pops=fp.popvec(64,N)
+        pops=fp.SpopVec(64,N)
+        sampler = fp.QtraitStatsSampler(len(pops),0.0)
         #Evolve to equilibrium, tracking along the way
-        stats = qt.evolve_qtrait_popstats(rng,
-                                          pops,
-                                          nlist[0:],
-                                          0,
-                                          m,
-                                          r,
-                                          nregions,sregions,recregions,
-                                          sigmaE=sigE,
-                                          trackStats=t,
-                                          VS=S,optimum=0) 
+        qt.evolve_regions_qtrait_sampler(rng,
+                                         pops,
+                                         sampler,
+                                         nlist[0:],
+                                         0,
+                                         m,
+                                         r,
+                                         nregions,sregions,recregions,
+                                         sigmaE=sigE,
+                                         sample=t,
+                                         VS=S,optimum=0)
+        stats=sampler.get()
         RTEMP=REPLICATE
         for si in stats:
             ti=pd.DataFrame(si)
@@ -99,16 +102,19 @@ def main():
             RTEMP+=1
             hdf.append('popstats',ti)
         #simulate another 10*N generations, sampling stats every 't' generations
-        stats = qt.evolve_qtrait_popstats(rng,
-                                          pops,
-                                          nlist[0:],
-                                          0,
-                                          m,
-                                          r,
-                                          nregions,sregions,recregions,
-                                          sigmaE=sigE,
-                                          trackStats=t,
-                                          VS=S,optimum=Opt)
+        sampler = fp.QtraitStatsSampler(len(pops),Opt)
+        qt.evolve_regions_qtrait_sampler(rng,
+                                         pops,
+                                         sampler,
+                                         nlist[0:],
+                                         0,
+                                         m,
+                                         r,
+                                         nregions,sregions,recregions,
+                                         sigmaE=sigE,
+                                         sample=t,
+                                         VS=S,optimum=Opt)
+        stats=sampler.get()
         for si in stats:
             ti=pd.DataFrame(si)
             ti['rep']=[REPLICATE]*len(ti.index)
