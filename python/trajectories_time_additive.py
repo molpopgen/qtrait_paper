@@ -85,33 +85,37 @@ def main():
     #16 batches of 64 runs = 1024 replicates
     for i in range(16):
         #set up populations
-        pops=fp.popvec(64,N)
+        pops=fp.SpopVec(64,N)
         #Evolve to equilibrium
-        traj1 = qt.evolve_qtrait_track(rng,
-                                      pops,
-                                      nlist[0:],
-                                      0,
-                                      m,
-                                      r,
-                                      nregions,sregions,recregions,
-                                      sigmaE=sigE,
-                                      track=1,
-                                      VS=S) ##Do not track popstats during "burn-in"
+        sampler = fp.FreqSampler(len(pops))
+        qt.evolve_regions_qtrait_sampler(rng,
+                                         pops,
+                                         sampler,
+                                         nlist[0:],
+                                         0,
+                                         m,
+                                         r,
+                                         nregions,sregions,recregions,
+                                         sigmaE=sigE,
+                                         sample=1,
+                                         VS=S) ##Do not track popstats during "burn-in"
 
+        traj1=sampler.get()
+        sampler = fp.FreqSampler(len(pops))
         #evolve for another 10N generations at new optimum
-        traj2=qt.evolve_qtrait_track(rng,pops,
-                                     nlist[0:],
-                                     0,
-                                     m,
-                                     r,
-                                     nregions,sregions,recregions,
-                                     sigmaE=sigE,
-                                     VS=S,optimum=Opt,track=1)
+        qt.evolve_regions_qtrait_sampler(rng,pops,sampler,
+                                         nlist[0:],
+                                         0,
+                                         m,
+                                         r,
+                                         nregions,sregions,recregions,
+                                         sigmaE=sigE,
+                                         VS=S,optimum=Opt,sample=1)
+        traj2=sampler.get()
         AGES=[]
         FIXATIONS=[]
         #merge trajectories and get allele ages (parallelized via open MP)
         traj1=fp.merge_trajectories(traj1,traj2)
-
         ages = fp.allele_ages(traj1)
         REPTEMP=REPLICATE
         for ai in range(len(ages)):
