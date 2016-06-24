@@ -1,5 +1,6 @@
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
+import fwdpy.fitness as fpw
 import numpy as np
 import pandas as pd
 #import matplotlib
@@ -8,7 +9,7 @@ import copy,sys
 
 N=1000
 NLOCI=10
-NREPS=40
+NREPS=20
 
 rnge=fp.GSLrng(100)
 nlist=np.array([N]*(15*N),dtype=np.uint32)
@@ -18,28 +19,37 @@ little_r_per_locus=rho_per_locus/(4.0*float(N))
 mu_n_region=theta_neutral_per_locus/(4.0*float(N))
 mu_del_ttl=1e-3
 
-sigmas=[0.1]*NLOCI
+#sigmas=[0.1]*NLOCI
 
 hdf=pd.HDFStore("cumVA.h5",'w')
 
-REPLICATE=0
-for batch in range(125): #4,000 reps...
-    x = qtm.evolve_qtraits_mloc(rnge,NREPS,N,NLOCI,
-                                nlist[:(10*N)],
-                                [mu_n_region]*NLOCI,
-                                [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                sigmas,
-                                [little_r_per_locus]*NLOCI,
-                                [0.5]*(NLOCI-1),#loci unlinked
-                                )
-    traj2=qtm.evolve_qtraits_mloc_VA(rnge,x,nlist,  #Only evolve N further generations...
-                                     [mu_n_region]*NLOCI,
-                                     [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                     sigmas,
-                                     [little_r_per_locus]*NLOCI,
-                                     [0.5]*(NLOCI-1),#loci unlinked
-                                     sample=10,optimum=0.5)
+fmodel = fpw.MlocusAdditive()
+sregions = []
+for i in range(NLOCI):
+    sregions.append(fp.GaussianS(i,i+1,1,0.1))
     
+REPLICATE=0
+for batch in range(1): #4,000 reps...
+    pops = fp.MlocusPopVec(NREPS,N,NLOCI)
+    sampler = fp.NothingSampler(len(pops))
+    x = qtm.evolve_qtraits_mloc_sample_fitness(rnge,pops,sampler,fmodel,
+                                               nlist[:(10*N)],
+                                               [mu_n_region]*NLOCI,
+                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               sregions,
+                                               [little_r_per_locus]*NLOCI,
+                                               [0.5]*(NLOCI-1),#loci unlinked
+                                               sample=1)
+    sampler = fp.VASampler(len(pops))
+    qtm.evolve_qtraits_mloc_sample_fitness(rnge,pops,sampler,fmodel,
+                                           nlist, #Evolve 15N gens past optimum shift
+                                           [mu_n_region]*NLOCI,
+                                           [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                           sregions,
+                                           [little_r_per_locus]*NLOCI,
+                                           [0.5]*(NLOCI-1),#loci unlinked
+                                           sample=10,optimum=0.5)
+    traj2=sampler.get()
     # df=[pd.DataFrame(i) for i in traj]
     # TEMP=REPLICATE
     # for i in df:
