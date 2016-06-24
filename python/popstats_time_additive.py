@@ -13,7 +13,7 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:")
+        opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:",["cores=","batches="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -30,6 +30,8 @@ def main():
     Opt = 0.0  # Value of optimum after 10N gens
     ofile=None
     seed = 0
+    ncores=64
+    nbatches=16
     for o,a in opts:
         if o == '-m':
             m = float(a)
@@ -51,7 +53,11 @@ def main():
             ofile = a
         elif o == '-r':
             r = float(a)
-
+        elif o == '--cores':
+            ncores=int(a)
+        elif o == '--batches':
+            nbatches=int(a)
+            
     if t is None:
         t = int(0.1*float(N))
     if H is None:
@@ -75,12 +81,13 @@ def main():
     nregions = []
     recregions = [fp.Region(0,1,1)]
     sregions = [fp.GaussianS(0,1,1,e)]
+
     #population size over time -- constant & we re-use this over and over
     nlist = np.array([N]*(10*N),dtype=np.uint32)
     #16 batches of 64 runs = 1024 replicates   
     REPLICATE=0 
-    for i in range(16):
-        pops=fp.SpopVec(64,N)
+    for i in range(nbatches):
+        pops=fp.SpopVec(ncores,N)
         sampler = fp.QtraitStatsSampler(len(pops),0.0)
         #Evolve to equilibrium, tracking along the way
         qt.evolve_regions_qtrait_sampler(rng,
