@@ -109,27 +109,29 @@ def main():
     rnge=fp.GSLrng(seed)
     rngs=fp.GSLrng(seed)
     nlist=np.array([N]*(10*N),dtype=np.uint32)
+    fitness = qtm.MlocusAdditiveTrait()
+    sregions=[fp.GaussianS(0,1,1,e,1.0)]*NLOCI
     for BATCH in range(16): #16*64=1024
-        x = fp.popvec_mloc(NREPS,N,NLOCI)
-
-        samples = qtm.evolve_qtraits_mloc_sample(rnge,rngs,x,nlist,
-                                                 [mu_n_region]*NLOCI,
-                                                 [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                                 [e]*NLOCI,
-                                                 [little_r_per_locus]*NLOCI,
-                                                 [0.5]*(NLOCI-1),#loci unlinked
-                                                 sample=t,nsam=nsam,VS=S)
- 
+        x = fp.MlocusPopVec(NREPS,N,NLOCI)
+        sampler = fp.PopSampler(len(x),nsam,rngs)
+        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
+                                               [mu_n_region]*NLOCI,
+                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               sregions,
+                                               [little_r_per_locus]*NLOCI,
+                                               [0.5]*(NLOCI-1),#loci unlinked
+                                               sample=t,VS=S)
+        samples=sampler.get()
         get_summstats_parallel(samples,REP,out)
-
-        samples = qtm.evolve_qtraits_mloc_sample(rnge,rngs,x,nlist,
-                                                 [mu_n_region]*NLOCI,
-                                                 [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                                 [e]*NLOCI,
-                                                 [little_r_per_locus]*NLOCI,
-                                                 [0.5]*(NLOCI-1),#loci unlinked
-                                                 sample=t,nsam=nsam,VS=S,optimum=Opt)
- 
+        sampler = fp.PopSampler(nsam,rngs)
+        qtm.evolve_qtraits_mloc_sample_fitnes(rnge,x,sampler,fitness,nlist,
+                                              [mu_n_region]*NLOCI,
+                                              [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                              sregions,
+                                              [little_r_per_locus]*NLOCI,
+                                              [0.5]*(NLOCI-1),#loci unlinked
+                                              sample=t,VS=S,optimum=Opt)
+        samples=sampler.get()
         get_summstats_parallel(samples,REP,out)
         REP += NREPS
     out.close()

@@ -77,32 +77,36 @@ def main():
     
     rnge=fp.GSLrng(seed)
     nlist=np.array([N]*(10*N),dtype=np.uint32)
+    fitness = qtm.MlocusAdditiveTrait()
+    sregions=[fp.GaussianS(0,1,1,e,1.0)]*NLOCI
     for BATCH in range(16): #16*64=1024
-        x = fp.popvec_mloc(NREPS,N,NLOCI)
-
-        stats = qtm.evolve_qtraits_mloc_popstats(rnge,x,nlist,
-                                                 [mu_n_region]*NLOCI,
-                                                 [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                                 [e]*NLOCI,
-                                                 [little_r_per_locus]*NLOCI,
-                                                 [0.5]*(NLOCI-1),#loci unlinked
-                                                 sample=t,VS=S)
+        x = fp.MlocusPopVec(NREPS,N,NLOCI)
+        sampler = fp.QtraitStatsSampler(len(x),0.0)
+        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
+                                               [mu_n_region]*NLOCI,
+                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               sregions,
+                                               [little_r_per_locus]*NLOCI,
+                                               [0.5]*(NLOCI-1),#loci unlinked
+                                               sample=t,VS=S)
 
         RTMP=REP
+        stats=sampler.get()
         for si in stats:
             tdf=pd.DataFrame([i for i in si if i['generation'] != 10*N])
             tdf['rep']=[RTMP]*len(tdf.index)
             out.append('popstats',tdf)
             RTMP+=1
 
-        stats = qtm.evolve_qtraits_mloc_popstats(rnge,x,nlist,
-                                                 [mu_n_region]*NLOCI,
-                                                 [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                                 [e]*NLOCI,
-                                                 [little_r_per_locus]*NLOCI,
-                                                 [0.5]*(NLOCI-1),#loci unlinked
-                                                 sample=t,VS=S,optimum=Opt)
-        
+        sampler = fp.QtraitStatsSampler(len(x),Opt)
+        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
+                                               [mu_n_region]*NLOCI,
+                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               sregions,
+                                               [little_r_per_locus]*NLOCI,
+                                               [0.5]*(NLOCI-1),#loci unlinked
+                                               sample=t,VS=S,optimum=Opt)
+        stats=sampler.get()
         for si in stats:
             tdf=pd.DataFrame(si)
             tdf['rep']=[REP]*len(tdf.index)

@@ -25,8 +25,6 @@ def main():
     mu_del_ttl = None # Mutation rate (per gamete, per generation) to alleles affecting trait value
     r = 0.5 # rec. rate b/w loci (per diploid, per gen)
     Opt = 0.0  # Value of optimum after 10N gens
-    fixationsFile=None
-    lostFile=None
     trajFile=None
     seed = 0
     for o,a in opts:
@@ -75,26 +73,29 @@ def main():
     
     rnge=fp.GSLrng(seed)
     nlist=np.array([N]*(10*N),dtype=np.uint32)
+    fitness = qtm.MlocusAdditiveTrait()
+    sregions=[fp.GaussianS(0,1,1,e,1.0)]*NLOCI
     for BATCH in range(16): #16*64=1024
-        x = fp.popvec_mloc(NREPS,N,NLOCI)
+        x = fp.MlocusPopVec(NREPS,N,NLOCI)
 
-        traj1 = qtm.evolve_qtraits_mloc_track(rnge,x,nlist,
-                                              [mu_n_region]*NLOCI,
-                                              [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                              [e]*NLOCI,
-                                              [little_r_per_locus]*NLOCI,
-                                              [0.5]*(NLOCI-1),#loci unlinked
-                                              1,VS=S)
-
-    
-        traj2 = qtm.evolve_qtraits_mloc_track(rnge,x,nlist,
-                                              [mu_n_region]*NLOCI,
-                                              [mu_del_ttl/float(NLOCI)]*NLOCI,
-                                              [e]*NLOCI,
-                                              [little_r_per_locus]*NLOCI,
-                                              [0.5]*(NLOCI-1),#loci unlinked
-                                              1,VS=S,optimum=Opt)
-        
+        sampler=fp.FreqSampler(len(x))
+        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
+                                               [mu_n_region]*NLOCI,
+                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               sregions,
+                                               [little_r_per_locus]*NLOCI,
+                                               [0.5]*(NLOCI-1),#loci unlinked
+                                               sample=1,VS=S)
+        traj1=sampler.get()
+        sampler=fp.FreqSampler(len(x))
+        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
+                                               [mu_n_region]*NLOCI,
+                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               sregions,
+                                               [little_r_per_locus]*NLOCI,
+                                               [0.5]*(NLOCI-1),#loci unlinked
+                                               sample=1,VS=S,optimum=Opt)
+        traj2=sampler.get()
         m=fp.tidy_trajectories(fp.merge_trajectories(traj1,traj2))
         for i in m:
             temp=pd.DataFrame(i)
