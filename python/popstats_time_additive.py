@@ -1,5 +1,6 @@
 import fwdpy as fp
 import fwdpy.qtrait as qt
+#import fwdpy.fitness as fpw
 import numpy as np
 import pandas as pd,getopt,sys,warnings,math
 
@@ -81,26 +82,26 @@ def main():
     nregions = []
     recregions = [fp.Region(0,1,1)]
     sregions = [fp.GaussianS(0,1,1,e)]
-
     #population size over time -- constant & we re-use this over and over
     nlist = np.array([N]*(10*N),dtype=np.uint32)
-    #16 batches of 64 runs = 1024 replicates   
+    #16 batches of 64 runs = 1024 replicates
+    fitness=qt.SpopAdditiveTrait()
     REPLICATE=0 
     for i in range(nbatches):
         pops=fp.SpopVec(ncores,N)
         sampler = fp.QtraitStatsSampler(len(pops),0.0)
         #Evolve to equilibrium, tracking along the way
-        qt.evolve_regions_qtrait_sampler(rng,
-                                         pops,
-                                         sampler,
-                                         nlist[0:],
-                                         0,
-                                         m,
-                                         r,
-                                         nregions,sregions,recregions,
-                                         sigmaE=sigE,
-                                         sample=t,
-                                         VS=S,optimum=0)
+        qt.evolve_regions_qtrait_sampler_fitness(rng,
+                                                 pops,
+                                                 sampler,fitness,
+                                                 nlist[0:],
+                                                 0,
+                                                 m,
+                                                 r,
+                                                 nregions,sregions,recregions,
+                                                 sigmaE=sigE,
+                                                 sample=t,
+                                                 VS=S,optimum=0)
         stats=sampler.get()
         RTEMP=REPLICATE
         for si in stats:
@@ -110,17 +111,17 @@ def main():
             hdf.append('popstats',ti)
         #simulate another 10*N generations, sampling stats every 't' generations
         sampler = fp.QtraitStatsSampler(len(pops),Opt)
-        qt.evolve_regions_qtrait_sampler(rng,
-                                         pops,
-                                         sampler,
-                                         nlist[0:],
-                                         0,
-                                         m,
-                                         r,
-                                         nregions,sregions,recregions,
-                                         sigmaE=sigE,
-                                         sample=t,
-                                         VS=S,optimum=Opt)
+        qt.evolve_regions_qtrait_sampler_fitness(rng,
+                                                 pops,
+                                                 sampler,fitness,
+                                                 nlist[0:],
+                                                 0,
+                                                 m,
+                                                 r,
+                                                 nregions,sregions,recregions,
+                                                 sigmaE=sigE,
+                                                 sample=t,
+                                                 VS=S,optimum=Opt)
         stats=sampler.get()
         for si in stats:
             ti=pd.DataFrame(si)
