@@ -58,7 +58,7 @@ def main():
     t=None     # 0.1N
     e = 0.25 # s.d. of effect sizes
     S = 1    # V(S)
-    H = None # desired b-sense H^2
+    H = 1.0 # desired b-sense H^2
     m = None # Mutation rate (per gamete, per generation) to alleles affecting trait value
     r = 0.5 # rec. rate (per diploid, per gen)
     Opt = 0.0  # Value of optimum after 10N gens
