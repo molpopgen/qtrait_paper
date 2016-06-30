@@ -10,7 +10,7 @@ import getopt
 import sys
 
 def usage():
-    print "something went wrong"
+    print ("something went wrong")
 
 valid_trait_models=['additive','mult']
 trait_models = {'additive':qtm.MlocusAdditiveTrait(),
@@ -18,8 +18,8 @@ trait_models = {'additive':qtm.MlocusAdditiveTrait(),
 
 valid_sampler_names=['stats','freq','popgen']
 
-def get_sampler(sampler_string,length,optimum,nsam,rng):
-    if sampler_string == 'stats':
+def get_sampler(samplerString,length,optimum,nsam,rng):
+    if samplerString == 'stats':
         return fp.QtraitStatsSampler(length,optimum)
     elif samplerString == 'freq':
         return fp.FreqSampler(length)
@@ -68,7 +68,7 @@ def write_output(sampler,output,nloci,REPID):
     return REPID
 
 def main():
-        try:
+    try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
                                     "nloci="])
@@ -82,7 +82,7 @@ def main():
     t=None     # 0.1N
     e = 0.25 # s.d. of effect sizes
     S = 1    # V(S)
-    H = None # desired b-sense H^2
+    H = 1.0 # desired b-sense H^2
     m = None # Mutation rate (per gamete, per generation) to alleles affecting trait value
     r = 0.5 #Recombination rate between locis
     Opt = 0.0  # Value of optimum after 10N gens
@@ -127,46 +127,43 @@ def main():
         elif o == '--trait':
             traitString = a
             if a not in valid_trait_models:
-                print "Error: invalid trait model"
+                print ("Error: invalid trait model")
                 usage()
                 sys.exit(0)
         elif o == '--sampler':
             samplerString = a
             if a not in valid_sampler_names:
-                print "Error: invalid sampler name"
+                print ("Error: invalid sampler name")
                 usage()
                 sys.exit(0)
         elif o == '--cores':
             ncores=int(a)
             if ncores < 1:
-                print "--ncores must be > 0"
+                print ("--ncores must be > 0")
                 usage()
                 sys.exit(0)
         elif o == '--batches':
             nbatches=int(a)
             if nbatches < 1:
-                print "--nbatches myst be > 0"
+                print ("--nbatches myst be > 0")
                 usage()
                 sys.exit(0)
         elif o == '--nloci':
             NLOCI=int(a)
             if NLOCI<2:
-                rpint "--nloci must be > 1"
+                rpint ("--nloci must be > 1")
                 usage()
                 sys.exit(0)
 
     if samplerString is None:
-        print "Error: sampler must be defined"
+        print ("Error: sampler must be defined")
         usage()
         sys.exit(0)
 
     if t is None:
-        print "Error: sampling interval must be defined"
+        print ("Error: sampling interval must be defined")
         usage()
         sys.exit(0)
-    if H is None:
-        usage()
-        sys.exit(2)
     if m is None:
         usage()
         sys.exit(2)
@@ -176,7 +173,7 @@ def main():
 
     #Can start working now:
     REP=0
-    out=pd.HDFStore(trajFile,"w",complevel=6,complib='zlib')
+    out=pd.HDFStore(ofile,"w",complevel=6,complib='zlib')
 
     little_r_per_locus = rho/(4.0*float(N))
     mu_n_region=theta/(4.0*float(N))
@@ -189,19 +186,19 @@ def main():
     for BATCH in range(nbatches):
         x = fp.MlocusPopVec(ncores,N,NLOCI)
 
-        sampler=(samplerString,len(x),Opt,nsam,rngs):
+        sampler=get_sampler(samplerString,len(x),Opt,nsam,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                                                [mu_n_region]*NLOCI,
-                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               [m/float(NLOCI)]*NLOCI,
                                                sregions,
                                                [little_r_per_locus]*NLOCI,
                                                [r]*(NLOCI-1),#loci unlinked
                                                sample=t,VS=S)
         REP=write_output(sampler,out,NLOCI,REP)
-        sampler=(samplerString,len(x),Opt,nsam,rngs):
+        sampler=get_sampler(samplerString,len(x),Opt,nsam,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                                                [mu_n_region]*NLOCI,
-                                               [mu_del_ttl/float(NLOCI)]*NLOCI,
+                                               [m/float(NLOCI)]*NLOCI,
                                                sregions,
                                                [little_r_per_locus]*NLOCI,
                                                [r]*(NLOCI-1),#loci unlinked
