@@ -170,10 +170,6 @@ def main():
                                                  sigE,
                                                  optimum=0.0,
                                                  VS=S)
-        ff=pd.HDFStore("first.h5",'w')
-        X=fp.tidy_trajectories(sampler.get())
-        ff.append('traj',pd.DataFrame(X[0]))
-        ff.close()
         dummy=write_output(sampler,output,REPID)
         sampler=get_sampler_type(samplerString,len(pops),Opt)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
@@ -188,10 +184,6 @@ def main():
                                                  sigE,
                                                  optimum=Opt,
                                                  VS=S)
-        ff=pd.HDFStore("last.h5",'w')
-        X=fp.tidy_trajectories(sampler.get())
-        ff.append('traj',pd.DataFrame(X[0]))
-        ff.close()
         REPID=write_output(sampler,output,REPID)
 
     output.close()
