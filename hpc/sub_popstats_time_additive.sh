@@ -12,7 +12,9 @@ do
 	    echo $SEED
 	    I=$(($I+1))
 	    echo $I
-	    qsub hpc/popstats_time_additive.sh $mu $H2 H2_"$H2"_OPT_"$OPT"_mu_"$mu".popstats.h5 $OPT 1 $SEED
+	    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_stats.h5
+	    qsub hpc/run_single_region.sh stats $mu $ofile 100 $OPT 1 0.25 $SEED
+	    #qsub hpc/popstats_time_additive.sh $mu $H2 H2_"$H2"_OPT_"$OPT"_mu_"$mu".popstats.h5 $OPT 1 $SEED
 	done
     done
 done
