@@ -42,7 +42,7 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
             REPID+=1
     elif isinstance(sampler,fp.QtraitStatsSampler):
         ##Write in append more
-        output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
+        output = pd.HDFStore(outputFilename,mode,complevel=6,complib='zlib')
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
