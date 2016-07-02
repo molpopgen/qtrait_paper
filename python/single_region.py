@@ -28,14 +28,21 @@ def get_sampler_type(samplerString, length,optimum):
         usage()
         sys.exit(0)
 
-def write_output(sampler,output,REPID):
+def write_output(sampler,outputFilename,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
+        ##Create a new file for each replicate so that file sizes
+        ##don't get unwieldy
         data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
         for df in data:
             df['rep']=[REPID]*len(df.index)
+            fn=outputFilename+'.rep'+str(batch)+'.h5'
+            output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
+            output.append('trajectories',pd.concat(data))
+            output.close()
             REPID+=1
-        output.append('trajectories',pd.concat(data))
     elif isinstance(sampler,fp.QtraitStatsSampler):
+        ##Write in append more
+        output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
@@ -153,7 +160,10 @@ def main():
     nregions=[]
     sregions=[fp.GaussianS(0,1,1,e,dominance)]
     recregions=[fp.Region(0,1,1)]
-    output=pd.HDFStore(ofile,'w',complevel=6,complib='zlib')
+    
+    if samplerString == 'stats':
+        output=pd.HDFStore(ofile,'w',complevel=6,complib='zlib')
+        output.close()
     REPID=0
     for BATCH in range(nbatches):
         pops=fp.SpopVec(ncores,N)
@@ -170,7 +180,10 @@ def main():
                                                  sigE,
                                                  optimum=0.0,
                                                  VS=S)
-        dummy=write_output(sampler,output,REPID)
+        if samplerString == 'freq':
+            dummy=write_output(sampler,ofile,REPID,BATCH,'w')
+        elif samplerString == 'stats':
+            dummy=write_output(sampler,ofile,REPID,BATCH,'a')
         sampler=get_sampler_type(samplerString,len(pops),Opt)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,
@@ -184,7 +197,11 @@ def main():
                                                  sigE,
                                                  optimum=Opt,
                                                  VS=S)
-        REPID=write_output(sampler,output,REPID)
+        if samplerString == 'freq':
+            #Append this time!
+            REPID=write_output(sampler,ofile,REPID,BATCH,'a')
+        elif samplerString == 'stats':
+            REPID=write_output(sampler,ofile,REPID,BATCH,'a')
 
     output.close()
 if __name__ == "__main__":
