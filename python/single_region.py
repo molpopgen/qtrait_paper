@@ -35,7 +35,7 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
         data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
         for df in data:
             df['rep']=[REPID]*len(df.index)
-            fn=outputFilename+'.rep'+str(batch)+'.h5'
+            fn=outputFilename+'.rep'+str(REPID)+'.h5'
             output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
             output.append('trajectories',pd.concat(data))
             output.close()
