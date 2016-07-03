@@ -13,7 +13,7 @@ do
 	    I=$(($I+1))
 	    echo $I
 	    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_traj
-	    qsub hpc/run_single_region.sh freq $mu $ofile 100 $OPT 1 0.25 $SEED
+	    qsub -N FATES -q krt,krti,bio,pub64 hpc/run_single_region.sh freq $mu $ofile 1 $OPT 1 0.25 $SEED
 	    #qsub hpc/fates_additive.sh $mu $H2 $OPT $SEED  H2_"$H2"_OPT_"$OPT"_mu_"$mu".ages.h5 H2_"$H2"_OPT_"$OPT"_mu_"$mu".traj.h5
 	done
     done
