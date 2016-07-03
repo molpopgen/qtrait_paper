@@ -35,11 +35,11 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
         data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
         for df in data:
             df['rep']=[REPID]*len(df.index)
-            fn=outputFilename+'.rep'+str(REPID)+'.h5'
-            output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
-            output.append('trajectories',df)
-            output.close()
             REPID+=1
+        fn=outputFilename+'.batch'+str(batch)+'.h5'
+        output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
+        output.append('trajectories',df)
+        output.close()
     elif isinstance(sampler,fp.QtraitStatsSampler):
         ##Write in append more
         output = pd.HDFStore(outputFilename,mode,complevel=6,complib='zlib')
