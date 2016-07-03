@@ -37,7 +37,7 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
             df['rep']=[REPID]*len(df.index)
             fn=outputFilename+'.rep'+str(REPID)+'.h5'
             output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
-            output.append('trajectories',pd.concat(data))
+            output.append('trajectories',df)
             output.close()
             REPID+=1
     elif isinstance(sampler,fp.QtraitStatsSampler):
