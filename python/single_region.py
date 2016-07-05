@@ -48,6 +48,7 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
             df['rep']=[REPID]*len(df.index)
             REPID+=1
         output.append('stats',pd.concat(data))
+        output.close()
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
     return REPID
