@@ -204,6 +204,5 @@ def main():
         elif samplerString == 'stats':
             REPID=write_output(sampler,ofile,REPID,BATCH,'a')
 
-    output.close()
 if __name__ == "__main__":
     main()
