@@ -11,7 +11,9 @@ do
 	    echo $SEED
 	    I=$(($I+1))
 	    echo $I
-	    qsub hpc/mloc_samples_time_additive.sh $mu $H2 H2_"$H2"_OPT_"$OPT"_mu_"$mu".mloc_samples.h5 $OPT 10 $SEED
+	    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_10regions_stats.h5
+	    qsub hpc/run_multi_region.sh $mu $ofile 100 $opt 1 0.25 $seed
+	    #qsub hpc/mloc_samples_time_additive.sh $mu $H2 H2_"$H2"_OPT_"$OPT"_mu_"$mu".mloc_samples.h5 $OPT 10 $SEED
 	done
     done
 done
