@@ -40,13 +40,11 @@ def write_output(sampler,output,nloci,REPID):
         data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
         for df in data:
             df['rep']=[REPID]*len(df.index)
-            REPID+=1
         output.append('trajectories',pd.concat(data))
     elif isinstance(sampler,fp.QtraitStatsSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
-            REPID+=1
         output.append('stats',pd.concat(data))
     elif isinstance(sampler,fp.PopSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
@@ -62,16 +60,14 @@ def write_output(sampler,output,nloci,REPID):
                     DF[i]['locus']=[LOCUS]*len(DF[i].index)
                     DF[i]['replicate']=[REPID]*len(DF[i].index)
                     rv.append(pd.concat(DF))
-            REPID+=1
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
-    return REPID
 
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
-                                    "nloci="])
+                                    "nloci=","fixations="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -97,6 +93,7 @@ def main():
     nbatches=16
     dominance=1.0
     nsam = None
+    fixationsFileName = None
     for o,a in opts:
         if o == '-m':
             m = float(a)
@@ -154,6 +151,8 @@ def main():
                 rpint ("--nloci must be > 1")
                 usage()
                 sys.exit(0)
+        elif o == "--fixations":
+            fixationsFileName=a    
 
     if samplerString is None:
         print ("Error: sampler must be defined")
@@ -194,7 +193,7 @@ def main():
                                                [little_r_per_locus]*NLOCI,
                                                [r]*(NLOCI-1),#loci unlinked
                                                sample=t,VS=S)
-        REP=write_output(sampler,out,NLOCI,REP)
+        write_output(sampler,out,NLOCI,REP)
         sampler=get_sampler(samplerString,len(x),Opt,nsam,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                                                [mu_n_region]*NLOCI,
@@ -203,7 +202,9 @@ def main():
                                                [little_r_per_locus]*NLOCI,
                                                [r]*(NLOCI-1),#loci unlinked
                                                sample=t,VS=S,optimum=Opt)
-        REP=write_output(sampler,out,NLOCI,REP)
+        write_output(sampler,out,NLOCI,REP)
+
+        REP+=len(x)
 
     out.close()
 
