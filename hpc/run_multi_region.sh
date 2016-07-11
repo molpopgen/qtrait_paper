@@ -17,4 +17,4 @@ sigmu=$7
 seed=$8
 echo "seed = $seed"
 #This will default to 10 loci, 64 cores, 16 batches
-python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 10000 -s $seed
+/usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 10000 -s $seed

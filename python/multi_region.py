@@ -1,4 +1,6 @@
 from __future__ import print_function
+import pyximport
+pyximport.install()
 import summstatsParallel
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
