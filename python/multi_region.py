@@ -1,9 +1,11 @@
 from __future__ import print_function
+import pyximport
+pyximport.install()
+import summstatsParallel
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import libsequence.polytable as polyt
 import libsequence.extensions as ext
-import KRT_qtrait_paper.summstatsParallel as sstats
 import numpy as np
 import pandas as pd
 import getopt
@@ -62,6 +64,17 @@ def write_output(sampler,output,nloci,REPID):
                     rv.append(pd.concat(DF))
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
+
+def write_fixations(pops,fixationsFileName,repid):
+    x=fp.view_fixations(pops)
+    hdf=pd.HDFStore(fixationsFileName,'a')
+    df=[pd.DataFrame(i) for i in x]
+    for i in df:
+        print (i.head())
+        i['rep']=[repid]*len(i.index)
+        repid+=1
+        hdf.append('fixations',i)
+    hdf.close()
 
 def main():
     try:
@@ -174,6 +187,10 @@ def main():
     REP=0
     out=pd.HDFStore(ofile,"w",complevel=6,complib='zlib')
 
+    if fixationsFileName is not None:
+        tfile=pd.HDFStore(fixationsFileName,'w')
+        tfile.close()
+        
     little_r_per_locus = rho/(4.0*float(N))
     mu_n_region=theta/(4.0*float(N))
 
@@ -203,7 +220,8 @@ def main():
                                                [r]*(NLOCI-1),#loci unlinked
                                                sample=t,VS=S,optimum=Opt)
         write_output(sampler,out,NLOCI,REP)
-
+        if fixationsFileName is not None:
+            write_fixations(x,fixationsFileName,REP)
         REP+=len(x)
 
     out.close()
