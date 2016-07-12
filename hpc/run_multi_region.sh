@@ -25,5 +25,5 @@ then
     /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10}
 else
     echo "python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10} --nsam ${11}"
-    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t 5000 --t2 500 -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10} --nsam ${11}
+    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t 1000 --t2 50 -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10} --nsam ${11}
 fi
