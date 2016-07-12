@@ -1,11 +1,9 @@
 from __future__ import print_function
 import pyximport
 pyximport.install()
-import summstatsParallel
+import summstatsParallel as plugin
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
-import libsequence.polytable as polyt
-import libsequence.extensions as ext
 import numpy as np
 import pandas as pd
 import getopt
@@ -28,7 +26,7 @@ def get_sampler(samplerString,length,optimum,nsam,rng):
     elif samplerString == 'popgen':
         if nsam is None:
             print("sample size cannot be none when sampler is ",samplerString)
-        return fp.PopSampler(length,nsam,rng)
+        return plugin.MlocusSummStatsSampler(length,nsam,rng)
     else:
         print ("invalid sampler name")
         usage()
@@ -50,20 +48,13 @@ def write_output(sampler,output,nloci,REPID):
             df['rep']=[REPID]*len(df.index)
             REPID+=1
         output.append('stats',pd.concat(data))
-    elif isinstance(sampler,fp.PopSampler):
+    elif isinstance(sampler,plugin.MlocusSummStatsSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
-        for REP in data:
-            for LOCUS in range(nloci):
-                gen=[i[0] for i in REP]
-                locus=[i[1][LOCUS]['genotypes'][0] for i in REP]
-                v=ext.SimDataVec(locus)
-                stats = sstats.getSummStatsParallel(v)
-                DF=[pd.DataFrame(i.items(),columns=['stat','value']) for i in stats]
-                for i in range(len(DF)):
-                    DF[i]['gen']=[gen[i]]*len(DF[i].index)
-                    DF[i]['locus']=[LOCUS]*len(DF[i].index)
-                    DF[i]['replicate']=[REPID]*len(DF[i].index)
-                    rv.append(pd.concat(DF))
+        for i in data:
+            i['rep']=[REPID]*len(i.index)
+            i = pd.melt(i,value_vars=['H1','H12','H2H1','hprime','iHS','nSL','nd1','tajd','thetapi','thetaw'],
+                        id_vars=['rep','locus','generation'])
+            output.append('summstats',i)
             REPID+=1
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
@@ -73,7 +64,6 @@ def write_fixations(pops,fixationsFileName,repid):
     hdf=pd.HDFStore(fixationsFileName,'a')
     df=[pd.DataFrame(i) for i in x]
     for i in df:
-        print (i.head())
         i['rep']=[repid]*len(i.index)
         repid+=1
         hdf.append('fixations',i)
