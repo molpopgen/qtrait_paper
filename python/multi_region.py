@@ -108,7 +108,7 @@ def main():
     ncores=64
     nbatches=16
     dominance=1.0
-    nsam = None
+    ssize = None
     fixationsFileName = None
     for o,a in opts:
         if o == '-m':
