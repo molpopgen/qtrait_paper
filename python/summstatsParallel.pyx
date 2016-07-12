@@ -1,3 +1,6 @@
+from cython_gsl cimport gsl_rng,gsl_rng_get,gsl_rng_alloc,gsl_rng_mt19937,gsl_rng_free
+from fwdpy.fwdpp cimport sep_sample_t
+from fwdpy.fwdpy cimport TemporalSampler,GSLrng,GSLrng_t,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
 from cython.parallel import parallel, prange
 from libsequence.polysitevector cimport polySiteVector,psite_vec_itr,psite_vec_const_itr
 
@@ -10,7 +13,16 @@ from libcpp.utility cimport pair
 from libcpp.string cimport string as cppstring
 from libcpp.memory cimport unique_ptr
 from cython.operator cimport dereference as deref
-        
+
+#This is what gets calculated every generation
+ctypedef vector[map[cppstring,double]] final_t
+
+ctypedef pair[uint,gsl_rng *] data_t
+
+#This is the C++ type of our custom sampler
+ctypedef custom_sampler_data[final_t,data_t] MlocusSampler_t
+
+#This is the function that actually calculated the summary stats each generation
 cdef map[cppstring,double] get_stats_details(const SimData & d, double minfreq, double binsize ) nogil:
     cdef map[cppstring,double] rv
     cdef unique_ptr[PolySIM] p = unique_ptr[PolySIM](new PolySIM(&d))
@@ -31,21 +43,32 @@ cdef map[cppstring,double] get_stats_details(const SimData & d, double minfreq, 
     
     return rv
 
-cdef vector[map[cppstring,double]] get_stats_parallel( const vector[SimData] & v,double minfreq, double binsize ) nogil:
-    cdef vector[map[cppstring,double]] rv
-    rv.resize(v.size())
-    if v.empty():
-        return rv
-    cdef int i
-    cdef int n = v.size()
-    for i in prange(n,schedule='static',nogil=True,chunksize=1):
-        rv[i] = get_stats_details(v[i],minfreq,binsize)
-    return rv
-        
-def getSummStatsParallel( SimDataVec p, double minfreq = 0.05, double binsize = 0.10 ):
-    """
-    For the length of p, use that many threads to get summary stats.
+#This is the function that is the workhorse of the sampler
+#note: we treat nsam as if const, but cannot declare it const b/c custom sampler API requires the flexibility
+cdef void mlocus_sampler_details(const multilocus_t * pop, const unsigned generation, final_t & f, data_t & data) nogil:
+    cdef vector[sep_sample_t] sample = sample_sep_single_mloc[multilocus_t](data.second,deref(pop),data.first,True)
+    cdef SimData d
+    cdef map[cppstring,double] temp
+    for i in range(sample.size()):
+        d=SimData(sample[i].first.begin(),sample[i].first.end())
+        temp = get_stats_details(d,0.05,0.10)
+        temp[cppstring(b'generation')]=<double>generation
+        temp[cppstring(b'locus')]=<double>i
+        f.push_back(temp)
 
-    The return value is a list of dicts.  Output order = input order
-    """
-    return get_stats_parallel(p.vec,minfreq,binsize)
+#Finally, our extension class
+cdef class MlocusSummStatsSampler(TemporalSampler):
+    def __cinit__(self,unsigned n, unsigned nsam,GSLrng r):
+        for i in range(n):
+            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[MlocusSampler_t](new MlocusSampler_t(&mlocus_sampler_details,
+                                                                                                         data_t(nsam,
+                                                                                                                gsl_rng_alloc(gsl_rng_mt19937)))))
+    def __dealloc__(self):
+        for i in range(self.vec.size()):
+            gsl_rng_free((<MlocusSampler_t*>self.vec[i].get()).data.second)
+
+    def get(self):
+        cdef vector[final_t] rv
+        for i in range(self.vec.size()):
+            rv.push_back((<MlocusSampler_t*>self.vec[i].get()).final())
+        return rv
