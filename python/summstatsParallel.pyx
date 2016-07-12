@@ -1,11 +1,9 @@
 from cython_gsl cimport gsl_rng,gsl_rng_get,gsl_rng_alloc,gsl_rng_mt19937,gsl_rng_free
 from fwdpy.fwdpp cimport sep_sample_t
-from fwdpy.fwdpy cimport TemporalSampler,GSLrng,GSLrng_t,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
-from cython.parallel import parallel, prange
+from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
 from libsequence.polysitevector cimport polySiteVector,psite_vec_itr,psite_vec_const_itr
-
 from libsequence.summstats cimport PolySIM,GarudStats,H1H12,snSL
-from libsequence.polytable cimport SimData,PolyTable
+from libsequence.polytable cimport SimData
 from libsequence.extensions cimport SimDataVec
 from libcpp.vector cimport vector
 from libcpp.map cimport map
@@ -64,6 +62,9 @@ cdef class MlocusSummStatsSampler(TemporalSampler):
                                                                                                          data_t(nsam,
                                                                                                                 gsl_rng_alloc(gsl_rng_mt19937)))))
     def __dealloc__(self):
+        """
+        Gotta free the gsl_rng *!!!!
+        """
         for i in range(self.vec.size()):
             gsl_rng_free((<MlocusSampler_t*>self.vec[i].get()).data.second)
 
