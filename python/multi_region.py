@@ -83,7 +83,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
-                                    "nloci=","fixations="])
+                                    "nloci=","fixations=","t2="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -92,6 +92,7 @@ def main():
     #set up default params
     N=1000   # pop size
     t=None     # 0.1N
+    t2=None
     e = 0.25 # s.d. of effect sizes
     S = 1    # V(S)
     H = 1.0 # desired b-sense H^2
@@ -125,6 +126,7 @@ def main():
             N=int(a)
         elif o == '-t':
             t = int(a)
+            t2=t
         elif o == '-s':
             seed = int(a)
         elif o == '-F':
@@ -168,7 +170,9 @@ def main():
                 usage()
                 sys.exit(0)
         elif o == "--fixations":
-            fixationsFileName=a    
+            fixationsFileName=a  
+        elif o == "--t2":
+            t2=int(a)
 
     if samplerString is None:
         print ("Error: sampler must be defined")
@@ -179,12 +183,15 @@ def main():
         print ("Error: sampling interval must be defined")
         usage()
         sys.exit(0)
+    if t2 is None:
+        t2=t
     if m is None:
         usage()
         sys.exit(2)
     if ofile is None:
         usage()
         sys.exit(2)
+
 
     #Can start working now:
     REP=0
@@ -221,7 +228,7 @@ def main():
                                                sregions,
                                                [little_r_per_locus]*NLOCI,
                                                [r]*(NLOCI-1),#loci unlinked
-                                               sample=t,VS=S,optimum=Opt)
+                                               sample=t2,VS=S,optimum=Opt)
         write_output(sampler,out,NLOCI,REP)
         if fixationsFileName is not None:
             write_fixations(x,fixationsFileName,REP)
