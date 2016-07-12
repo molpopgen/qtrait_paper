@@ -27,7 +27,7 @@ def get_sampler(samplerString,length,optimum,nsam,rng):
         return fp.FreqSampler(length)
     elif samplerString == 'popgen':
         if nsam is None:
-            print("sample size cannot be none when sampler is ",sampler_string)
+            print("sample size cannot be none when sampler is ",samplerString)
         return fp.PopSampler(length,nsam,rng)
     else:
         print ("invalid sampler name")
@@ -42,11 +42,13 @@ def write_output(sampler,output,nloci,REPID):
         data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
         for df in data:
             df['rep']=[REPID]*len(df.index)
+            REPID+=1
         output.append('trajectories',pd.concat(data))
     elif isinstance(sampler,fp.QtraitStatsSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
+            REPID+=1
         output.append('stats',pd.concat(data))
     elif isinstance(sampler,fp.PopSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
@@ -62,6 +64,7 @@ def write_output(sampler,output,nloci,REPID):
                     DF[i]['locus']=[LOCUS]*len(DF[i].index)
                     DF[i]['replicate']=[REPID]*len(DF[i].index)
                     rv.append(pd.concat(DF))
+            REPID+=1
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
 
@@ -202,7 +205,7 @@ def main():
     for BATCH in range(nbatches):
         x = fp.MlocusPopVec(ncores,N,NLOCI)
 
-        sampler=get_sampler(samplerString,len(x),Opt,nsam,rngs)
+        sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                                                [mu_n_region]*NLOCI,
                                                [m/float(NLOCI)]*NLOCI,
@@ -211,7 +214,7 @@ def main():
                                                [r]*(NLOCI-1),#loci unlinked
                                                sample=t,VS=S)
         write_output(sampler,out,NLOCI,REP)
-        sampler=get_sampler(samplerString,len(x),Opt,nsam,rngs)
+        sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                                                [mu_n_region]*NLOCI,
                                                [m/float(NLOCI)]*NLOCI,
