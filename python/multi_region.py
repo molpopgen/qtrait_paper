@@ -73,7 +73,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
-                                    "nloci=","fixations=","t2="])
+                                    "nloci=","fixations=","t2=","g2="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -101,6 +101,7 @@ def main():
     dominance=1.0
     ssize = None
     fixationsFileName = None
+    G2 = None
     for o,a in opts:
         if o == '-m':
             m = float(a)
@@ -163,6 +164,8 @@ def main():
             fixationsFileName=a  
         elif o == "--t2":
             t2=int(a)
+	elif o == "--g2":
+	    G2=int(a)
 
     if samplerString is None:
         print ("Error: sampler must be defined")
@@ -181,7 +184,8 @@ def main():
     if ofile is None:
         usage()
         sys.exit(2)
-
+    if G2 is None:
+	G2=10*N
 
     #Can start working now:
     REP=0
@@ -212,7 +216,7 @@ def main():
                                                sample=t,VS=S)
         write_output(sampler,out,NLOCI,REP)
         sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
-        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
+        qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist[:G2],
                                                [mu_n_region]*NLOCI,
                                                [m/float(NLOCI)]*NLOCI,
                                                sregions,
