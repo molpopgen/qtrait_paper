@@ -1,15 +1,9 @@
 import pandas as pd
 import glob
-
+from common_functions import *
 summstat_files=sorted(glob.glob('../*_10regions_popgen.h5'))
 popstat_files=sorted(glob.glob('../*_10regions_stats.h5'))
 
-#fxn to pull simulation params out of file names
-def parse_params(fn):
-    x=fn.split('_')
-    opt=x[3]
-    mu=x[5]
-    return {'opt':opt,'mu':mu,'sigmu':0.25}
 
 meanSstats=[]
 
