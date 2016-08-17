@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in *.tif
+for i in $(ls *.tif | grep -v _compressed)
 do
     n=`basename $i .tif`
     convert $i -set colorspace RGB -layers flatten -alpha off -compress lzw -depth 8 \
