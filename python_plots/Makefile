@@ -1,5 +1,6 @@
 OUT=tenLocusPopgenMeans.h5  tenLocusQstatMeans.h5 tenLocusSweepSummaries.h5 \
-	NumberLociInvolved.csv
+	NumberLociInvolved.csv \
+	LociInvolved.h5
 
 all: $(OUT) 
 
@@ -16,4 +17,7 @@ tenLocusSweepSummaries.h5 : ../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_pop
 	python tenLocusSweepSummaries.py
 
 NumberLociInvolved.csv: LociInvolvedSummaries.py
+	python LociInvolvedSummaries.py
+
+LociInvolved.h5: LociInvolvedSummaries.py
 	python LociInvolvedSummaries.py

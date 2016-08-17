@@ -44,4 +44,10 @@ for n,g in xgParams:
 LociInvolved=pd.DataFrame(LociInvolvedTemp)
 
 LociInvolvedGroup = LociInvolved.groupby(['opt','mu']).mean().reset_index()
+#This table is the means, etc., for loci w/hard sweeps, soft sweeps, whatnot:
 LociInvolvedGroup.to_csv("NumberLociInvolved.csv",index=False,sep=' ',float_format='%.3f')
+
+#This is the raw data
+LociInvolved.to_hdf('LociInvolved.h5','loci')
+
+
