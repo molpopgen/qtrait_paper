@@ -23,7 +23,6 @@ for f in files:
     dflist.append(pd.DataFrame(pd.concat([hard,soft])))
 
 df=pd.DataFrame(pd.concat(dflist))
-print df.opt.unique()
 out=pd.HDFStore('tenLocusSweepSummaries.h5','w')
 out.append('sweeps',df)
 out.close()
