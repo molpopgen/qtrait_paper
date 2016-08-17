@@ -2,10 +2,10 @@ OUT=tenLocusPopgenMeans.h5  tenLocusQstatMeans.h5 tenLocusSweepSummaries.h5 \
 	NumberLociInvolved.csv \
 	LociInvolved.h5
 
-all: $(OUT) 
+all: $(OUT) overallfigsdone.txt
 
 clean: 
-	rm -f $(OUT)
+	rm -f $(OUT) *.tif overallfigsdone.txt
 
 POPGENFILES=../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_popgen.h5   ../H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_10regions_popgen.h5   ../H2_1.0_OPT_1_mu_0.00025_sigmu0.25_10regions_popgen.h5  ../H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_1_mu_0.001_sigmu0.25_10regions_popgen.h5  ../H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_0.5_mu_0.005_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_1_mu_0.005_sigmu0.25_10regions_popgen.h5 
 
@@ -27,3 +27,7 @@ NumberLociInvolved.csv: LociInvolvedSummaries.py
 
 LociInvolved.h5: LociInvolvedSummaries.py
 	python LociInvolvedSummaries.py
+
+overallfigsdone.txt: SummaryStats.ipynb tenLocusPopgenMeans.h5
+	jupyter nbconvert --execute SummaryStats.ipynb
+	touch overallfigsdone.txt
