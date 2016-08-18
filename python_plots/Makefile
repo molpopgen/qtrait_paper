@@ -1,8 +1,8 @@
 OUT=tenLocusPopgenMeans.h5  tenLocusQstatMeans.h5 tenLocusSweepSummaries.h5 \
 	NumberLociInvolved.csv \
 	LociInvolved.h5 \
-    tenLocusPopgenLociWithFixations.h5 \
-    tenLocusPopgenLociWithoutFixations.h5 \
+    tenLocusPopgenMeansLociWithFixations.h5 \
+    tenLocusPopgenMeansLociWithoutFixations.h5 \
 
 all: $(OUT) overallfigsdone.txt images_compressed.txt
 
@@ -39,8 +39,8 @@ images_compressed.txt: overallfigsdone.txt
 	touch images_compressed.txt
 
 
-tenLocusPopgenLociWithFixations.h5: $(POPGENFILES) VariationLociContributing.py
+tenLocusPopgenMeansLociWithFixations.h5: $(POPGENFILES) VariationLociContributing.py
 	python VariationLociContributing.py
 
-tenLocusPopgenLociWithoutFixations.h5: $(POPGENFILES) VariationLociNotContributing.py
+tenLocusPopgenMeansLociWithoutFixations.h5: $(POPGENFILES) VariationLociNotContributing.py
 	python VariationLociNotContributing.py
