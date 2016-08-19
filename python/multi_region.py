@@ -73,7 +73,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
-                                    "nloci=","fixations=","t2=","g2="])
+                                    "nloci=","fixations=","t2=","g2=","neutral="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -91,7 +91,8 @@ def main():
     Opt = 0.0  # Value of optimum after 10N gens
     ofile=None
     seed = 0
-    NLOCI=10
+    NLOCI=11  #The total number of loci to simulate
+    NeutralLocus = 5 #The index of the locus where no causal mutations will occur
     theta = 100 # mutational size of region where neutral mutations occur
     rho = 100   # recombination size of region where neutral mutations occur
     traitString="additive"
@@ -166,7 +167,11 @@ def main():
             t2=int(a)
 	elif o == "--g2":
 	    G2=int(a)
-
+        elif o == "--neutral":
+            if a != "None":
+                NeutralLocus=int(a)
+            else:
+                NeutralLocus=a
     if samplerString is None:
         print ("Error: sampler must be defined")
         usage()
@@ -203,26 +208,31 @@ def main():
     nlist=np.array([N]*(10*N),dtype=np.uint32)
     fitness = get_trait_model(traitString)
     sregions=[fp.GaussianS(0,1,1,e,dominance)]*NLOCI
+
+    neutral_mut_rates = [mu_n_region]*NLOCI
+    causal_mut_rates = [m/float(NLOCI)]*NLOCI
+    if NeutralLocus is not None:
+        causal_mut_rates[NeutralLocus]=0.0
     for BATCH in range(nbatches):
         x = fp.MlocusPopVec(ncores,N,NLOCI)
 
         sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
-                                               [mu_n_region]*NLOCI,
-                                               [m/float(NLOCI)]*NLOCI,
-                                               sregions,
-                                               [little_r_per_locus]*NLOCI,
-                                               [r]*(NLOCI-1),#loci unlinked
-                                               sample=t,VS=S)
+                neutral_mut_rates,
+                causal_mut_rates,
+                sregions,
+                [little_r_per_locus]*NLOCI,
+                [r]*(NLOCI-1),#loci unlinked
+                sample=t,VS=S)
         write_output(sampler,out,NLOCI,REP)
         sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist[:G2],
-                                               [mu_n_region]*NLOCI,
-                                               [m/float(NLOCI)]*NLOCI,
-                                               sregions,
-                                               [little_r_per_locus]*NLOCI,
-                                               [r]*(NLOCI-1),#loci unlinked
-                                               sample=t2,VS=S,optimum=Opt)
+                neutral_mut_rates,
+                causal_mut_rates,
+                sregions,
+                [little_r_per_locus]*NLOCI,
+                [r]*(NLOCI-1),#loci unlinked
+                sample=t2,VS=S,optimum=Opt)
         write_output(sampler,out,NLOCI,REP)
         if fixationsFileName is not None:
             write_fixations(x,fixationsFileName,REP)
