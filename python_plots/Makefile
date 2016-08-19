@@ -5,13 +5,13 @@ OUT=tenLocusPopgenMeans.h5  tenLocusQstatMeans.h5 tenLocusSweepSummaries.h5 \
     tenLocusPopgenMeansLociWithoutFixations.h5 \
 
 all: $(OUT) overallfigsdone.txt locicontributingplots.txt
-	jupyter nbconvert --execute SummaryStats.ipynb
+#	jupyter nbconvert --execute SummaryStats.ipynb
 
 clean: 
 	rm -f $(OUT) *.tif overallfigsdone.txt locicontributingplots.txt
 
-compressed:
-	ls -1 *.tif | grep -v compressed > tiffiles
+compressed: overallfigsdone.txt locicontributingplots.txt
+	ls -1 images/*.tif | grep -v compressed > tiffiles
 	parallel bash compress_image.sh :::: tiffiles
 #	find . -name '*.tif' | grep -v compressed | xargs rm -f 
 	rm -f tiffiles
@@ -31,13 +31,16 @@ tenLocusQstatMeans.h5 : $(QTRAITFILES)
 tenLocusSweepSummaries.h5 : $(FIXATIONFILES)
 	python tenLocusSweepSummaries.py
 
-NumberLociInvolved.csv: LociInvolvedSummaries.py
+NumberLociInvolved.csv: LociInvolvedSummaries.py tenLocusSweepSummaries.h5
 	python LociInvolvedSummaries.py
 
-LociInvolved.h5: LociInvolvedSummaries.py
+LociInvolved.h5: LociInvolvedSummaries.py tenLocusSweepSummaries.h5
 	python LociInvolvedSummaries.py
-
-overallfigsdone.txt: plot_summary_stats.py tenLocusPopgenMeans.h5
+	
+overallfigsdone.txt: tenLocusPopgenMeans.h5 plot_summary_stats.py tenLocusPopgenMeans.h5
+	@if [ ! -d images ] ;then \
+		mkdir images ; \
+	fi
 	python plot_summary_stats.py tenLocusPopgenMeans.h5 _overall
 	touch overallfigsdone.txt
 
@@ -48,6 +51,9 @@ tenLocusPopgenMeansLociWithoutFixations.h5: tenLocusSweepSummaries.h5 $(POPGENFI
 	python VariationLociNotContributing.py
 
 locicontributingplots.txt: tenLocusPopgenMeansLociWithFixations.h5 tenLocusPopgenMeansLociWithoutFixations.h5
+	@if [ ! -d images ] ;then \
+		mkdir images ; \
+	fi
 	python plot_summary_stats.py tenLocusPopgenMeansLociWithFixations.h5 _with_fixations
 	python plot_summary_stats.py tenLocusPopgenMeansLociWithoutFixations.h5 _without_fixations
 	touch locicontributingplots.txt
