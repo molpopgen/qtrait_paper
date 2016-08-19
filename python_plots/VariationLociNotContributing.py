@@ -28,5 +28,7 @@ for n,g in NFg:
     temp.set_index(['rep','locus'],inplace=True)
     result=temp.join([d],how='inner').reset_index()
     means=result.groupby(['generation','variable']).mean().reset_index()
+    means['opt']=[opt]*len(means.index)
+    means['mu']=[mu]*len(means.index)
     out.append('nofixations',means)
 out.close()
