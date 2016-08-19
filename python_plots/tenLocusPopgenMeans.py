@@ -17,6 +17,8 @@ for i,j in zip(summstat_files,popstat_files):
     xm.reset_index(inplace=True)
     for k in pi:
         xm[k]=[pi[k]]*len(xm.index)
+    del xm['rep']
+    del xm['locus']
     meanSstats.append(xm)
 
 out=pd.HDFStore('tenLocusPopgenMeans.h5','w',complevel=6,complib='zlib')

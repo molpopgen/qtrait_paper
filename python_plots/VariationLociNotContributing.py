@@ -30,5 +30,7 @@ for n,g in NFg:
     means=result.groupby(['generation','variable']).mean().reset_index()
     means['opt']=[opt]*len(means.index)
     means['mu']=[mu]*len(means.index)
+    del means['rep']
+    del means['locus']
     out.append('nofixations',means)
 out.close()

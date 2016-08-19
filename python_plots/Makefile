@@ -3,8 +3,9 @@ OUT=tenLocusPopgenMeans.h5  tenLocusQstatMeans.h5 tenLocusSweepSummaries.h5 \
 	LociInvolved.h5 \
     tenLocusPopgenMeansLociWithFixations.h5 \
     tenLocusPopgenMeansLociWithoutFixations.h5 \
+    tenLocusPopgenMeansSoftSweepsOnly.h5
 
-all: $(OUT) overallfigsdone.txt locicontributingplots.txt
+all: $(OUT) overallfigsdone.txt locicontributingplots.txt softsweepsonly.txt
 #	jupyter nbconvert --execute SummaryStats.ipynb
 
 clean: 
@@ -49,11 +50,21 @@ tenLocusPopgenMeansLociWithFixations.h5: tenLocusSweepSummaries.h5 $(POPGENFILES
 tenLocusPopgenMeansLociWithoutFixations.h5: tenLocusSweepSummaries.h5 $(POPGENFILES) VariationLociNotContributing.py loci_contributing.py
 	python VariationLociNotContributing.py
 
-locicontributingplots.txt: tenLocusPopgenMeansLociWithFixations.h5 tenLocusPopgenMeansLociWithoutFixations.h5
+tenLocusPopgenMeansSoftSweepsOnly.h5: tenLocusSweepSummaries.h5 $(POPGENFILES) VariationLociContributingByType.py loci_contributing.py
+	python VariationLociContributingByType.py
+
+locicontributingplots.txt: tenLocusPopgenMeansLociWithFixations.h5 tenLocusPopgenMeansLociWithoutFixations.h5 plot_summary_stats.py
 	@if [ ! -d images ] ;then \
 		mkdir images ; \
 	fi
 	python plot_summary_stats.py tenLocusPopgenMeansLociWithFixations.h5 _with_fixations
 	python plot_summary_stats.py tenLocusPopgenMeansLociWithoutFixations.h5 _without_fixations
 	touch locicontributingplots.txt
+
+softsweepsonly.txt: tenLocusPopgenMeansSoftSweepsOnly.h5 plot_summary_stats.py
+	@if [ ! -d images ] ;then \
+		mkdir images ; \
+	fi
+	python plot_summary_stats.py tenLocusPopgenMeansSoftSweepsOnly.h5 _soft_only
+	touch softsweepsonly.txt
 
