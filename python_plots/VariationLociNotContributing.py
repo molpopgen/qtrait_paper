@@ -7,46 +7,12 @@
 
 import pandas as pd
 import numpy as np
-
+from loci_contributing import *
 
 # In[2]:
 
 x=pd.read_hdf('tenLocusSweepSummaries.h5')
-
-
-# In[3]:
-
-#This is the expected range of loci.
-#if any are missing in x for a specific rep, 
-#then those loci did not have sweeps from standing varation
-#nor any fixations after ('hard sweeps')
-loci=set(range(10))
-
-
-# In[4]:
-
-#build a list of dicts of loci not involved
-temp=[]
-xg=x.groupby(['opt','mu'])
-for n,g in xg:
-    reps=g.groupby(['rep'])
-    for n2,g2 in reps:
-        #Get loci that DID 
-        #have fixations for this rep
-        l=set(g2.locus)
-        nofixations = loci.difference(l)
-        for nf in nofixations:
-            t = {'opt':n[0],'mu':n[1],'rep':n2,
-                'locus':nf}
-            temp.append(t)
-NoFixations=pd.DataFrame(temp)
-            
-
-
-# Step 2: grouping by optimum/mutation rate, read in the variation data and make some plots
-
-# In[ ]:
-
+NoFixations=process_fixations(x,False)
 out=pd.HDFStore('tenLocusPopgenMeansLociWithoutFixations.h5','w',complevel=6,complib='zlib')
 NFg = NoFixations.groupby(['opt','mu'])
 for n,g in NFg:

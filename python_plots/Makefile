@@ -39,8 +39,8 @@ images_compressed.txt: overallfigsdone.txt
 	touch images_compressed.txt
 
 
-tenLocusPopgenMeansLociWithFixations.h5: $(POPGENFILES) VariationLociContributing.py
+tenLocusPopgenMeansLociWithFixations.h5: tenLocusSweepSummaries.h5 $(POPGENFILES) VariationLociContributing.py loci_contributing.py
 	python VariationLociContributing.py
 
-tenLocusPopgenMeansLociWithoutFixations.h5: $(POPGENFILES) VariationLociNotContributing.py
+tenLocusPopgenMeansLociWithoutFixations.h5: tenLocusSweepSummaries.h5 $(POPGENFILES) VariationLociNotContributing.py loci_contributing.py
 	python VariationLociNotContributing.py
