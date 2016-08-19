@@ -73,7 +73,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
-                                    "nloci=","fixations=","t2=","g2=","neutral="])
+                                    "nloci=","fixations=","t2=","g2="])#,"neutral="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err) # will print something like "option -a not recognized"
@@ -91,8 +91,8 @@ def main():
     Opt = 0.0  # Value of optimum after 10N gens
     ofile=None
     seed = 0
-    NLOCI=11  #The total number of loci to simulate
-    NeutralLocus = 5 #The index of the locus where no causal mutations will occur
+    NLOCI=10  #The total number of loci to simulate
+    #NeutralLocus = 5 #The index of the locus where no causal mutations will occur
     theta = 100 # mutational size of region where neutral mutations occur
     rho = 100   # recombination size of region where neutral mutations occur
     traitString="additive"
@@ -167,11 +167,11 @@ def main():
             t2=int(a)
 	elif o == "--g2":
 	    G2=int(a)
-        elif o == "--neutral":
-            if a != "None":
-                NeutralLocus=int(a)
-            else:
-                NeutralLocus=a
+        #elif o == "--neutral":
+        #    if a != "None":
+        #        NeutralLocus=int(a)
+        #    else:
+        #        NeutralLocus=a
     if samplerString is None:
         print ("Error: sampler must be defined")
         usage()
@@ -211,8 +211,8 @@ def main():
 
     neutral_mut_rates = [mu_n_region]*NLOCI
     causal_mut_rates = [m/float(NLOCI)]*NLOCI
-    if NeutralLocus is not None:
-        causal_mut_rates[NeutralLocus]=0.0
+    #if NeutralLocus is not None:
+    #    causal_mut_rates[NeutralLocus]=0.0
     for BATCH in range(nbatches):
         x = fp.MlocusPopVec(ncores,N,NLOCI)
 
