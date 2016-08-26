@@ -23,7 +23,7 @@ def get_sampler(samplerString,length,optimum,nsam,rng):
     if samplerString == 'stats':
         return fp.QtraitStatsSampler(length,optimum)
     elif samplerString == 'ages':
-        return mlocAges.MlocusAgesSampler(length) 
+        return mlocAges.MlocusAgeSampler(length) 
     elif samplerString == 'popgen':
         if nsam is None:
             print("sample size cannot be none when sampler is ",samplerString)
@@ -37,7 +37,7 @@ def get_trait_model(traitString):
    return trait_models[traitString]
 
 def write_output(sampler,output,nloci,REPID):
-    if isinstance(sampler,mlocAges.MlocusAgesSampler):
+    if isinstance(sampler,mlocAges.MlocusAgeSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
