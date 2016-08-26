@@ -17,13 +17,13 @@ valid_trait_models=['additive','mult']
 trait_models = {'additive':qtm.MlocusAdditiveTrait(),
                 'mult':qtm.MlocusMultTrait()}
 
-valid_sampler_names=['stats','freq','popgen']
+valid_sampler_names=['stats','ages','popgen']
 
 def get_sampler(samplerString,length,optimum,nsam,rng):
     if samplerString == 'stats':
         return fp.QtraitStatsSampler(length,optimum)
-    elif samplerString == 'freq':
-        return fp.FreqSampler(length)
+    elif samplerString == 'ages':
+        return mlocAges.MlocusAgesSampler(length) 
     elif samplerString == 'popgen':
         if nsam is None:
             print("sample size cannot be none when sampler is ",samplerString)
@@ -37,12 +37,12 @@ def get_trait_model(traitString):
    return trait_models[traitString]
 
 def write_output(sampler,output,nloci,REPID):
-    if isinstance(sampler,fp.FreqSampler):
-        data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
+    if isinstance(sampler,mlocAges.MlocusAgesSampler):
+        data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
             REPID+=1
-        output.append('trajectories',pd.concat(data))
+        output.append('ages',pd.concat(data))
     elif isinstance(sampler,fp.QtraitStatsSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
