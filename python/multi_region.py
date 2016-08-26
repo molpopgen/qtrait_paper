@@ -2,6 +2,7 @@ from __future__ import print_function
 import pyximport
 pyximport.install()
 import summstatsParallel as plugin
+import mlocAges
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import numpy as np
