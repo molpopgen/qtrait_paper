@@ -23,7 +23,7 @@ valid_sampler_names=['lstats','stats','ages','popgen']
 def get_sampler(samplerString,length,optimum,nsam,rng):
     if samplerString == 'lstats':
         return PopstatsLocus.PopstatsLocus(length)
-    if samplerString == 'stats':
+    elif samplerString == 'stats':
         return fp.QtraitStatsSampler(length,optimum)
     elif samplerString == 'ages':
         return mlocAges.MlocusAgeSampler(length) 
