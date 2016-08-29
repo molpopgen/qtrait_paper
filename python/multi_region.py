@@ -3,6 +3,7 @@ import pyximport
 pyximport.install()
 import summstatsParallel as plugin
 import mlocAges
+import PopstatsLocus
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import numpy as np
@@ -17,9 +18,11 @@ valid_trait_models=['additive','mult']
 trait_models = {'additive':qtm.MlocusAdditiveTrait(),
                 'mult':qtm.MlocusMultTrait()}
 
-valid_sampler_names=['stats','ages','popgen']
+valid_sampler_names=['lstats','stats','ages','popgen']
 
 def get_sampler(samplerString,length,optimum,nsam,rng):
+    if samplerString == 'lstats':
+        return PopstatsLocus.PopstatsLocus(length)
     if samplerString == 'stats':
         return fp.QtraitStatsSampler(length,optimum)
     elif samplerString == 'ages':
@@ -37,7 +40,13 @@ def get_trait_model(traitString):
    return trait_models[traitString]
 
 def write_output(sampler,output,nloci,REPID):
-    if isinstance(sampler,mlocAges.MlocusAgeSampler):
+    if isinstance(sampler,PopstatsLocus.PopstatsLocus):
+        data=[pd.DataFrame(i) for i in sampler.get()]
+        for df in data:
+            df['rep']=[REPID]*len(df.index)
+            REPID+=1
+        output.append('lstats',pd.concat(data))
+    elif isinstance(sampler,mlocAges.MlocusAgeSampler):
         data=[pd.DataFrame(i) for i in sampler.get()]
         for df in data:
             df['rep']=[REPID]*len(df.index)
