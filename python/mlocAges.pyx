@@ -20,13 +20,10 @@ cdef void mlocus_age_sampler_details(const multilocus_t * pop,
         final_t & f) nogil:
     #Keep track of per-locus data 
     #using fast hash tables
-    cdef unordered_map[unsigned,unsigned] locus_counts
-    cdef unordered_map[unsigned,double] locus_data 
+    cdef vector[unsigned] locus_counts,locus_data
     cdef unsigned nloci = pop.diploids[0].size()
-    cdef unsigned i
-    for i in range(nloci):
-        locus_counts[i]=0
-        locus_data[i]=0.
+    locus_counts.resize(nloci,0)
+    locus_data.resize(nloci,0)
 
     #value that we'll keep writing to
     cdef mlocus_allele_age temp
@@ -34,20 +31,21 @@ cdef void mlocus_age_sampler_details(const multilocus_t * pop,
 
     cdef unsigned twoN = 2*pop.N
     cdef unsigned locus
-    cdef double age
+    cdef unsigned age
+    cdef size_t i
     for i in range(pop.mutations.size()):
-        if pop.mcounts[i]>0 and pop.mcounts[i]<twoN: 
-            #variant is segregating
-            locus = <unsigned>pop.mutations[i].pos
-            locus_counts[locus]+=1
-            age = <double>(generation - pop.mutations[i].g + 1)
-            locus_data[locus] += age
-    cdef pair[uint,double] pi
-    for pi in locus_data:
-        pi.second /= <double>locus_counts[pi.first]
-        temp.locus = pi.first
-        temp.age = pi.second
-        f.push_back(temp)
+        if pop.mutations[i].neutral == 0:
+            if pop.mcounts[i]>0 and pop.mcounts[i]<twoN:
+                #variant is segregating
+                locus = <unsigned>pop.mutations[i].pos
+                locus_counts[locus]+=1
+                age = (generation - pop.mutations[i].g + 1)
+                locus_data[locus] += age
+    for i in range(locus_counts.size()):
+        if locus_counts[i]:
+            temp.locus = i
+            temp.age = <double>locus_data[i]/<double>locus_counts[i]
+            f.push_back(temp)
 
 cdef class MlocusAgeSampler(TemporalSampler):
     def __cinit__(self,unsigned n):
