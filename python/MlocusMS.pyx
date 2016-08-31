@@ -32,8 +32,8 @@ cdef extern from "writems.hpp" namespace "writems" nogil:
 #note: we treat nsam as if const, but cannot declare it const b/c custom sampler API requires the flexibility
 cdef void mlocus_mswriter_details(const multilocus_t * pop, const unsigned generation, final_t & f, data_t & data) nogil:
     f.push_back(generation)
-    #Will keep fixations...
-    cdef vector[sep_sample_t] sample = sample_sep_single_mloc[multilocus_t](data.second,deref(pop),data.first.nsam,False)
+    #Will remove fixations...
+    cdef vector[sep_sample_t] sample = sample_sep_single_mloc[multilocus_t](data.second,deref(pop),data.first.nsam,True)
     cdef SimData d
     for i in sample:
         #neutral variants:
