@@ -4,6 +4,7 @@ pyximport.install()
 import summstatsParallel as plugin
 import mlocAges
 import PopstatsLocus
+import MlocusMS
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import numpy as np
@@ -18,9 +19,9 @@ valid_trait_models=['additive','mult']
 trait_models = {'additive':qtm.MlocusAdditiveTrait(),
                 'mult':qtm.MlocusMultTrait()}
 
-valid_sampler_names=['lstats','stats','ages','popgen']
+valid_sampler_names=['lstats','stats','ages','popgen','ms']
 
-def get_sampler(samplerString,length,optimum,nsam,rng):
+def get_sampler(samplerString,length,optimum,nsam,rng,nstub,sstub):
     if samplerString == 'lstats':
         return PopstatsLocus.PopstatsLocus(length)
     elif samplerString == 'stats':
@@ -31,6 +32,12 @@ def get_sampler(samplerString,length,optimum,nsam,rng):
         if nsam is None:
             print("sample size cannot be none when sampler is ",samplerString)
         return plugin.MlocusSummStatsSampler(length,nsam,rng)
+    elif samplerString == 'ms':
+        if nsam is None:
+            print("sample size cannot be none when sampler is ",samplerString)
+        if nstub is None or sstub is None:
+            raise RuntimeError("file name prefixes cannot be None")
+        return MlocusMS.MlocusMSwriter(length,nsam,nstub,sstub,rng)
     else:
         print ("invalid sampler name")
         usage()
@@ -83,6 +90,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",
                                    ["theta=","rho=","trait=","sampler=","nsam=","cores=","batches=",
+                                       "nstub=","sstub=",
                                     "nloci=","fixations=","t2=","g2="])#,"neutral="])
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -113,6 +121,8 @@ def main():
     ssize = None
     fixationsFileName = None
     G2 = None
+    nstub=None
+    sstub=None
     for o,a in opts:
         if o == '-m':
             m = float(a)
@@ -177,6 +187,10 @@ def main():
             t2=int(a)
 	elif o == "--g2":
 	    G2=int(a)
+        elif o == "--nstub":
+            nstub=a
+        elif o == '--sstub':
+            sstub=a
         #elif o == "--neutral":
         #    if a != "None":
         #        NeutralLocus=int(a)
@@ -225,8 +239,13 @@ def main():
     #    causal_mut_rates[NeutralLocus]=0.0
     for BATCH in range(nbatches):
         x = fp.MlocusPopVec(ncores,N,NLOCI)
-
-        sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
+        nstub_t = None
+        sstub_t = None
+        if nstub is not None:
+            nstub_t = nstub + b'.batch' + str(BATCH)
+        if sstub is not None:
+            sstub_t = sstub + b'.batch' + str(BATCH)
+        sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs,nstub_t,sstub_t)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                 neutral_mut_rates,
                 causal_mut_rates,
@@ -235,7 +254,7 @@ def main():
                 [r]*(NLOCI-1),#loci unlinked
                 sample=t,VS=S)
         write_output(sampler,out,NLOCI,REP)
-        sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs)
+        sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs,nstub_t,sstub_t)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist[:G2],
                 neutral_mut_rates,
                 causal_mut_rates,
