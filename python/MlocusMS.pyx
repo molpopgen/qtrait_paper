@@ -44,7 +44,7 @@ cdef void mlocus_mswriter_details(const multilocus_t * pop, const unsigned gener
         writeSimData(d,data.first.selected)
     
 #Finally, our extension class
-cdef class MlocusSummStatsSampler(TemporalSampler):
+cdef class MlocusMSwriter(TemporalSampler):
     def __cinit__(self,unsigned n, unsigned nsam,cppstring nfile,cppstring sfile,GSLrng r):
         cdef sampling_details temp
         temp.nsam=nsam
