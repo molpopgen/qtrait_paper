@@ -4,7 +4,6 @@ pyximport.install()
 import summstatsParallel as plugin
 import mlocAges
 import PopstatsLocus
-import MlocusMS
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import numpy as np
@@ -37,7 +36,7 @@ def get_sampler(samplerString,length,optimum,nsam,rng,nstub,sstub):
             print("sample size cannot be none when sampler is ",samplerString)
         if nstub is None or sstub is None:
             raise RuntimeError("file name prefixes cannot be None")
-        return fp.PopSampler(nsam,rng,False,nstub,sstub,[(float(i),float(i)+1.) for i in range(10)])
+        return fp.PopSampler(length,nsam,rng,False,nstub,sstub,[(float(i),float(i)+1.) for i in range(10)])
     else:
         print ("invalid sampler name")
         usage()
