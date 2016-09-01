@@ -44,7 +44,8 @@ cdef map[cppstring,double] get_stats_details(const SimData & d, double minfreq, 
 #This is the function that is the workhorse of the sampler
 #note: we treat nsam as if const, but cannot declare it const b/c custom sampler API requires the flexibility
 cdef void mlocus_sampler_details(const multilocus_t * pop, const unsigned generation, final_t & f, data_t & data) nogil:
-    cdef vector[sep_sample_t] sample = sample_sep_single_mloc[multilocus_t](data.second,deref(pop),data.first,True)
+    cdef vector[pair[double,double]] b
+    cdef vector[sep_sample_t] sample = sample_sep_single_mloc[multilocus_t](data.second,deref(pop),data.first,True,b)
     cdef SimData d
     cdef map[cppstring,double] temp
     for i in range(sample.size()):
