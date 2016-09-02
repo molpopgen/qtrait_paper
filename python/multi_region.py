@@ -9,7 +9,7 @@ import fwdpy.qtrait_mloc as qtm
 import numpy as np
 import pandas as pd
 import getopt
-import sys
+import sys,math
 
 def usage():
     print ("something went wrong")
@@ -34,8 +34,8 @@ def get_sampler(samplerString,length,optimum,nsam,rng,nstub,sstub):
     elif samplerString == 'ms':
         if nsam is None:
             print("sample size cannot be none when sampler is ",samplerString)
-        if nstub is None or sstub is None:
-            raise RuntimeError("file name prefixes cannot be None")
+#        if nstub is None or sstub is None:
+#            raise RuntimeError("file name prefixes cannot be None")
         return fp.PopSampler(length,nsam,rng,False,nstub,sstub,[(float(i),float(i)+1.) for i in range(10)])
     else:
         print ("invalid sampler name")
@@ -72,6 +72,21 @@ def write_output(sampler,output,nloci,REPID):
                         id_vars=['rep','locus','generation'])
             output.append('summstats',i)
             REPID+=1
+    elif isinstance(sampler,fp.PopSampler):
+        data=[i for i in sampler.get()]
+        for i in data:
+            t = [j[1] for j in i if math.isnan(j[1]['p'][0]) is False]
+            for j in t:
+                j['rep']=[REPID]*len(j['p'])
+            t=pd.concat([pd.DataFrame(i) for i in t])
+            t.drop(['h','label'],axis=1,inplace=True)
+            output.append('details',t)
+            REPID+=1
+        #for j in data[0]:
+        #    print (len(j))
+        #    print (j[1])
+        #    t = [ji for ji in j[1] if math.isnan(ji['p'][0]) is False]
+        #    print (t)
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
 
