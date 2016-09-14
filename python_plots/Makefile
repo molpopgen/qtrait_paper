@@ -30,10 +30,10 @@ FIXATIONFILES= ../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_popgen_fixations
 tenLocusPopgenMeans.h5 : $(POPGENFILES)
 	python tenLocusPopgenMeans.py
 
-tenLocusQstatMeans.h5 : $(QTRAITFILES)
+tenLocusQstatMeans.h5 : $(QTRAITFILES) tenLocusQstatMeans.py qstatmeans.py
 	python tenLocusQstatMeans.py
 
-oneLocusQstatMeans.h5 : $(QTRAITFILES_SINGLE)
+oneLocusQstatMeans.h5 : $(QTRAITFILES_SINGLE) oneLocusQstatMeans.py qstatmeans.py
 	python oneLocusQstatMeans.py
 
 tenLocusSweepSummaries.h5 : $(FIXATIONFILES)

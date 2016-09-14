@@ -36,7 +36,8 @@ def get_sampler(samplerString,length,optimum,nsam,rng,nstub,sstub):
             print("sample size cannot be none when sampler is ",samplerString)
 #        if nstub is None or sstub is None:
 #            raise RuntimeError("file name prefixes cannot be None")
-        return fp.PopSampler(length,nsam,rng,False,nstub,sstub,[(float(i),float(i)+1.) for i in range(10)])
+        return fp.PopSampler(length,nsam,rng,False,nstub,sstub,[(float(i),float(i)+1.) for i in
+            range(10)],recordSamples=False)
     else:
         print ("invalid sampler name")
         usage()
@@ -73,15 +74,10 @@ def write_output(sampler,output,nloci,REPID):
             output.append('summstats',i)
             REPID+=1
     elif isinstance(sampler,fp.PopSampler):
-        data=[i for i in sampler.get()]
+        data=sampler.get()
         for i in data:
-            t = [j[1] for j in i if math.isnan(j[1]['p'][0]) is False]
-            for j in t:
-                j['rep']=[REPID]*len(j['p'])
-            t=pd.concat([pd.DataFrame(i) for i in t])
-            t.drop(['h','label'],axis=1,inplace=True)
-            output.append('details',t)
-            REPID+=1
+            for j in i.yield_data():
+                print (j[1])
         #for j in data[0]:
         #    print (len(j))
         #    print (j[1])
@@ -267,6 +263,7 @@ def main():
                 [little_r_per_locus]*NLOCI,
                 [r]*(NLOCI-1),#loci unlinked
                 sample=t,VS=S)
+        sys.exit(1)
         write_output(sampler,out,NLOCI,REP)
         sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs,nstub_t,sstub_t)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist[:G2],
