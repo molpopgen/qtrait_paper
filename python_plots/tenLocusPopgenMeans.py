@@ -18,8 +18,9 @@ def update_totals(args):
     if Totals is None:
         Totals=xm
     else:
-        Totals=Totals.append(['generation','variable']).sum().reset_index()
-        #Totals.value+=xm.value
+        temp = Totals.append(xm)
+        tempg=temp.groupby(['generation','variable']).sum().reset_index()
+        Totals=temp
     return Totals
 
 def process_file(ifile,params,out):
