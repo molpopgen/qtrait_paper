@@ -71,7 +71,7 @@ def write_output(sampler,output,nloci,REPID):
 
 def write_fixations(pops,fixationsFileName,repid):
     x=fp.view_fixations(pops)
-    hdf=pd.HDFStore(fixationsFileName,'a')
+    hdf=pd.HDFStore(fixationsFileName,'a',complevel=6,complib='zlib'))
     df=[pd.DataFrame(i) for i in x]
     for i in df:
         i['rep']=[repid]*len(i.index)

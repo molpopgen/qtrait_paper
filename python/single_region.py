@@ -32,13 +32,18 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
         ##Create a new file for each replicate so that file sizes
         ##don't get unwieldy
-        data=[pd.DataFrame(i) for i in fp.tidy_trajectories(sampler.get())]
-        for df in data:
-            df['rep']=[REPID]*len(df.index)
-            REPID+=1
         fn=outputFilename+'.batch'+str(batch)+'.h5'
-        output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')
-        output.append('trajectories',df)
+	output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
+        data=sampler.get()
+        for di in data:
+            df=pd.DataFrame(fp.tidy_trajectories(di))
+            df['rep']=REPID*len(df.index)
+            df.reset_index(['rep'],inplace=True,drop=True)
+            output.append('trajectories',df)
+            REPID+=1
+        #for df in data:
+        #    df['rep']=[REPID]*len(df.index)
+        #    REPID+=1
         output.close()
     elif isinstance(sampler,fp.QtraitStatsSampler):
         ##Write in append more
