@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -q krt,krti,krti,bio,sf
+#$ -q krt,krti,krti,bio,sf,pub64
 #$ -pe openmp 64
 #$ -R y
 
@@ -22,8 +22,8 @@ echo "seed = $seed"
 if [ -z ${11+x} ]
 then
     #There is no arg 11
-    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10}
+    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed $9 ${10}
 else
-    echo "python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10} --nsam ${11}"
-    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t 1000 --t2 50 -O $optimum -S $VS -e $sigmu -N 10000 -s $seed $9 ${10} --nsam ${11}
+    echo "python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed $9 ${10} --nsam ${11}"
+    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t 100 --t2 10 -O $optimum -S $VS -e $sigmu -N 5000 -s $seed $9 ${10} --nsam ${11}
 fi
