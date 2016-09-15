@@ -6,7 +6,7 @@ import glob,sys
 
 x=pd.read_hdf(sys.argv[1]) #HDF5 file with mean values of summary stat per generation
 STUB=sys.argv[2] #The image for a summary stat will be in file STAT+STUB+.tif
-x['scaled_time']=x.generation.subtract(100000.).divide(4e4)
+x['scaled_time']=x.generation.subtract(50000.).divide(2e4)
 xg=x.groupby(['mu','opt'])
 
 linestyles=['solid','dashed','dotted']

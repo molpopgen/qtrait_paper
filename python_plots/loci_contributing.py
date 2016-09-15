@@ -1,5 +1,26 @@
 import pandas as pd
 
+def process_file(args):
+    g=args[0]
+    fn=args[1]
+    opt=args[2]
+    mu=args[3]
+    OUTFILE=args[4]
+    out=pd.HDFStore(OUTFILE,'a',complevel=6,complib='zlib')
+    temp=pd.DataFrame(g)
+    d=pd.read_hdf(fn)
+    d.reset_index(inplace=True)
+    d.set_index(['rep','locus'],inplace=True,drop=True)
+    temp.set_index(['rep','locus'],inplace=True,drop=True)
+    result= temp.join([d],how='inner').reset_index()
+    means=result.groupby(['generation','variable']).mean().reset_index()
+    means['opt']=[opt]*len(means.index)
+    means['mu']=[mu]*len(means.index)
+    del means['rep']
+    del means['locus']
+    out.append('fixations',means)
+    out.close()
+
 def process_fixations(x,have_fixations = True):
     #This is the expected range of loci.
     #if any are missing in x for a specific rep, 
@@ -48,4 +69,3 @@ def count_soft_hard(x):
     result.reset_index(inplace=True)
     result.fillna(0,inplace=True)
     return result 
-

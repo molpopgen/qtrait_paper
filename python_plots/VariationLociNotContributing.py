@@ -1,19 +1,13 @@
-
-# coding: utf-8
-
-# Extract summary stats of variation at loci that do NOT contribute to adaptation.
-
-# In[1]:
-
 import pandas as pd
 import numpy as np
 from loci_contributing import *
-
-# In[2]:
+import multiprocessing
 
 x=pd.read_hdf('tenLocusSweepSummaries.h5')
 NoFixations=process_fixations(x,False)
-out=pd.HDFStore('tenLocusPopgenMeansLociWithoutFixations.h5','w',complevel=6,complib='zlib')
+OUTFILE='tenLocusPopgenMeansLociWithoutFixations.h5'
+out=pd.HDFStore(OUTFILE,'w',complevel=6,complib='zlib')
+out.close()
 NFg = NoFixations.groupby(['opt','mu'])
 for n,g in NFg:
     opt=str(n[0])
@@ -21,16 +15,7 @@ for n,g in NFg:
         opt='1'
     mu=str(n[1])
     fn = '../H2_1.0_OPT_' + opt + '_mu_' + mu + '_sigmu0.25_10regions_popgen.h5'
-    d = pd.read_hdf(fn)
-    reps=g.groupby(['rep'])
-    d.set_index(['rep','locus'],inplace=True)
-    temp=pd.DataFrame(g)
-    temp.set_index(['rep','locus'],inplace=True)
-    result=temp.join([d],how='inner').reset_index()
-    means=result.groupby(['generation','variable']).mean().reset_index()
-    means['opt']=[opt]*len(means.index)
-    means['mu']=[mu]*len(means.index)
-    del means['rep']
-    del means['locus']
-    out.append('nofixations',means)
-out.close()
+    P=multiprocessing.Pool(1)
+    P.map(process_file,[(g,fn,opt,mu,OUTFILE)])
+    P.close()
+
