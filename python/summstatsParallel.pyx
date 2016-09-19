@@ -3,7 +3,7 @@ from fwdpy.fwdpp cimport sep_sample_t
 from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
 from libsequence.polysitevector cimport polySiteVector,psite_vec_itr,psite_vec_const_itr
 from libsequence.summstats cimport PolySIM,GarudStats,H1H12,snSL
-from libsequence.polytable cimport SimData
+from libsequence.polytable cimport SimData,removeInvariantPos
 from libsequence.extensions cimport SimDataVec
 from libcpp.vector cimport vector
 from libcpp.map cimport map
@@ -50,6 +50,7 @@ cdef void mlocus_sampler_details(const multilocus_t * pop, const unsigned genera
     cdef map[cppstring,double] temp
     for i in range(sample.size()):
         d=SimData(sample[i].first.begin(),sample[i].first.end())
+        removeInvariantPos[SimData](d,0,0,'-')
         temp = get_stats_details(d,0.05,0.10)
         temp[cppstring(b'generation')]=<double>generation
         temp[cppstring(b'locus')]=<double>i
