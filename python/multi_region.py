@@ -1,7 +1,6 @@
 from __future__ import print_function
 import pyximport
 pyximport.install()
-import summstatsParallel as plugin
 import mlocAges
 import PopstatsLocus
 import fwdpy as fp
@@ -9,7 +8,7 @@ import fwdpy.qtrait_mloc as qtm
 import numpy as np
 import pandas as pd
 import getopt
-import sys,math
+import sys,math,gc
 
 def usage():
     print ("something went wrong")
@@ -18,7 +17,7 @@ valid_trait_models=['additive','mult']
 trait_models = {'additive':qtm.MlocusAdditiveTrait(),
                 'mult':qtm.MlocusMultTrait()}
 
-valid_sampler_names=['lstats','stats','ages','popgen','ms']
+valid_sampler_names=['lstats','stats','ages','ms']
 
 def get_sampler(samplerString,length,optimum,nsam,rng,nstub,sstub):
     if samplerString == 'lstats':
@@ -27,10 +26,6 @@ def get_sampler(samplerString,length,optimum,nsam,rng,nstub,sstub):
         return fp.QtraitStatsSampler(length,optimum)
     elif samplerString == 'ages':
         return mlocAges.MlocusAgeSampler(length) 
-    elif samplerString == 'popgen':
-        if nsam is None:
-            print("sample size cannot be none when sampler is ",samplerString)
-        return plugin.MlocusSummStatsSampler(length,nsam,rng)
     elif samplerString == 'ms':
         if nsam is None:
             print("sample size cannot be none when sampler is ",samplerString)
@@ -65,30 +60,21 @@ def write_output(sampler,output,nloci,REPID):
             df['rep']=[REPID]*len(df.index)
             REPID+=1
         output.append('stats',pd.concat(data))
-    elif isinstance(sampler,plugin.MlocusSummStatsSampler):
-        data=[pd.DataFrame(i) for i in sampler.get()]
-        for i in data:
-            i['rep']=[REPID]*len(i.index)
-            i = pd.melt(i,value_vars=['H1','H12','H2H1','hprime','iHS','nSL','nd1','tajd','thetapi','thetaw'],
-                        id_vars=['rep','locus','generation'])
-            output.append('summstats',i)
-            REPID+=1
     elif isinstance(sampler,fp.PopSampler):
         data=sampler.get()
         for i in data:
-            for j in i.yield_data():
-                print (j[1])
-        #for j in data[0]:
-        #    print (len(j))
-        #    print (j[1])
-        #    t = [ji for ji in j[1] if math.isnan(ji['p'][0]) is False]
-        #    print (t)
+            df=pd.concat([pd.DataFrame(j[1]) for j in i.yield_data()])
+            df['rep']=[REPID]*len(df.index)
+            REPID+=1
+            output.append('details',df)
+            del df
+            gc.collect()
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
 
 def write_fixations(pops,fixationsFileName,repid):
     x=fp.view_fixations(pops)
-    hdf=pd.HDFStore(fixationsFileName,'a',complevel=6,complib='zlib'))
+    hdf=pd.HDFStore(fixationsFileName,'a',complevel=6,complib='zlib')
     df=[pd.DataFrame(i) for i in x]
     for i in df:
         i['rep']=[repid]*len(i.index)
@@ -252,9 +238,9 @@ def main():
         nstub_t = None
         sstub_t = None
         if nstub is not None:
-            nstub_t = nstub + b'.batch' + str(BATCH)
+            nstub_t = nstub + b'.pre_shift.batch' + str(BATCH)
         if sstub is not None:
-            sstub_t = sstub + b'.batch' + str(BATCH)
+            sstub_t = sstub + b'.pre_shift.batch' + str(BATCH)
         sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs,nstub_t,sstub_t)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist,
                 neutral_mut_rates,
@@ -263,8 +249,12 @@ def main():
                 [little_r_per_locus]*NLOCI,
                 [r]*(NLOCI-1),#loci unlinked
                 sample=t,VS=S)
-        sys.exit(1)
         write_output(sampler,out,NLOCI,REP)
+
+        if nstub is not None:
+            nstub_t = nstub + b'.post_shift.batch' + str(BATCH)
+        if sstub is not None:
+            sstub_t = sstub + b'.post_shift.batch' + str(BATCH)
         sampler=get_sampler(samplerString,len(x),Opt,ssize,rngs,nstub_t,sstub_t)
         qtm.evolve_qtraits_mloc_sample_fitness(rnge,x,sampler,fitness,nlist[:G2],
                 neutral_mut_rates,
