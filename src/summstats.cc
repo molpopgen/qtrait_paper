@@ -86,6 +86,9 @@ main(int argc, char **argv)
     int argn = 1;
     const char *infile = argv[argn++];
     const char *outfile = argv[argn++];
+	//The next two are params for nSL/iHS
+	//calculations: SNP freq filter and
+	//bin size for standardizing
     const double minfreq = atof(argv[argn++]);
     const double binsize = atof(argv[argn++]);
     const int nthreads = atoi(argv[argn++]);
