@@ -24,6 +24,6 @@ then
     #There is no arg 11
     /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed $9 ${10}
 else
-    echo "python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed $9 ${10} --nsam ${11}"
-    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t 100 --t2 10 -O $optimum -S $VS -e $sigmu -N 5000 -s $seed $9 ${10} --nsam ${11}
+    echo "python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed ${@:9}"
+    /usr/bin/time -f "%e %M" -o multi_region.$sampler.$optimum.$VS.$mutrate.time python python/multi_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample --t2 10 -O $optimum -S $VS -e $sigmu -N 5000 -s $seed ${@:9}
 fi
