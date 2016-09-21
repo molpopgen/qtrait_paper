@@ -1,3 +1,6 @@
+/* Calculate "genome-scan" statistics in parallel from
+ * files of "ms"-format blocks"
+ */
 #include <Sequence/PolySIM.hpp>
 #include <Sequence/PolyTableFunctions.hpp>
 #include <Sequence/SimData.hpp>
@@ -17,6 +20,10 @@ using namespace std;
 using namespace Sequence;
 using namespace boost::iostreams;
 
+//This is our task object,
+//which keeps the data,
+//and operator() calcuates the statistics 
+//when desired.
 struct statTask
 {
     SimData d;
@@ -65,6 +72,8 @@ struct statTask
     }
 };
 
+//Our task object is writable to
+//and ostream-like type.
 std::ostream &
 operator<<(ostream &out, const statTask &s)
 {
@@ -77,11 +86,16 @@ main(int argc, char **argv)
     int argn = 1;
     const char *infile = argv[argn++];
     const char *outfile = argv[argn++];
+	//The next two are params for nSL/iHS
+	//calculations: SNP freq filter and
+	//bin size for standardizing
     const double minfreq = atof(argv[argn++]);
     const double binsize = atof(argv[argn++]);
     const int nthreads = atoi(argv[argn++]);
     tbb::task_scheduler_init init(nthreads);
 
+	//Read the input file (using boost's iostreams
+	//library), and populate a vector of tasks.
     filtering_istream in;
     ifstream input(infile, ios_base::in | ios_base::binary);
     in.push(gzip_decompressor());
@@ -95,11 +109,13 @@ main(int argc, char **argv)
         }
     while (!in.eof());
 
+	//Execute the tasks in parallel
     tbb::parallel_for(tbb::blocked_range<size_t>(0, tasks.size()),
                       [&tasks](const tbb::blocked_range<size_t> &r) {
                           for (size_t i = r.begin(); i < r.end(); ++i)
                               tasks[i]();
                       });
+	//Write the results to a gzip-compressed file
     filtering_ostream out;
     ofstream output(outfile, ios_base::out | ios_base::binary);
     out.push(gzip_compressor());
