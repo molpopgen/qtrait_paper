@@ -52,7 +52,7 @@ struct sfsTask
                 in >> d >> ws;
                 std::vector<unsigned> sfs;
                 d = removeInvariantPos(d);
-				sfs.resize(d.size());
+				sfs.resize(d.size()-1);
                 for (auto i = d.sbegin(); i != d.send(); ++i)
                     {
                         auto c = std::count(i->second.begin(), i->second.end(),
