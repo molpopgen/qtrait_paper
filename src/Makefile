@@ -1,5 +1,6 @@
 CXXFLAGS=-O2 -std=c++11
 
-all: summstats.o trimFixations.o
+all: summstats.o trimFixations.o sfs.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o summstats summstats.o $(LDFLAGS) -lsequence -lz -lboost_iostreams -ltbb
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o sfs sfs.o $(LDFLAGS) -lsequence -lz -lboost_iostreams -ltbb
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o trimFixations trimFixations.o $(LDFLAGS) -lsequence -lz -lboost_iostreams
