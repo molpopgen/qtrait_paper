@@ -21,8 +21,9 @@ tfiles=[]
 for f in tf.getmembers():
     #Check that it matches the pattern
     if f.name.find('neutral')>0:
-        if f.name.find('gz')>0:
-            tfiles.append(f)
+        if f.name.find('post')>0:
+            if f.name.find('gz')>0:
+                tfiles.append(f)
 
 #We will process BATCHSIZE files at a time
 #using an external C++ program that will
