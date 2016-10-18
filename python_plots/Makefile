@@ -19,7 +19,8 @@ compressed: overallfigsdone.txt locicontributingplots.txt
 	cat tiffiles | xargs rm -f
 	rm -f tiffiles
 
-POPGENFILES=../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_popgen.h5   ../H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_10regions_popgen.h5   ../H2_1.0_OPT_1_mu_0.00025_sigmu0.25_10regions_popgen.h5  ../H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_1_mu_0.001_sigmu0.25_10regions_popgen.h5  ../H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_0.5_mu_0.005_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_1_mu_0.005_sigmu0.25_10regions_popgen.h5 
+#POPGENFILES=../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_popgen.h5   ../H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_10regions_popgen.h5   ../H2_1.0_OPT_1_mu_0.00025_sigmu0.25_10regions_popgen.h5  ../H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_1_mu_0.001_sigmu0.25_10regions_popgen.h5  ../H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_0.5_mu_0.005_sigmu0.25_10regions_popgen.h5     ../H2_1.0_OPT_1_mu_0.005_sigmu0.25_10regions_popgen.h5 
+POPGENFILES=../genome_scan_summstats.tar
 
 QTRAITFILES=../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_stats.h5   ../H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_10regions_stats.h5   ../H2_1.0_OPT_1_mu_0.00025_sigmu0.25_10regions_stats.h5  ../H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_10regions_stats.h5     ../H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_10regions_stats.h5     ../H2_1.0_OPT_1_mu_0.001_sigmu0.25_10regions_stats.h5  ../H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_10regions_stats.h5     ../H2_1.0_OPT_0.5_mu_0.005_sigmu0.25_10regions_stats.h5     ../H2_1.0_OPT_1_mu_0.005_sigmu0.25_10regions_stats.h5 
 
