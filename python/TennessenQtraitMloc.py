@@ -179,7 +179,6 @@ def main():
                     polySIMlist.extend([sstats.polySIM(j) for j in i])
                     hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
                 stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
-                print len(stats)
                 combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
                 window=0
                 for cs in combinedStats:
