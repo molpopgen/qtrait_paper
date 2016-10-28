@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for timing in pre post
+for timing in post
 do
 	for sel in neutral
 	do
@@ -9,7 +9,7 @@ do
 		if true ; then
 		cat <<- EOF > $SCRIPTNAME
 		#!/bin/bash
-		#\$ -q krt,krti,bio,pub64,sf
+		#\$ -q krt,krti,bio,pub64,sf,pub8i,pub128i
 		#\$ -pe openmp 8
 		#\$ -t 1-$NFILES
 		cd \$SGE_O_WORKDIR
