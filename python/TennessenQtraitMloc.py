@@ -62,7 +62,7 @@ def get_nlist2():
     """
     n=[1861]*(2040-920) #E3
     n.extend(fpd.exponential_size_change(1032,9300,920-205)) #E4
-    n.extend(fpd.exponential_size_change(9300,51200,205)) #E5
+    n.extend(fpd.exponential_size_change(9300,512000,205)) #E5
     return n
 
 def main():
