@@ -20,7 +20,7 @@ import libsequence.parallel as lsp
 import libsequence.polytable as pt
 import libsequence.summstats as sstats
 import libsequence.windows as windows
-
+print fp.__file__
 def get_nlist1():
     """
     Generates a numpy array of the canges in N over time
@@ -141,7 +141,7 @@ def main():
         pops = fp.MlocusPopVec(NCORES,nlist[0],NLOCI)
         sampler=fp.NothingSampler(len(pops))
         d=datetime.datetime.now()
-        print d.now()
+        print "starting batch, ",batch, "at ",d.now()
         qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
                 nlist[0:],
                 nregions,sregions,recregions,
@@ -168,11 +168,12 @@ def main():
         if statfile is not None:
             dflist=[]
             #get data from sampler.  A list of generators is returned
-            data = sampler.get()
+            #data = sampler.get()
             #get summary stats in sliding windows based on neutral diversity
-            for di in data:
-                simDataList=[pt.simData(k[0][0]) for k in di.yield_data()]
-                w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(simDataList,locus_boundaries)]
+            for di in sampler:
+                #simDataList=[pt.simData(k[0][0]) for k in di.yield_data()]
+                #w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(simDataList,locus_boundaries)]
+                w=[windows.Windows(pt.simData(dii[0][0]),window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for dii,j in zip(di,locus_boundaries)]
                 polySIMlist=[]
                 hapstats=[] #nSL, etc.
                 for i in w:
@@ -188,6 +189,9 @@ def main():
                     dflist.append(tempDF)
                 repid+=1 
             H5out.append('stats',pd.concat(dflist))
+            del deflist
+        del sampler
+        del pops
     if statfile is not None:
         H5out.close()
 
