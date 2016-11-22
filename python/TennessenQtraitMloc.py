@@ -189,7 +189,7 @@ def main():
                     dflist.append(tempDF)
                 repid+=1 
             H5out.append('stats',pd.concat(dflist))
-            del deflist
+            del dflist
         del sampler
         del pops
     if statfile is not None:
