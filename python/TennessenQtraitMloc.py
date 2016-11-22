@@ -166,13 +166,9 @@ def main():
         d=datetime.datetime.now()
         print d.now()
         if statfile is not None:
-            dflist=[]
             #get data from sampler.  A list of generators is returned
-            #data = sampler.get()
-            #get summary stats in sliding windows based on neutral diversity
             for di in sampler:
-                #simDataList=[pt.simData(k[0][0]) for k in di.yield_data()]
-                #w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(simDataList,locus_boundaries)]
+                #get summary stats in sliding windows based on neutral diversity
                 w=[windows.Windows(pt.simData(dii[0][0]),window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for dii,j in zip(di,locus_boundaries)]
                 polySIMlist=[]
                 hapstats=[] #nSL, etc.
@@ -180,16 +176,17 @@ def main():
                     polySIMlist.extend([sstats.polySIM(j) for j in i])
                     hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
                 stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
+                del w
+                del polySIMlist
                 combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
                 window=0
                 for cs in combinedStats:
                     tempDF=pd.DataFrame({'stat':statnames,'value':list(cs),
                             'window':[window]*len(statnames),'rep':[repid]*len(statnames)})
+                    H5out.append('stats',tempDF)
+                    del tempDF
                     window+=1
-                    dflist.append(tempDF)
                 repid+=1 
-            H5out.append('stats',pd.concat(dflist))
-            del dflist
         del sampler
         del pops
     if statfile is not None:
