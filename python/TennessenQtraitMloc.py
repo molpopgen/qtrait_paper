@@ -20,7 +20,7 @@ import libsequence.parallel as lsp
 import libsequence.polytable as pt
 import libsequence.summstats as sstats
 import libsequence.windows as windows
-print fp.__file__
+
 def get_nlist1():
     """
     Generates a numpy array of the canges in N over time
@@ -186,6 +186,9 @@ def main():
                     H5out.append('stats',tempDF)
                     del tempDF
                     window+=1
+                del combinedStats
+                del stats
+                del hapstats
                 repid+=1 
         del sampler
         del pops
