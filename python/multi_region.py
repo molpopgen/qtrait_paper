@@ -55,15 +55,14 @@ def write_output(sampler,output,nloci,REPID):
             REPID+=1
         output.append('ages',pd.concat(data))
     elif isinstance(sampler,fp.QtraitStatsSampler):
-        data=[pd.DataFrame(i) for i in sampler.get()]
-        for df in data:
+        for i in sampler:
+            df=pd.DataFrame(i)
             df['rep']=[REPID]*len(df.index)
             REPID+=1
-        output.append('stats',pd.concat(data))
+            output.append('stats',df)
     elif isinstance(sampler,fp.PopSampler):
-        data=sampler.get()
-        for i in data:
-            df=pd.concat([pd.DataFrame(j[1]) for j in i.yield_data()])
+        for i in sampler:
+            df=pd.concat([pd.DataFrame(j[1]) for j in i])
             df['rep']=[REPID]*len(df.index)
             REPID+=1
             output.append('details',df)
