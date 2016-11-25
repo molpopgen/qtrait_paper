@@ -65,6 +65,30 @@ def get_nlist2():
     n.extend(fpd.exponential_size_change(9300,512000,205)) #E5
     return n
 
+def process_samples(di,H5out,locus_boundaries,repid):
+    #get summary stats in sliding windows based on neutral diversity
+    w=[windows.Windows(pt.simData(dii[0][0]),window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for dii,j in zip(di,locus_boundaries)]
+    polySIMlist=[]
+    hapstats=[] #nSL, etc.
+    for i in w:
+        polySIMlist.extend([sstats.polySIM(j) for j in i])
+        hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
+    del i #Delete i, which is the last window...
+    stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
+    del w
+    del polySIMlist
+    combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
+    window=0
+    for cs in combinedStats:
+        tempDF=pd.DataFrame({'stat':statnames,'value':list(cs),
+                'window':[window]*len(statnames),'rep':[repid]*len(statnames)})
+        H5out.append('stats',tempDF)
+        del tempDF
+        window+=1
+    del cs,combinedStats
+    del stats
+    del hapstats
+
 def main():
     #This is the number of loci where causative variants occur.
     #Each locus will be in the "middle" of a region, so there
@@ -166,36 +190,13 @@ def main():
         d=datetime.datetime.now()
         print(d.now())
         if statfile is not None:
-            #get data from sampler.  A list of generators is returned
-            for di in BIGsampler:
-                #get summary stats in sliding windows based on neutral diversity
-                w=[windows.Windows(pt.simData(dii[0][0]),window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for dii,j in zip(di,locus_boundaries)]
-                polySIMlist=[]
-                hapstats=[] #nSL, etc.
-                for i in w:
-                    polySIMlist.extend([sstats.polySIM(j) for j in i])
-                    hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
-                del i #Delete i, which is the last window...
-                stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
-                del w
-                del polySIMlist
-                combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
-                window=0
-                for cs in combinedStats:
-                    tempDF=pd.DataFrame({'stat':statnames,'value':list(cs),
-                            'window':[window]*len(statnames),'rep':[repid]*len(statnames)})
-                    H5out.append('stats',tempDF)
-                    del tempDF
-                    window+=1
-                del cs,combinedStats
-                del stats
-                del hapstats
-                repid+=1 
-            del di 
+            #def process_samples(di,H5out,locus_boundaries,repid):
+            [process_samples(i,H5out,locus_boundaries,r) for i,r in zip(BIGsampler,range(repid,repid+len(BIGsampler)))]
+            repid+=len(BIGsampler)
         BIGsampler.force_clear()
-        del BIGsampler
+        BIGsampler=None
         pops.clear()
-        del pops
+        pops=None
         gc.collect()
     if statfile is not None:
         H5out.close()
