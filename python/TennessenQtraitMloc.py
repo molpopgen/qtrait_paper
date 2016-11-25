@@ -6,13 +6,13 @@
 #4. A sample of n=6e3 is taken at the end and summary stats are calcuated for 11 window
 #5. The samples are written to files for latter analysis with SweeD and SDS
 #6. The change in the optimum trait value occurs "out of Africa".  The optimum is 0 prior to then.
-
+from __future__ import print_function
 import fwdpy as fp
 import fwdpy.qtrait_mloc as qtm
 import fwdpy.demography as fpd
 import numpy as np
 import pandas as pd
-import sys
+import sys,gc
 import datetime
 import getopt
 import warnings
@@ -84,7 +84,7 @@ def main():
     try:
         opts,args=getopt.getopt(sys.argv[1:],"",['theta=','rho=','seed=','ncores=','nreps=','tbb=','mu=','statfile=','opt='])
     except getopt.GetoptError as err:
-        print err
+        print(err)
         sys.exit(1)
     
     for o,a in opts:
@@ -141,7 +141,7 @@ def main():
         pops = fp.MlocusPopVec(NCORES,nlist[0],NLOCI)
         sampler=fp.NothingSampler(len(pops))
         d=datetime.datetime.now()
-        print "starting batch, ",batch, "at ",d.now()
+        print("starting batch, ",batch, "at ",d.now())
         qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
                 nlist[0:],
                 nregions,sregions,recregions,
@@ -149,7 +149,7 @@ def main():
                 0,
                 0,0.)
         d=datetime.datetime.now()
-        print d.now()
+        print(d.now())
         nlist=np.array(get_nlist2(),dtype=np.uint32)
         #nlist=np.array([NANC]*100,dtype=np.uint32)
         qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
@@ -158,16 +158,16 @@ def main():
                 [0.5]*(NLOCI-1),
                 0,optimum)
         d=datetime.datetime.now()
-        print d.now()
+        print(d.now())
         neutralFile = nstub + '.batch' + str(batch)
         selectedFile = sstub + '.batch' + str(batch)
-        sampler=fp.PopSampler(len(pops),6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
-        fp.apply_sampler(pops,sampler)
+        BIGsampler=fp.PopSampler(len(pops),6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
+        fp.apply_sampler(pops,BIGsampler)
         d=datetime.datetime.now()
-        print d.now()
+        print(d.now())
         if statfile is not None:
             #get data from sampler.  A list of generators is returned
-            for di in sampler:
+            for di in BIGsampler:
                 #get summary stats in sliding windows based on neutral diversity
                 w=[windows.Windows(pt.simData(dii[0][0]),window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for dii,j in zip(di,locus_boundaries)]
                 polySIMlist=[]
@@ -175,6 +175,7 @@ def main():
                 for i in w:
                     polySIMlist.extend([sstats.polySIM(j) for j in i])
                     hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
+                del i #Delete i, which is the last window...
                 stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
                 del w
                 del polySIMlist
@@ -186,12 +187,16 @@ def main():
                     H5out.append('stats',tempDF)
                     del tempDF
                     window+=1
-                del combinedStats
+                del cs,combinedStats
                 del stats
                 del hapstats
                 repid+=1 
-        del sampler
+            del di 
+        BIGsampler.force_clear()
+        del BIGsampler
+        pops.clear()
         del pops
+        gc.collect()
     if statfile is not None:
         H5out.close()
 
