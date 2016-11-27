@@ -21,6 +21,8 @@ import libsequence.polytable as pt
 import libsequence.summstats as sstats
 import libsequence.windows as windows
 
+STATNAMES=['S','tajimasd','pi','thetaw','hprime','H1','H12','H2H1','nSL','iHS']
+
 def get_nlist1():
     """
     Generates a numpy array of the canges in N over time
@@ -65,7 +67,7 @@ def get_nlist2():
     n.extend(fpd.exponential_size_change(9300,512000,205)) #E5
     return n
 
-def process_samples(di,H5out,locus_boundaries,statnames,repid):
+def process_samples(di,H5out,locus_boundaries,repid):
     print("processing")
     #get summary stats in sliding windows based on neutral diversity
     sd=[pt.simData(dii[0][0]) for dii in di]
@@ -83,8 +85,8 @@ def process_samples(di,H5out,locus_boundaries,statnames,repid):
     combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
     window=0
     for cs in combinedStats:
-        tempDF=pd.DataFrame({'stat':statnames,'value':list(cs),
-                'window':[window]*len(statnames),'rep':[repid]*len(statnames)})
+        tempDF=pd.DataFrame({'stat':STATNAMES,'value':list(cs),
+                'window':[window]*len(STATNAMES),'rep':[repid]*len(STATNAMES)})
         H5out.append('stats',tempDF)
         del tempDF
         window+=1
@@ -157,7 +159,6 @@ def main():
     sregions=[fp.GaussianS(j[0]+5.,j[0]+6.,mu,SIGMU,coupled=False) for i,j in zip(range(NLOCI),locus_boundaries)]
     f=qtm.MlocusAdditiveTrait()
     sched = lsp.scheduler_init(TBB)
-    statnames=['S','tajimasd','pi','thetaw','hprime','H1','H12','H2H1','nSL','iHS']
     H5out = None
     if statfile is not None:
         H5out = pd.HDFStore(statfile,'w')
@@ -192,7 +193,7 @@ def main():
         print(d.now())
         if statfile is not None:
             for di in BIGsampler:
-                process_samples(di,H5out,locus_boundaries,statnames,repid)
+                process_samples(di,H5out,locus_boundaries,repid)
                 repid+=1
                 del di
         BIGsampler.force_clear()
