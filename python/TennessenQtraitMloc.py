@@ -65,18 +65,21 @@ def get_nlist2():
     n.extend(fpd.exponential_size_change(9300,512000,205)) #E5
     return n
 
-def process_samples(di,H5out,locus_boundaries,repid):
+def process_samples(di,H5out,locus_boundaries,statnames,repid):
+    print("processing")
     #get summary stats in sliding windows based on neutral diversity
-    w=[windows.Windows(pt.simData(dii[0][0]),window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for dii,j in zip(di,locus_boundaries)]
-    polySIMlist=[]
+    sd=[pt.simData(dii[0][0]) for dii in di]
+    w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(sd,locus_boundaries)]
+    sd=None
     hapstats=[] #nSL, etc.
+    polySIMlist=[]
     for i in w:
         polySIMlist.extend([sstats.polySIM(j) for j in i])
         hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
     del i #Delete i, which is the last window...
     stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
-    del w
-    del polySIMlist
+    w=None
+    polySIMlist=None
     combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
     window=0
     for cs in combinedStats:
@@ -161,7 +164,6 @@ def main():
     repid=0
     for batch in range(NREPS):
         nlist=np.array(get_nlist1(),dtype=np.uint32)
-        #nlist=np.array([NANC]*100,dtype=np.uint32)
         pops = fp.MlocusPopVec(NCORES,nlist[0],NLOCI)
         sampler=fp.NothingSampler(len(pops))
         d=datetime.datetime.now()
@@ -175,7 +177,6 @@ def main():
         d=datetime.datetime.now()
         print(d.now())
         nlist=np.array(get_nlist2(),dtype=np.uint32)
-        #nlist=np.array([NANC]*100,dtype=np.uint32)
         qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
                 nlist[0:],
                 nregions,sregions,recregions,
@@ -190,9 +191,10 @@ def main():
         d=datetime.datetime.now()
         print(d.now())
         if statfile is not None:
-            #def process_samples(di,H5out,locus_boundaries,repid):
-            [process_samples(i,H5out,locus_boundaries,r) for i,r in zip(BIGsampler,range(repid,repid+len(BIGsampler)))]
-            repid+=len(BIGsampler)
+            for di in BIGsampler:
+                process_samples(di,H5out,locus_boundaries,statnames,repid)
+                repid+=1
+                del di
         BIGsampler.force_clear()
         BIGsampler=None
         pops.clear()
