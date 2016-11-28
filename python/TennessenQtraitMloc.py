@@ -16,6 +16,7 @@ import sys,gc
 import datetime
 import getopt
 import warnings
+import multiprocessing as mp
 import libsequence.parallel as lsp
 import libsequence.polytable as pt
 import libsequence.summstats as sstats
@@ -67,32 +68,38 @@ def get_nlist2():
     n.extend(fpd.exponential_size_change(9300,512000,205)) #E5
     return n
 
-def process_samples(di,H5out,locus_boundaries,repid):
+def process_samples(args):
     print("processing")
+    di,statfile,locus_boundaries,repid,TBB=args
+    H5out = pd.HDFStore(statfile,mode='a')
+    sched = lsp.scheduler_init(TBB)
     #get summary stats in sliding windows based on neutral diversity
     sd=[pt.simData(dii[0][0]) for dii in di]
     w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(sd,locus_boundaries)]
     sd=None
     hapstats=[] #nSL, etc.
     polySIMlist=[]
-    for i in w:
-        polySIMlist.extend([sstats.polySIM(j) for j in i])
-        hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in i])
-    del i #Delete i, which is the last window...
+    for wi in w:
+        polySIMlist.extend([sstats.polySIM(j) for j in wi])
+        hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in wi])
+    wi = None #Delete the last window...
+    #stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
     stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
-    w=None
-    polySIMlist=None
     combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
+    polySIMlist=None
+    #combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
     window=0
     for cs in combinedStats:
         tempDF=pd.DataFrame({'stat':STATNAMES,'value':list(cs),
                 'window':[window]*len(STATNAMES),'rep':[repid]*len(STATNAMES)})
         H5out.append('stats',tempDF)
-        del tempDF
         window+=1
-    del cs,combinedStats
-    del stats
-    del hapstats
+        tempDF=None
+    cs=None
+    combinedStats=None
+    stats=None
+    hapstats=None
+    H5out.close()
 
 def main():
     #This is the number of loci where causative variants occur.
@@ -130,7 +137,7 @@ def main():
         elif o == '--tbb':
             TBB=int(a)
         elif o == '--mu':
-            if(a <= 0):
+            if(float(a) <= 0):
                 raise RuntimeError("mutation rate must be > 0")
             mu=float(a)
         elif o == '--statfile':
@@ -158,11 +165,12 @@ def main():
     recregions=[fp.Region(j[0],j[1],rho_per_locus/(4.*float(NANC)),coupled=True) for i,j in zip(range(NLOCI),locus_boundaries)]
     sregions=[fp.GaussianS(j[0]+5.,j[0]+6.,mu,SIGMU,coupled=False) for i,j in zip(range(NLOCI),locus_boundaries)]
     f=qtm.MlocusAdditiveTrait()
-    sched = lsp.scheduler_init(TBB)
     H5out = None
     if statfile is not None:
         H5out = pd.HDFStore(statfile,'w')
+        H5out.close()
     repid=0
+    P=mp.Pool(1)
     for batch in range(NREPS):
         nlist=np.array(get_nlist1(),dtype=np.uint32)
         pops = fp.MlocusPopVec(NCORES,nlist[0],NLOCI)
@@ -193,7 +201,8 @@ def main():
         print(d.now())
         if statfile is not None:
             for di in BIGsampler:
-                process_samples(di,H5out,locus_boundaries,repid)
+                P.map(process_samples,[(di,statfile,locus_boundaries,repid,TBB)])
+#                process_samples((di,statfile,locus_boundaries,repid))
                 repid+=1
                 del di
         BIGsampler.force_clear()
@@ -201,8 +210,8 @@ def main():
         pops.clear()
         pops=None
         gc.collect()
-    if statfile is not None:
-        H5out.close()
+    #if statfile is not None:
+    #    H5out.close()
 
 if __name__ == "__main__":
     main()
