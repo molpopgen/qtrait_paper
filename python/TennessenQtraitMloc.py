@@ -69,7 +69,6 @@ def get_nlist2():
     return n
 
 def process_samples(args):
-    print("processing")
     di,statfile,locus_boundaries,repid,TBB=args
     H5out = pd.HDFStore(statfile,mode='a')
     sched = lsp.scheduler_init(TBB)
@@ -89,11 +88,17 @@ def process_samples(args):
     polySIMlist=None
     #combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
     window=0
+    locus=0
     for cs in combinedStats:
         tempDF=pd.DataFrame({'stat':STATNAMES,'value':list(cs),
-                'window':[window]*len(STATNAMES),'rep':[repid]*len(STATNAMES)})
+                'window':[window]*len(STATNAMES),'rep':[repid]*len(STATNAMES),
+                'locus':[locus]*len(STATNAMES)})
+                #'locus':[l for l in range(10) for i in range(len(locus_boundaries))]})
         H5out.append('stats',tempDF)
         window+=1
+        if window==11:
+            window=0
+            locus+=1
         tempDF=None
     cs=None
     combinedStats=None
