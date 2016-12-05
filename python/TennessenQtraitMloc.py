@@ -14,8 +14,8 @@ import numpy as np
 import pandas as pd
 import sys,gc
 import datetime
-import getopt
 import warnings
+import argparse
 import multiprocessing as mp
 import libsequence.parallel as lsp
 import libsequence.polytable as pt
@@ -106,86 +106,51 @@ def process_samples(args):
     hapstats=None
     H5out.close()
 
-def main():
-    #This is the number of loci where causative variants occur.
-    #Each locus will be in the "middle" of a region, so there
-    #will be 10x more DNA on either side
-    NLOCI=10
-    NREPS=1
-    NCORES=1
-    SEED=None
-    SIGMU=0.25
-    TBB=-1
-    mu=1e-3
-    optimum = None
-    #Mutation/rec params
-    theta_neutral=100.0
-    rho_per_locus=100.0
-    statfile = None
-    try:
-        opts,args=getopt.getopt(sys.argv[1:],"",['theta=','rho=','seed=','ncores=','nreps=','tbb=','mu=','statfile=','opt='])
-    except getopt.GetoptError as err:
-        print(err)
-        sys.exit(1)
-    
-    for o,a in opts:
-        if o == '--theta':
-            theta_neutral=float(a)
-        elif o == '--rho':
-            rho_per_locus=float(a)
-        elif o == '--seed':
-            SEED=int(a)
-        elif o == '--ncores':
-            NCORES=int(a)
-        elif o == '--nreps':
-            NREPS=int(a)
-        elif o == '--tbb':
-            TBB=int(a)
-        elif o == '--mu':
-            if(float(a) <= 0):
-                raise RuntimeError("mutation rate must be > 0")
-            mu=float(a)
-        elif o == '--statfile':
-            statfile=a
-        elif o == '--opt':
-            optimum=float(a)
+def make_parser():
+    parser = argparse.ArgumentParser(
+        description="Ten locus simulation of Tennessen model")
 
-    if optimum is None:
-        raise RuntimeError("optimum trait value not specified, use --opt <optimum>")
+    parser.add_argument('--mu','-m',type=float,default=1e-3,help="mutation rate to mutations affecting trait value")
+    parser.add_argument('--theta','-t',type=float,default=100.0,metavar="THETA",help="4Nu")
+    parser.add_argument('--rho','-r',type=float,default=100.0,metavar="RHO",help="4Nr")
+    parser.add_argument('--TBB','-T',type=int,default=-1,help="TBB threading control")
+    parser.add_argument('--seed','-S',type=int,default=None,help="RNG seed")
+    parser.add_argument('--ncores','-n',type=int,default=1)
+    parser.add_argument('--nreps','-nr',type=int,default=1)
+    parser.add_argument('--nloci','-nl',type=int,default=10)
+    parser.add_argument('--sigmu','-si',type=float,default=0.25)
+    parser.add_argument('--statfile','-st',type=str,default=None)
+    parser.add_argument('--opt','-o',type=float,default=0.0)
 
-    if SEED is None:
-        warnings.warn("Setting seed to 0, use --seed <seedval> to change")
-        SEED=0
-    if statfile is None:
-        warnings.warn("No output file for summary stats specified.  Use --statfile <filename.h5> to change.")
+    return parser
 
-    nstub = "neutral.mu"+str(mu)+".opt"+str(optimum)
-    sstub = "selected.mu"+str(mu)+".opt"+str(optimum)
-    rnge=fp.GSLrng(SEED)
+def main(args):
+    nstub = "neutral.mu"+str(args.mu)+".opt"+str(args.opt)
+    sstub = "selected.mu"+str(args.mu)+".opt"+str(args.opt)
+    rnge=fp.GSLrng(args.seed)
 
-    START=2500
     NANC=7310
-    locus_boundaries=[(float(i+i*11),float(i+i*11+11)) for i in range(NLOCI)]
-    nregions=[fp.Region(j[0],j[1],theta_neutral/(4.*float(NANC)),coupled=True) for i,j in zip(range(NLOCI),locus_boundaries)]
-    recregions=[fp.Region(j[0],j[1],rho_per_locus/(4.*float(NANC)),coupled=True) for i,j in zip(range(NLOCI),locus_boundaries)]
-    sregions=[fp.GaussianS(j[0]+5.,j[0]+6.,mu,SIGMU,coupled=False) for i,j in zip(range(NLOCI),locus_boundaries)]
+    locus_boundaries=[(float(i+i*11),float(i+i*11+11)) for i in range(args.nloci)]
+    nregions=[fp.Region(j[0],j[1],args.theta/(4.*float(NANC)),coupled=True) for i,j in zip(range(args.nloci),locus_boundaries)]
+    recregions=[fp.Region(j[0],j[1],args.rho/(4.*float(NANC)),coupled=True) for i,j in zip(range(args.nloci),locus_boundaries)]
+    sregions=[fp.GaussianS(j[0]+5.,j[0]+6.,args.mu,args.sigmu,coupled=False) for i,j in zip(range(args.nloci),locus_boundaries)]
     f=qtm.MlocusAdditiveTrait()
     H5out = None
-    if statfile is not None:
-        H5out = pd.HDFStore(statfile,'w')
+    if args.statfile is not None:
+        H5out = pd.HDFStore(args.statfile,'w')
         H5out.close()
     repid=0
     P=mp.Pool(1)
-    for batch in range(NREPS):
+    for batch in range(args.nreps):
         nlist=np.array(get_nlist1(),dtype=np.uint32)
-        pops = fp.MlocusPopVec(NCORES,nlist[0],NLOCI)
+        pops = fp.MlocusPopVec(args.ncores,nlist[0],args.nloci)
         sampler=fp.NothingSampler(len(pops))
         d=datetime.datetime.now()
         print("starting batch, ",batch, "at ",d.now())
         qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
                 nlist[0:],
                 nregions,sregions,recregions,
-                [0.5]*(NLOCI-1),
+                [0.5]*(args.nloci-1),
                 0,
                 0,0.)
         d=datetime.datetime.now()
@@ -195,7 +160,7 @@ def main():
                 nlist[0:],
                 nregions,sregions,recregions,
                 [0.5]*(NLOCI-1),
-                0,optimum)
+                0,args.opt)
         d=datetime.datetime.now()
         print(d.now())
         neutralFile = nstub + '.batch' + str(batch)
@@ -219,7 +184,9 @@ def main():
     #    H5out.close()
 
 if __name__ == "__main__":
-    main()
+    parser=make_parser()
+    args=parser.parse_args(sys.argv[1:])
+    main(args)
 
 
 
