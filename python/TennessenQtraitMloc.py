@@ -16,6 +16,7 @@ import sys,gc
 import datetime
 import warnings
 import argparse
+import random
 import multiprocessing as mp
 import libsequence.parallel as lsp
 import libsequence.polytable as pt
@@ -69,9 +70,8 @@ def get_nlist2():
     return n
 
 def process_samples(args):
-    di,statfile,locus_boundaries,repid,TBB=args
+    di,statfile,locus_boundaries,repid=args
     H5out = pd.HDFStore(statfile,mode='a')
-    sched = lsp.scheduler_init(TBB)
     #get summary stats in sliding windows based on neutral diversity
     sd=[pt.simData(dii[0][0]) for dii in di]
     w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(sd,locus_boundaries)]
@@ -124,7 +124,8 @@ def make_parser():
 
     return parser
 
-def main(args):
+def run_batch(argtuple):
+    args,repid,batch=argtuple
     nstub = "neutral.mu"+str(args.mu)+".opt"+str(args.opt)
     sstub = "selected.mu"+str(args.mu)+".opt"+str(args.opt)
     rnge=fp.GSLrng(args.seed)
@@ -135,58 +136,64 @@ def main(args):
     recregions=[fp.Region(j[0],j[1],args.rho/(4.*float(NANC)),coupled=True) for i,j in zip(range(args.nloci),locus_boundaries)]
     sregions=[fp.GaussianS(j[0]+5.,j[0]+6.,args.mu,args.sigmu,coupled=False) for i,j in zip(range(args.nloci),locus_boundaries)]
     f=qtm.MlocusAdditiveTrait()
-    H5out = None
+
+    nlist=np.array(get_nlist1(),dtype=np.uint32)
+    pops = fp.MlocusPopVec(args.ncores,nlist[0],args.nloci)
+    sampler=fp.NothingSampler(len(pops))
+    d=datetime.datetime.now()
+    print("starting batch, ",batch, "at ",d.now())
+    qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
+            nlist[0:],
+            nregions,sregions,recregions,
+            [0.5]*(args.nloci-1),
+            0,
+            0,0.)
+    d=datetime.datetime.now()
+    print(d.now())
+    nlist=np.array(get_nlist2(),dtype=np.uint32)
+    qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
+            nlist[0:],
+            nregions,sregions,recregions,
+            [0.5]*(args.nloci-1),
+            0,args.opt)
+    d=datetime.datetime.now()
+    print(d.now())
+    neutralFile = nstub + '.batch' + str(batch)
+    selectedFile = sstub + '.batch' + str(batch)
+    BIGsampler=fp.PopSampler(len(pops),6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
+    fp.apply_sampler(pops,BIGsampler)
+    d=datetime.datetime.now()
+    print(d.now())
     if args.statfile is not None:
-        H5out = pd.HDFStore(args.statfile,'w')
-        H5out.close()
-    repid=0
-    P=mp.Pool(1)
-    for batch in range(args.nreps):
-        nlist=np.array(get_nlist1(),dtype=np.uint32)
-        pops = fp.MlocusPopVec(args.ncores,nlist[0],args.nloci)
-        sampler=fp.NothingSampler(len(pops))
-        d=datetime.datetime.now()
-        print("starting batch, ",batch, "at ",d.now())
-        qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
-                nlist[0:],
-                nregions,sregions,recregions,
-                [0.5]*(args.nloci-1),
-                0,
-                0,0.)
-        d=datetime.datetime.now()
-        print(d.now())
-        nlist=np.array(get_nlist2(),dtype=np.uint32)
-        qtm.evolve_qtraits_mloc_regions_sample_fitness(rnge,pops,sampler,f,
-                nlist[0:],
-                nregions,sregions,recregions,
-                [0.5]*(NLOCI-1),
-                0,args.opt)
-        d=datetime.datetime.now()
-        print(d.now())
-        neutralFile = nstub + '.batch' + str(batch)
-        selectedFile = sstub + '.batch' + str(batch)
-        BIGsampler=fp.PopSampler(len(pops),6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
-        fp.apply_sampler(pops,BIGsampler)
-        d=datetime.datetime.now()
-        print(d.now())
-        if statfile is not None:
-            for di in BIGsampler:
-                P.map(process_samples,[(di,statfile,locus_boundaries,repid,TBB)])
-#                process_samples((di,statfile,locus_boundaries,repid))
-                repid+=1
-                del di
-        BIGsampler.force_clear()
-        BIGsampler=None
-        pops.clear()
-        pops=None
-        gc.collect()
-    #if statfile is not None:
-    #    H5out.close()
+        sched = lsp.scheduler_init(args.TBB)
+        for di in BIGsampler:
+            process_samples((di,args.statfile,locus_boundaries,repid))
+            repid+=1
+            del di
+    BIGsampler.force_clear()
+    BIGsampler=None
+    pops.clear()
+    pops=None
 
 if __name__ == "__main__":
     parser=make_parser()
     args=parser.parse_args(sys.argv[1:])
-    main(args)
+    if args.statfile is not None:
+        H5out = pd.HDFStore(args.statfile,'w')
+        H5out.close()
+    #Use multiprocessing hack to keep total RAM well-controlled.
+    repid=0
+    #Use user seed to generate a 
+    #seed for each "batch" of "ncore" reps
+    initial_seed = args.seed
+    random.seed(initial_seed)
+    for batch in range(args.nreps):
+        repseed=random.randrange(42000000)
+        print(repseed)
+        repid+=args.ncores
+        P=mp.Pool(1)
+        P.map(run_batch,[(args,repseed,batch)])
+        P.close()
 
 
 
