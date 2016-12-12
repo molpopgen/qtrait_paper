@@ -22,6 +22,9 @@ import libsequence.parallel as lsp
 import libsequence.polytable as pt
 import libsequence.summstats as sstats
 import libsequence.windows as windows
+#do check on minimum pylibseq version
+import libsequence
+assert libsequence.__version__ >= '0.1.9'
 
 STATNAMES=['S','tajimasd','pi','thetaw','hprime','H1','H12','H2H1','nSL','iHS']
 
@@ -73,13 +76,13 @@ def process_samples(args):
     di,statfile,locus_boundaries,repid=args
     H5out = pd.HDFStore(statfile,mode='a')
     #get summary stats in sliding windows based on neutral diversity
-    sd=[pt.simData(dii[0][0]) for dii in di]
+    sd=[pt.SimData(dii[0][0]) for dii in di]
     w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(sd,locus_boundaries)]
     sd=None
     hapstats=[] #nSL, etc.
     polySIMlist=[]
     for wi in w:
-        polySIMlist.extend([sstats.polySIM(j) for j in wi])
+        polySIMlist.extend([sstats.PolySIM(j) for j in wi])
         hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in wi])
     wi = None #Delete the last window...
     #stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
@@ -126,6 +129,7 @@ def make_parser():
 
 def run_batch(argtuple):
     args,repid,batch=argtuple
+    print ("seed for batch = ",args.seed)
     nstub = "neutral.mu"+str(args.mu)+".opt"+str(args.opt)
     sstub = "selected.mu"+str(args.mu)+".opt"+str(args.opt)
     rnge=fp.GSLrng(args.seed)
@@ -158,20 +162,31 @@ def run_batch(argtuple):
             0,args.opt)
     d=datetime.datetime.now()
     print(d.now())
-    neutralFile = nstub + '.batch' + str(batch)
-    selectedFile = sstub + '.batch' + str(batch)
-    BIGsampler=fp.PopSampler(len(pops),6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
-    fp.apply_sampler(pops,BIGsampler)
-    d=datetime.datetime.now()
-    print(d.now())
     if args.statfile is not None:
         sched = lsp.scheduler_init(args.TBB)
-        for di in BIGsampler:
-            process_samples((di,args.statfile,locus_boundaries,repid))
-            repid+=1
-            del di
-    BIGsampler.force_clear()
-    BIGsampler=None
+    for pi in pops:
+        neutralFile = nstub + '.rep' + str(repid) + '.gz'
+        selectedFile = sstub + '.rep' + str(repid) + '.gz'
+        BIGsampler=fp.PopSampler(1,6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
+        fp.apply_sampler_single(pi,BIGsampler)
+        if args.statfile is not None:
+            for di in BIGsampler:
+                process_samples((di,args.statfile,locus_boundaries,repid))
+        repid+=1
+    #neutralFile = nstub + '.batch' + str(batch)
+    #selectedFile = sstub + '.batch' + str(batch)
+    #BIGsampler=fp.PopSampler(len(pops),600,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
+    #fp.apply_sampler(pops,BIGsampler)
+    #d=datetime.datetime.now()
+    #print(d.now())
+    #if args.statfile is not None:
+    #    sched = lsp.scheduler_init(args.TBB)
+    #    for di in BIGsampler:
+    #        process_samples((di,args.statfile,locus_boundaries,repid))
+    #        repid+=1
+    #        del di
+    #BIGsampler.force_clear()
+    #BIGsampler=None
     pops.clear()
     pops=None
 
@@ -189,11 +204,8 @@ if __name__ == "__main__":
     random.seed(initial_seed)
     for batch in range(args.nreps):
         repseed=random.randrange(42000000)
-        print(repseed)
-        repid+=args.ncores
+        args.seed=repseed
         P=mp.Pool(1)
-        P.map(run_batch,[(args,repseed,batch)])
+        P.map(run_batch,[(args,repid,batch)])
         P.close()
-
-
-
+        repid+=args.ncores
