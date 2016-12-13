@@ -71,7 +71,7 @@ def get_nlist2():
 
 def process_samples(args):
     di,statfile,locus_boundaries,repid=args
-    H5out = pd.HDFStore(statfile,mode='a'i,complevel=6,complib='zlib')
+    H5out = pd.HDFStore(statfile,mode='a',complevel=6,complib='zlib')
     #get summary stats in sliding windows based on neutral diversity
     sd=[pt.SimData(dii[0][0]) for dii in di]
     w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(sd,locus_boundaries)]

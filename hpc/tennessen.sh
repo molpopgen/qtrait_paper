@@ -14,4 +14,4 @@ statfile=$4
 
 echo "Running on $HOSTNAME"
 echo "python ../python/TennessenQtraitMloc.py --ncores 32 --nreps 4 --mu $mu --opt $opt --seed $seed --statfile $statfile --tbb $CORES"
-python ../python/TennessenQtraitMloc.py --ncores 16 --nreps 8 --mu $mu --opt $opt --seed $seed --statfile $statfile --tbb $CORES
+python ../python/TennessenQtraitMloc.py --ncores 16 --nreps 8 --mu $mu --opt $opt --seed $seed --statfile $statfile --TBB $CORES
