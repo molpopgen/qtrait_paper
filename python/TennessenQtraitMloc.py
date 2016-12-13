@@ -159,6 +159,8 @@ def run_batch(argtuple):
     if args.statfile is not None:
         sched = lsp.scheduler_init(args.TBB)
     for pi in pops:
+        #Apply the sampler 1 population at a time.
+        #This saves a fair bit of RAM.
         neutralFile = nstub + '.rep' + str(repid) + '.gz'
         selectedFile = sstub + '.rep' + str(repid) + '.gz'
         BIGsampler=fp.PopSampler(1,6000,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
