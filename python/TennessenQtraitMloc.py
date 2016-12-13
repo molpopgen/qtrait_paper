@@ -74,7 +74,7 @@ def get_nlist2():
 
 def process_samples(args):
     di,statfile,locus_boundaries,repid=args
-    H5out = pd.HDFStore(statfile,mode='a')
+    H5out = pd.HDFStore(statfile,mode='a'i,complevel=6,complib='zlib')
     #get summary stats in sliding windows based on neutral diversity
     sd=[pt.SimData(dii[0][0]) for dii in di]
     w=[windows.Windows(i,window_size=1.,step_len=1.,starting_pos=j[0],ending_pos=j[1]) for i,j in zip(sd,locus_boundaries)]
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     parser=make_parser()
     args=parser.parse_args(sys.argv[1:])
     if args.statfile is not None:
-        H5out = pd.HDFStore(args.statfile,'w')
+        H5out = pd.HDFStore(args.statfile,'w',complevel=6,complib='zlib')
         H5out.close()
     #Use multiprocessing hack to keep total RAM well-controlled.
     repid=0
