@@ -46,9 +46,6 @@ def get_nlist1():
     """
     n=[7310]*(10*7310) #E1: evolve ancestral size to mutation/selection/drift equilibrium
     n.extend([14474]*(5920-2040)) #E2
-    #n.extend([1861]*(2040-920)) #E3
-    #n.extend(fpd.exponential_size_change(1032,9300,920-205)) #E4
-    #n.extend(fpd.exponential_size_change(9300,51200,205)) #E5
     return n
 
 def get_nlist2():
@@ -85,18 +82,15 @@ def process_samples(args):
         polySIMlist.extend([sstats.PolySIM(j) for j in wi])
         hapstats.extend([(sstats.garudStats(j),sstats.std_nSLiHS(j,0.05,0.1)) for j in wi])
     wi = None #Delete the last window...
-    #stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
     stats=[(i.numpoly(),i.tajimasd(),i.thetapi(),i.thetaw(),i.hprime()) for i in polySIMlist]
     combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
     polySIMlist=None
-    #combinedStats=[i+(j[0]['H1'],j[0]['H12'],j[0]['H2H1'],j[1][0],j[1][1]) for i,j in zip(stats,hapstats)]
     window=0
     locus=0
     for cs in combinedStats:
         tempDF=pd.DataFrame({'stat':STATNAMES,'value':list(cs),
                 'window':[window]*len(STATNAMES),'rep':[repid]*len(STATNAMES),
                 'locus':[locus]*len(STATNAMES)})
-                #'locus':[l for l in range(10) for i in range(len(locus_boundaries))]})
         H5out.append('stats',tempDF)
         window+=1
         if window==11:
@@ -173,20 +167,6 @@ def run_batch(argtuple):
             for di in BIGsampler:
                 process_samples((di,args.statfile,locus_boundaries,repid))
         repid+=1
-    #neutralFile = nstub + '.batch' + str(batch)
-    #selectedFile = sstub + '.batch' + str(batch)
-    #BIGsampler=fp.PopSampler(len(pops),600,rnge,False,neutralFile,selectedFile,recordSamples=True,boundaries=locus_boundaries)
-    #fp.apply_sampler(pops,BIGsampler)
-    #d=datetime.datetime.now()
-    #print(d.now())
-    #if args.statfile is not None:
-    #    sched = lsp.scheduler_init(args.TBB)
-    #    for di in BIGsampler:
-    #        process_samples((di,args.statfile,locus_boundaries,repid))
-    #        repid+=1
-    #        del di
-    #BIGsampler.force_clear()
-    #BIGsampler=None
     pops.clear()
     pops=None
 
