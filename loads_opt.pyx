@@ -144,11 +144,11 @@ cdef void update_number_mutations(const singlepop_t * pop, const size_t diploid,
 #Notes:
 #The fixed load is constant for everyone, so we just calculate it once.
 
-cdef load_values additive_load(const singlepop_t * pop,const unsigned generation) nogil:
+cdef load_values additive_load(const singlepop_t * pop,const unsigned generation,const double opt) nogil:
     rv = make_return_value(pop,generation)
     #2*sum_fixed_effects b/c everyone is a homozygote
     #for a fixation
-    cdef double fixed_w = gaussian_fitness(2.*sum_fixed_effects(pop),0.,1.)
+    cdef double fixed_w = gaussian_fitness(2.*sum_fixed_effects(pop),opt,1.)
     rv.fixed=1.-fixed_w
 
     #Seg and total loads
@@ -167,12 +167,12 @@ cdef load_values additive_load(const singlepop_t * pop,const unsigned generation
     rv.total_muts/=<double>pop.diploids.size()
     return rv;
 
-cdef load_values gbr_load(const singlepop_t * pop,const unsigned generation) nogil:
+cdef load_values gbr_load(const singlepop_t * pop,const unsigned generation,const double opt) nogil:
     rv = make_return_value(pop,generation)
     #For this model, P = sqrt(h1*h2), where the h terms are
     #sum over effect sizes on each haplotype.
     #For fixations, h1=h2, and thus P = sqrt(h2^2)=h1.
-    rv.fixed = 1.-gaussian_fitness(sum_fixed_effects(pop),0.,1.)
+    rv.fixed = 1.-gaussian_fitness(sum_fixed_effects(pop),opt,1.)
 
     #Seg and total loads
     cdef pair[double,double] hapsums
@@ -192,9 +192,9 @@ cdef load_values gbr_load(const singlepop_t * pop,const unsigned generation) nog
     rv.total_muts/=<double>pop.diploids.size()
     return rv;
 
-cdef load_values multiplicative_load(const singlepop_t * pop,const unsigned generation) nogil:
+cdef load_values multiplicative_load(const singlepop_t * pop,const unsigned generation,const double opt) nogil:
     rv = make_return_value(pop,generation)
-    rv.fixed = 1.-(1.- gaussian_fitness(2.*prod_fixed_effects(pop),0.,1.))
+    rv.fixed = 1.-(1.- gaussian_fitness(2.*prod_fixed_effects(pop),opt,1.))
 
     #Seg and total loads
     cdef size_t i = 0
@@ -215,11 +215,12 @@ cdef load_values multiplicative_load(const singlepop_t * pop,const unsigned gene
 #The extension types are implemented in terms of several
 #callback functions: the 3 defined above, plus apply_load_calculator.
 ctypedef vector[load_values] final_t
-ctypedef load_values(*load_calculator_fxn)(const singlepop_t *, const unsigned) nogil
-ctypedef custom_sampler_data[final_t,load_calculator_fxn] load_sampler_t
+ctypedef load_values(*load_calculator_fxn)(const singlepop_t *, const unsigned, const double) nogil
+ctypedef pair[load_calculator_fxn,double] custom_data_t
+ctypedef custom_sampler_data[final_t,custom_data_t] load_sampler_t
 
-cdef void apply_load_calculator(const singlepop_t * pop,const unsigned generation, final_t & final, load_calculator_fxn & f) nogil:
-    final.push_back(f(pop,generation))
+cdef void apply_load_calculator(const singlepop_t * pop,const unsigned generation, final_t & final, custom_data_t & f) nogil:
+    final.push_back(f.first(pop,generation,f.second))
 
 cdef get_data(const vector[unique_ptr[sampler_base]] & vec):
     rv=[]
@@ -229,23 +230,32 @@ cdef get_data(const vector[unique_ptr[sampler_base]] & vec):
     return rv
 
 cdef class additiveLoad(TemporalSampler):
-    def __cinit__(self,unsigned n):
+    def __cinit__(self,unsigned n,double opt):
+        cdef custom_data_t d
+        d.first=&additive_load
+        d.second=opt
         for i in range(n):
-            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,&additive_load)))
+            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,d)))
     def get(self):
         return get_data(self.vec)
 
 cdef class gbrLoad(TemporalSampler):
-    def __cinit__(self,unsigned n):
+    def __cinit__(self,unsigned n,double opt):
+        cdef custom_data_t d
+        d.first=&gbr_load
+        d.second=opt
         for i in range(n):
-            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,&gbr_load)))
+            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,d)))
     def get(self):
         return get_data(self.vec)
 
 cdef class multiplicativeLoad(TemporalSampler):
-    def __cinit__(self,unsigned n):
+    def __cinit__(self,unsigned n,double opt):
+        cdef custom_data_t d
+        d.first=&multiplicative_load
+        d.second=opt
         for i in range(n):
-            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,&multiplicative_load)))
+            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,d)))
     def get(self):
         return get_data(self.vec)
 
