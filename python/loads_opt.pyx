@@ -238,6 +238,13 @@ cdef class additiveLoad(TemporalSampler):
             self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,d)))
     def get(self):
         return get_data(self.vec)
+    def __len__(self):
+        return self.vec.size()
+    def __iter__(self):
+        for i in range(self.vec.size()):
+            yield (<load_sampler_t*>(self.vec[i].get())).final()
+    def __next__(self):
+        return next(self)
 
 cdef class gbrLoad(TemporalSampler):
     def __cinit__(self,unsigned n,double opt):
@@ -248,6 +255,13 @@ cdef class gbrLoad(TemporalSampler):
             self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,d)))
     def get(self):
         return get_data(self.vec)
+    def __len__(self):
+        return self.vec.size()
+    def __iter__(self):
+        for i in range(self.vec.size()):
+            yield (<load_sampler_t*>(self.vec[i].get())).final()
+    def __next__(self):
+        return next(self) 
 
 cdef class multiplicativeLoad(TemporalSampler):
     def __cinit__(self,unsigned n,double opt):
@@ -258,4 +272,10 @@ cdef class multiplicativeLoad(TemporalSampler):
             self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[load_sampler_t](new load_sampler_t(&apply_load_calculator,d)))
     def get(self):
         return get_data(self.vec)
-
+    def __len__(self):
+        return self.vec.size()
+    def __iter__(self):
+        for i in range(self.vec.size()):
+            yield (<load_sampler_t*>(self.vec[i].get())).final()
+    def __next__(self):
+        return next(self)
