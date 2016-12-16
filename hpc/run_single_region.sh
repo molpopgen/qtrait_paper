@@ -15,4 +15,5 @@ optimum=$5
 VS=$6
 sigmu=$7
 seed=$8
-python python/single_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed
+#python python/single_region.py --sampler $sampler -m $mutrate -F $ofile -t $tsample -O $optimum -S $VS -e $sigmu -N 5000 -s $seed
+python python/single_region.py 5000 $optimum --sampler $sampler --mutrate $mutrate --outfile $ofile --tsample $tsampler --VS $VS --sigmu $sigmu --seed $seed
