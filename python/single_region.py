@@ -1,17 +1,18 @@
 import fwdpy as fp
 import fwdpy.qtrait as qt
 import numpy as np
-import gzip,getopt,sys,warnings,math
+import gzip,argparse,getopt,sys,warnings,math
 import pandas as pd
 ##import local functions
 from single_region_common import *
 
-valid_trait_models=['additive','mult']
+SAMPLERS=('stats','freq')
+TRAITS=('additive','mult')
+#valid_trait_models=['additive','mult']
 trait_models = {'additive':qt.SpopAdditiveTrait(),
                 'mult':qt.SpopMultTrait()}
 
-valid_sampler_names=['stats','freq']
-
+#valid_sampler_names=['stats','freq']
 def usage():
     print "something went wrong"
 
@@ -53,8 +54,34 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
     else:
         raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
     return REPID
-        
+       
+def make_parser():
+    parser=argparse.ArgumentParser(description="Single region, simple demography, additive effects.")
+
+    parser.add_argument('--seed','-S',type=int,default=0,metavar='SEED',help='Random number seed (default 0)')
+    #parser.add_argument('--theta','-th',type=float,default=100.,metavar='THETA',help="4Nu/region (default 100.0)")
+    parser.add_argument('--recrate','-r',type=float,default=0.5,help="Genetic distance of region.  Default = 0.5 = 50cM")
+    parser.add_argument('--tsample','-t',type=int,default=0,metavar='TSAMPLE',help="How often to apply sampler. Default = 0 = never")
+    parser.add_argument('--sigmu',type=float,default=0.25,metavar='SIGMU',help="Std. dev. of effect sizes. Default = 0.25")
+    parser.add_argument('--H2',type=float,default=1.0,help="Desired heritability.  Default of 1.0. We use HoC approximation to determine std. dev. of environmental/random effects to give this heritability on average")
+    parser.add_argument('--VS',type=float,default=1.0,help="V(S). Default to 1.0.")
+    parser.add_argument('--mutrate','-m',type=float,default=-1.0,help="Mutation rate to selected variants. Required.",required=True)
+    parser.add_argument("--outfile",'-O',type=str,default=None,help="Output file. Required",required=True)
+    parser.add_argument('--trait',choices=TRAITS,default='additive',help="Genotype to phenotype model. Default is additive.")
+    parser.add_argument('--sampler',choices=SAMPLERS,help="Temporal sampler type. Default is None")
+    parser.add_argument('--dominance',type=float,default=1.0,help="Dominance. Default is 1.0 (co-dominance).")
+    parser.add_argument('--ncores',type=int,default=64,help="No. simultaneous simulations to run. Default = 64")
+    parser.add_argument('--nbatches',type=int,default=16,help="No. 'batches' of simulations to run.  Total number of replicates will be NCORES*NBATCHES")
+    #Positional arguments
+    parser.add_argument('popsize',type=int,default=10000)
+    parser.add_argument('optimum',type=float,default=0.0)
+
+    return parser
+
 def main():
+    parser=make_parser()
+    parser.parse_args(sys.argv[1:])
+    sys.exit(0) 
     try:
         opts, args = getopt.getopt(sys.argv[1:],"m:e:H:S:O:N:t:s:F:r:n:d:",["theta=","rho=","trait=","sampler=","nsam=","cores=","batches="])
     except getopt.GetoptError as err:
