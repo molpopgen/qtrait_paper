@@ -1,3 +1,4 @@
+from __future__ import print_function
 import fwdpy as fp
 import fwdpy.qtrait as qt
 import numpy as np
@@ -5,8 +6,10 @@ import gzip,argparse,sys,warnings,math
 import pandas as pd
 ##import local functions
 from single_region_common import *
-
-SAMPLERS=('stats','freq')
+import pyximport
+pyximport.install()
+import loads_opt
+SAMPLERS=('stats','freq','load')
 TRAITS=('additive','mult')
 trait_models = {'additive':qt.SpopAdditiveTrait(),
                 'mult':qt.SpopMultTrait()}
@@ -14,17 +17,22 @@ trait_models = {'additive':qt.SpopAdditiveTrait(),
 def get_trait_model(traitString):
    return trait_models[traitString]
 
-def get_sampler_type(samplerString, length,optimum):
+def get_sampler_type(samplerString, traitString,length,optimum):
     if samplerString == 'stats':
         return fp.QtraitStatsSampler(length,optimum)
     elif samplerString == 'freq':
         return fp.FreqSampler(length)
+    elif samplerString == 'load':
+        if traitString == 'additive':
+            return loads_opt.additiveLoad(length,optimum)
+        elif traitString == 'mult':
+            return loads_opt.multiplicativeLoad(length,optimum)
     else:
         print ("invalid sampler name")
         usage()
         sys.exit(0)
 
-def write_output(sampler,outputFilename,REPID,batch,mode):
+def write_output(sampler,outputFilename,REPID,batch,mode,dfname):
     if isinstance(sampler,fp.FreqSampler):
         ##Create a new file for each replicate so that file sizes
         ##don't get unwieldy
@@ -34,25 +42,27 @@ def write_output(sampler,outputFilename,REPID,batch,mode):
             df=pd.DataFrame(fp.tidy_trajectories(di))
             df['rep']=REPID*len(df.index)
             df.reset_index(['rep'],inplace=True,drop=True)
-            output.append('trajectories',df)
+            output.append(dfname,df)
             REPID+=1
         output.close()
-    elif isinstance(sampler,fp.QtraitStatsSampler):
+    else:
+        #elif isinstance(sampler,fp.QtraitStatsSampler):
         ##Write in append mode
         output = pd.HDFStore(outputFilename,mode,complevel=6,complib='zlib')
         for s in sampler:
-            df=pd.DataFrame(i)
+            df=pd.DataFrame(s)
             df['rep']=[REPID]*len(df.index)
             REPID+=1
-        output.append('stats',pd.concat(data))
+            output.append(dfname,df)
         output.close()
-    else:
-        raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
+    #else:
+    #    raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
     return REPID
        
 def make_parser():
     parser=argparse.ArgumentParser(description="Single region, simple demography, additive effects.")
 
+    parser.add_argument('--verbose',action='store_true')
     group = parser.add_argument_group("Required arguments")
     group.add_argument('--mutrate','-m',type=float,default=-1.0,help="Mutation rate to selected variants. Required.",required=True)
     group.add_argument("--outfile",'-O',type=str,default=None,help="Output file. Required",required=True)
@@ -79,13 +89,14 @@ def main():
     parser=make_parser()
     args=parser.parse_args(sys.argv[1:])
 
+    if args.verbose:
+        print (args)
     ##Figure out sigma_E from params
-    print (args)
     sigE = get_sigE_additive(args.mutrate,args.VS,args.H2)
 
     trait = get_trait_model(args.trait)
 
-    nlist = np.array([args.popsize]*(args.popsize),dtype=np.uint32)
+    nlist = np.array([args.popsize]*(10*args.popsize),dtype=np.uint32)
     rng=fp.GSLrng(args.seed)
     mu_neutral = 0.0
     nregions=[]
@@ -98,7 +109,7 @@ def main():
     REPID=0
     for BATCH in range(args.nbatches):
         pops=fp.SpopVec(args.ncores,args.popsize)
-        sampler=get_sampler_type(args.sampler,len(pops),0.0)
+        sampler=get_sampler_type(args.sampler,args.trait,len(pops),0.0)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,
                                                  0.0,
@@ -112,10 +123,12 @@ def main():
                                                  optimum=0.0,
                                                  VS=args.VS)
         if args.sampler == 'freq':
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'w')
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'w','trajectories')
         elif args.sampler == 'stats':
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a')
-        sampler=get_sampler_type(args.sampler,len(pops),args.optimum)
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','stats')
+        else:
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','load')
+        sampler=get_sampler_type(args.sampler,args.trait,len(pops),args.optimum)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,
                                                  0.0,
@@ -130,9 +143,11 @@ def main():
                                                  VS=args.VS)
         if args.sampler == 'freq':
             #Append this time!
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a')
-        elif samplerString == 'stats':
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a')
+            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','trajectories')
+        elif args.sampler == 'stats':
+            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','stats')
+        else:
+            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','load')
 
 if __name__ == "__main__":
     main()
