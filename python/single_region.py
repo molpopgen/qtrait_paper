@@ -32,14 +32,14 @@ def get_sampler_type(samplerString, traitString,length,optimum):
         usage()
         sys.exit(0)
 
-def write_output(sampler,outputFilename,REPID,batch,mode,dfname):
+def write_output(sampler,outputFilename,REPID,batch,mode,dfname,popsize):
     if isinstance(sampler,fp.FreqSampler):
         ##Create a new file for each replicate so that file sizes
         ##don't get unwieldy
         fn=outputFilename+'.batch'+str(batch)+'.h5'
 	output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
         for di in sampler:
-            df=pd.DataFrame(fp.tidy_trajectories(di))
+            df=pd.DataFrame(fp.tidy_trajectories(di)),lambda x: x[1][-1][0] >= 4*popsize))
             df['rep']=REPID*len(df.index)
             df.reset_index(['rep'],inplace=True,drop=True)
             output.append(dfname,df)
@@ -123,11 +123,11 @@ def main():
                                                  optimum=0.0,
                                                  VS=args.VS)
         if args.sampler == 'freq':
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'w','trajectories')
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'w','trajectories',args.popsize)
         elif args.sampler == 'stats':
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','stats')
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','stats',args.popsize)
         else:
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','load')
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','load',args.popsize)
         sampler=get_sampler_type(args.sampler,args.trait,len(pops),args.optimum)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,
@@ -143,11 +143,11 @@ def main():
                                                  VS=args.VS)
         if args.sampler == 'freq':
             #Append this time!
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','trajectories')
+            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','trajectories',args.popsize)
         elif args.sampler == 'stats':
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','stats')
+            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','stats',args.popsize)
         else:
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','load')
+            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','load',args.popsize)
 
 if __name__ == "__main__":
     main()
