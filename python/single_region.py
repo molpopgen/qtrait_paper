@@ -39,7 +39,7 @@ def write_output(sampler,outputFilename,REPID,batch,mode,dfname,popsize):
         fn=outputFilename+'.batch'+str(batch)+'.h5'
 	output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
         for di in sampler:
-            df=pd.DataFrame(fp.tidy_trajectories(di)),lambda x: x[1][-1][0] >= 4*popsize))
+            df=pd.DataFrame(fp.tidy_trajectories(di,lambda x: x[1][-1][0] >= 8*popsize))
             df['rep']=REPID*len(df.index)
             df.reset_index(['rep'],inplace=True,drop=True)
             output.append(dfname,df)
