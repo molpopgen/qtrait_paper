@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -q krt,krti,bio
+#$ -q krt@compute-2-14,krt@compute-2-15,krti,bio
 #$ -pe openmp 64-72
 
 module load krthornt/thorntonlab
@@ -14,4 +14,4 @@ statfile=$4
 
 echo "Running on $HOSTNAME"
 echo "python ../python/TennessenQtraitMloc.py --ncores 32 --nreps 4 --mu $mu --opt $opt --seed $seed --statfile $statfile --tbb $CORES"
-python ../python/TennessenQtraitMloc.py --ncores 32 --nreps 4 --mu $mu --opt $opt --seed $seed --statfile $statfile --tbb $CORES
+python ../python/TennessenQtraitMloc.py --ncores 16 --nreps 8 --mu $mu --opt $opt --seed $seed --statfile $statfile --TBB $CORES
