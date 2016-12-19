@@ -4,6 +4,8 @@ import fwdpy.qtrait as qt
 import numpy as np
 import gzip,argparse,sys,warnings,math
 import pandas as pd
+import multiprocessing as mp
+
 ##import local functions
 from single_region_common import *
 import pyximport
@@ -32,28 +34,27 @@ def get_sampler_type(samplerString, traitString,length,optimum):
         usage()
         sys.exit(0)
 
-def write_output(sampler,outputFilename,REPID,batch,mode,dfname,popsize):
+def write_output(sampler,args,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
         ##Create a new file for each replicate so that file sizes
         ##don't get unwieldy
-        fn=outputFilename+'.batch'+str(batch)+'.h5'
+        fn=args.outfile+'.batch'+str(batch)+'.h5'
 	output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
         for di in sampler:
-            df=pd.DataFrame(fp.tidy_trajectories(di,lambda x: x[1][-1][0] >= 8*popsize))
+            df=pd.DataFrame(fp.tidy_trajectories(di,lambda x: x[1][-1][0] >= 8*args.popsize))
             df['rep']=REPID*len(df.index)
             df.reset_index(['rep'],inplace=True,drop=True)
-            output.append(dfname,df)
+            output.append(args.sampler,df)
             REPID+=1
         output.close()
     else:
-        #elif isinstance(sampler,fp.QtraitStatsSampler):
         ##Write in append mode
-        output = pd.HDFStore(outputFilename,mode,complevel=6,complib='zlib')
+        output = pd.HDFStore(args.outfile,mode,complevel=6,complib='zlib')
         for s in sampler:
             df=pd.DataFrame(s)
             df['rep']=[REPID]*len(df.index)
             REPID+=1
-            output.append(dfname,df)
+            output.append(args.sampler,df)
         output.close()
     #else:
     #    raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
@@ -82,7 +83,7 @@ def make_parser():
     #Positional arguments
     parser.add_argument('popsize',type=int,help="Population size.  Simulation will run 10*N generations before and after optimum shift.")
     parser.add_argument('optimum',type=float,help="Optimum trait value.")
-
+    parser.add_argument('--poolsize',type=int,default=10,help="Size of multiprocessing.Pool.  Only used when sampler == freq.")
     return parser
 
 def main():
@@ -123,11 +124,11 @@ def main():
                                                  optimum=0.0,
                                                  VS=args.VS)
         if args.sampler == 'freq':
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'w','trajectories',args.popsize)
+            dummy=write_output(sampler,args,REPID,BATCH,'w')
         elif args.sampler == 'stats':
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','stats',args.popsize)
+            dummy=write_output(sampler,args,REPID,BATCH,'a')
         else:
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a','load',args.popsize)
+            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a',args.popsize)
         sampler=get_sampler_type(args.sampler,args.trait,len(pops),args.optimum)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,
@@ -143,11 +144,11 @@ def main():
                                                  VS=args.VS)
         if args.sampler == 'freq':
             #Append this time!
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','trajectories',args.popsize)
+            REPID=write_output(sampler,args,REPID,BATCH,'a')
         elif args.sampler == 'stats':
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','stats',args.popsize)
+            REPID=write_output(sampler,args,REPID,BATCH,'a')
         else:
-            REPID=write_output(sampler,args.outfile,REPID,BATCH,'a','load',args.popsize)
+            REPID=write_output(sampler,args,REPID,BATCH,'a')
 
 if __name__ == "__main__":
     main()
