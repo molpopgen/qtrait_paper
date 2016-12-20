@@ -3,11 +3,11 @@ import fwdpy.qtrait as qt
 import pandas as pd
 import numpy as np
 
-hdf = pd.HDFStore("popstats.h5",'w')
-hdf.open()
-k=0
 
-N=1000
+hdf = pd.HDFStore("validation_popstats.h5",'w',complevel=6,complib='zlib')
+hdf2 = pd.HDFStore("validation_popstats.h5",'w',complevel=6,complib='zlib')
+
+N=5000
 nlist = np.array([N]*10*N,dtype=np.uint32)
 
 nregions=[]
@@ -26,10 +26,11 @@ for mu in muvals:
     for sigmu in sigmuvals:
         sregions = [fp.GaussianS(0,1,1,sigmu)]
         for sige in sigevals:
-            eh2 = 4.*mu/(4*mu + sige**sige)
+            eh2 = 4.*mu/(4.*mu + sige**2.)
             for rec in recvals:
+		k=0
                 for i in range(BATCHES):
-                    pops = qt.evolve_qtrait(rng,64,
+                    pops = qt.evolve_reqions_qtrait(rng,64,
                                             N,
                                             nlist[0:],
                                             0,
@@ -51,7 +52,7 @@ for mu in muvals:
                                'VG':np.var(G)}
                         vals.append(val)
                         k=k+1
-
+                    views = fp.view_mutations(pops)
                     hdf.append('popstats',pd.DataFrame(vals))
 hdf.close()
                         
