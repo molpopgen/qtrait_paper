@@ -31,6 +31,41 @@ ctypedef vector[statdata] final_t
 
 ctypedef custom_sampler[final_t] PopstatsLocus_t
 
+cdef pair[double,vector[double]] sum_of_squares( gsl_vector * v,
+         gsl_matrix * m) nogil:
+    #We now regress individual genetic values onto the genetic values due to 
+    #each locus.  We use QR decomposition for the regression.
+    TAU=gsl_vector_alloc(min(m.size1,m.size2))
+    SUMS=gsl_vector_alloc(m.size1)
+    Q=gsl_matrix_alloc(m.size1,m.size1)
+    R=gsl_matrix_alloc(m.size1,m.size2)
+
+    gsl_linalg_QR_decomp(m,TAU)
+    gsl_linalg_QR_unpack(m,TAU,Q,R)
+    gsl_blas_dgemv(CblasTrans,1.0,Q,v,0.0,SUMS)
+
+    gsl_matrix_free(Q)
+    gsl_matrix_free(R)
+    gsl_vector_free(TAU)
+
+    cdef pair[double,vector[double]] rv
+
+    cdef size_t i
+    for i in range(0,m.size2): #re-using dip as dummy here!
+        rv.second.push_back(gsl_pow_2(gsl_vector_get(SUMS,i+1)))
+   
+    cdef size_t DF = m.size2-1
+    RSS=0.0
+    for i in range(DF+1,SUMS.size):
+        RSS += gsl_pow_2(gsl_vector_get(SUMS,i))
+
+    cdef double sqi=0.
+    rv.first = RSS
+    for sqi in rv.second: rv.first += sqi
+
+    gsl_vector_free(SUMS)
+    return rv
+
 cdef void popstats_locus_details(const multilocus_t * pop,
         const unsigned generation,
         final_t & f) nogil:
@@ -111,63 +146,21 @@ cdef void popstats_locus_details(const multilocus_t * pop,
                     gsl_matrix_set(LOCI,dip,dummy+1,gsl_matrix_get(LOCI,dip,dummy+1) + s)
                 dummy+=1
 
-    
+    cdef pair[double,vector[double]] ssquares = sum_of_squares(GVALUES,LOCI) 
 
-    #We now regress individual genetic values onto the genetic values due to 
-    #each locus.  We use QR decomposition for the regression.
-    TAU=gsl_vector_alloc(min(LOCI.size1,LOCI.size2))
-    SUMS=gsl_vector_alloc(LOCI.size1)
-    Q=gsl_matrix_alloc(LOCI.size1,LOCI.size1)
-    R=gsl_matrix_alloc(LOCI.size1,LOCI.size2)
-
-    gsl_linalg_QR_decomp(LOCI,TAU)
-    gsl_linalg_QR_unpack(LOCI,TAU,Q,R)
-    gsl_blas_dgemv(CblasTrans,1.0,Q,GVALUES,0.0,SUMS)
-
-    cdef vector[double] squares
-
-    for dip in range(0,LOCI.size2): #re-using dip as dummy here!
-        squares.push_back(gsl_pow_2(gsl_vector_get(SUMS,dip+1)))
-   
-    cdef size_t DF = LOCI.size2-1
-    cdef float RSS = 0.0
-    for dip in range(DF+1,SUMS.size):
-        RSS += gsl_pow_2(gsl_vector_get(SUMS,dip))
-
-    cdef double sqi=0.
-    cdef double SS = RSS
-    for sqi in squares: SS += sqi
-
-    gsl_matrix_free(LOCI)
-    gsl_matrix_free(Q)
-    gsl_matrix_free(R)
     gsl_vector_free(GVALUES)
-    gsl_vector_free(TAU)
-    gsl_vector_free(SUMS)
+    gsl_matrix_free(LOCI)
 
-    squares.resize(VG.size(),0.0)
+    ssquares.second.resize(VG.size(),0.0)
     cdef vector[double] csum
     csum.resize(VG.size(),0.0)
-    partial_sum(squares.begin(),squares.end(),csum.begin())
+    for dip in range(ssquares.second.size()): ssquares.second[dip]/=ssquares.first
+    partial_sum(ssquares.second.begin(),ssquares.second.end(),csum.begin())
     dummy=0
     for locus in range(VGindexes.size()):
         temp.locus=VGindexes[locus]
-        temp.value=csum[locus]/SS
+        temp.value=csum[locus]/ssquares.first
         temp.rank=locus+1
-        #if VG[VGindexes[locus]] == 0.:
-        #    temp.value=0.0
-        #else:
-        #    sqi=0.
-        #    dummy=0
-        #    for dip in range(VGindexes.size()):
-        #        if VG[VGindexes[dip]] >= VG[VGindexes[locus]]:
-        #            sqi += squares[dummy]
-        #            dummy+=1
-        #        #if VG[VGindexes[dip]] != 0.:
-        #        #    sqi += squares[dummy]
-        #        #    dummy+=1
-        #    sqi /= SS
-        #    temp.value=sqi
         f.push_back(temp)
 
 cdef class PopstatsLocus(TemporalSampler):
