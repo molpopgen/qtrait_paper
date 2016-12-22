@@ -71,8 +71,19 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     reverse(VGindexes.begin(),VGindexes.end())
     
     cdef int invariant = count(VG.begin(),VG.end(),0.0)
+    cdef statdata temp
+    temp.generation=generation
+    temp.stat = string("pVG")
 
     if invariant > 0:
+        if invariant == <int>VG.size():
+            for locus in range(VG.size()):
+                temp.locus=locus
+                temp.value=0.0
+                f.push_back(temp)
+            gsl_matrix_free(LOCI)
+            gsl_vector_free(GVALUES)
+            return 
         #We cannot include these loci in the calculation
         gsl_matrix_free(LOCI)
         LOCI=gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()-invariant)
@@ -107,7 +118,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
 
     cdef vector[double] squares
 
-    for dip in range(SUMS.size-1): #re-using dip as dummy here!
+    for dip in range(0,LOCI.size2): #re-using dip as dummy here!
         squares.push_back(gsl_pow_2(gsl_vector_get(SUMS,dip+1)))
    
     cdef size_t DF = LOCI.size2-1
@@ -127,9 +138,6 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     gsl_vector_free(SUMS)
 
     dummy=0
-    cdef statdata temp
-    temp.generation=generation
-    temp.stat = string("pVG")
     for locus in range(VGindexes.size()):
         temp.locus=VGindexes[locus]
         if VG[VGindexes[locus]] == 0.:
@@ -137,10 +145,13 @@ cdef void popstats_locus_details(const multilocus_t * pop,
         else:
             sqi=0.
             dummy=0
-            for dip in range(locus):
-                if VG[VGindexes[dip]] != 0.:
+            for dip in range(VGindexes.size()):
+                if VG[VGindexes[dip]] >= VG[VGindexes[locus]]:
                     sqi += squares[dummy]
                     dummy+=1
+                #if VG[VGindexes[dip]] != 0.:
+                #    sqi += squares[dummy]
+                #    dummy+=1
             sqi /= SS
             temp.value=sqi
         f.push_back(temp)
