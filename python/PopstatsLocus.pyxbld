@@ -14,5 +14,5 @@ def make_ext(modname, pyxfilename):
                      sources=[pyxfilename],
                      language='c++',
 		     include_dirs=[fwdpp_includes],
-		     extra_compile_args=['-std=c++11'],
+		     extra_compile_args=['-std=c++11','-DHAVE_INLINE'],
 		     libraries=['sequence','gsl','gslcblas','pthread'])
