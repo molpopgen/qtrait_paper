@@ -31,10 +31,8 @@ ctypedef vector[statdata] final_t
 
 ctypedef custom_sampler[final_t] PopstatsLocus_t
 
-cdef pair[double,vector[double]] sum_of_squares( gsl_vector * v,
-         gsl_matrix * m) nogil:
-    #We now regress individual genetic values onto the genetic values due to 
-    #each locus.  We use QR decomposition for the regression.
+cdef pair[double,vector[double]] sum_of_squares(gsl_vector * v,
+                                                gsl_matrix * m) nogil:
     TAU=gsl_vector_alloc(min(m.size1,m.size2))
     SUMS=gsl_vector_alloc(m.size1)
     Q=gsl_matrix_alloc(m.size1,m.size1)
