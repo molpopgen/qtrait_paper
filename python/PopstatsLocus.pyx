@@ -125,10 +125,13 @@ cdef void popstats_locus_details(const multilocus_t * pop,
             gsl_matrix_free(LOCI)
             gsl_vector_free(GVALUES)
             return 
-        #We cannot include these loci in the calculation
-        gsl_matrix_free(LOCI)
-        LOCI=gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()-invariant+1)
-        gsl_matrix_set_zero(LOCI)
+        #We cannot include these loci in the calculation,
+        #and so we'll change size2 (no. columns) to reflect
+        #that some columns have no variation
+        LOCI.size2 -= invariant
+        #gsl_matrix_free(LOCI)
+        #LOCI=gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()-invariant+1)
+        #gsl_matrix_set_zero(LOCI)
 
     #Refill the matrix based on sorted order
     cdef size_t dummy=0
@@ -157,7 +160,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     dummy=0
     for locus in range(VGindexes.size()):
         temp.locus=VGindexes[locus]
-        temp.value=csum[locus]/ssquares.first
+        temp.value=csum[locus]
         temp.rank=locus+1
         f.push_back(temp)
 
