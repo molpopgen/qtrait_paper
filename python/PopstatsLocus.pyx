@@ -110,7 +110,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     cdef int invariant = count(VG.begin(),VG.end(),0.0)
     cdef statdata temp
     temp.generation=generation
-    temp.stat = string("pVG")
+    temp.stat = string("cVG")
 
     if invariant > 0:
         if invariant == <int>VG.size():
