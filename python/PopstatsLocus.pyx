@@ -144,7 +144,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
                     gsl_matrix_set(LOCI,dip,dummy+1,gsl_matrix_get(LOCI,dip,dummy+1) + s)
                 dummy+=1
 
-    cdef pair[double,vector[double]] ssquares = sum_of_squares(GVALUES,LOCI) 
+    ssquares = sum_of_squares(GVALUES,LOCI) 
 
     gsl_vector_free(GVALUES)
     gsl_matrix_free(LOCI)
