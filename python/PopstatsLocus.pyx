@@ -17,9 +17,13 @@ cdef extern from "<algorithm>" namespace "std" nogil:
     void reverse[iter](iter,iter)
     int count[iter,value](iter,iter,value)
 
+cdef extern from "<numeric>" namespace "std" nogil:
+    oiter partial_sum[iter,oiter](iter beg,iter end,oiter result)
+
 cdef struct statdata:
     unsigned generation
     unsigned locus
+    unsigned rank
     string stat
     double value
 
@@ -77,16 +81,20 @@ cdef void popstats_locus_details(const multilocus_t * pop,
 
     if invariant > 0:
         if invariant == <int>VG.size():
+            #if there is no VG in the population,
+            #create empty entry for this
+            #time point and return
             for locus in range(VG.size()):
                 temp.locus=locus
                 temp.value=0.0
+                temp.rank=locus+1
                 f.push_back(temp)
             gsl_matrix_free(LOCI)
             gsl_vector_free(GVALUES)
             return 
         #We cannot include these loci in the calculation
         gsl_matrix_free(LOCI)
-        LOCI=gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()-invariant)
+        LOCI=gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()-invariant+1)
         gsl_matrix_set_zero(LOCI)
 
     #Refill the matrix based on sorted order
@@ -97,10 +105,10 @@ cdef void popstats_locus_details(const multilocus_t * pop,
             if VG[locus] != 0.0:
                 for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
                     s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
-                    #gsl_matrix_set(LOCI,dip,dummy+1,gsl_matrix_get(LOCI,dip,dummy+1) + s)
+                    gsl_matrix_set(LOCI,dip,dummy+1,gsl_matrix_get(LOCI,dip,dummy+1) + s)
                 for mut in range(pop.gametes[pop.diploids[dip][locus].second].smutations.size()):
                     s=pop.mutations[pop.gametes[pop.diploids[dip][locus].second].smutations[mut]].s
-                    #gsl_matrix_set(LOCI,dip,dummy+1,gsl_matrix_get(LOCI,dip,dummy+1) + s)
+                    gsl_matrix_set(LOCI,dip,dummy+1,gsl_matrix_get(LOCI,dip,dummy+1) + s)
                 dummy+=1
 
     
@@ -137,23 +145,29 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     gsl_vector_free(TAU)
     gsl_vector_free(SUMS)
 
+    squares.resize(VG.size(),0.0)
+    cdef vector[double] csum
+    csum.resize(VG.size(),0.0)
+    partial_sum(squares.begin(),squares.end(),csum.begin())
     dummy=0
     for locus in range(VGindexes.size()):
         temp.locus=VGindexes[locus]
-        if VG[VGindexes[locus]] == 0.:
-            temp.value=0.0
-        else:
-            sqi=0.
-            dummy=0
-            for dip in range(VGindexes.size()):
-                if VG[VGindexes[dip]] >= VG[VGindexes[locus]]:
-                    sqi += squares[dummy]
-                    dummy+=1
-                #if VG[VGindexes[dip]] != 0.:
-                #    sqi += squares[dummy]
-                #    dummy+=1
-            sqi /= SS
-            temp.value=sqi
+        temp.value=csum[locus]/SS
+        temp.rank=locus+1
+        #if VG[VGindexes[locus]] == 0.:
+        #    temp.value=0.0
+        #else:
+        #    sqi=0.
+        #    dummy=0
+        #    for dip in range(VGindexes.size()):
+        #        if VG[VGindexes[dip]] >= VG[VGindexes[locus]]:
+        #            sqi += squares[dummy]
+        #            dummy+=1
+        #        #if VG[VGindexes[dip]] != 0.:
+        #        #    sqi += squares[dummy]
+        #        #    dummy+=1
+        #    sqi /= SS
+        #    temp.value=sqi
         f.push_back(temp)
 
 cdef class PopstatsLocus(TemporalSampler):
