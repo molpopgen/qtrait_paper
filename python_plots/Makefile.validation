@@ -1,0 +1,7 @@
+TARGET1=validation_summaries.h5
+
+all: $(TARGET1)
+
+$(TARGET1): ../validation_popstats.h5 summarize_validation_sims.py
+	python summarize_validation_sims.py
+
