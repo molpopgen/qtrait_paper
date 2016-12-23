@@ -20,7 +20,7 @@ recvals=[0.,1./(4.*float(N)),10./(4.*float(N)),100./(4.*float(N))]
 
 rng = fp.GSLrng(27288)
 
-BATCHES=4
+BATCHES=16
 for mu in muvals:
     for sigmu in sigmuvals:
         sregions = [fp.GaussianS(0,1,1,sigmu)]
