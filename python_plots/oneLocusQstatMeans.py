@@ -4,7 +4,6 @@ import multiprocessing as mp
 from qstatmeans import process_file,parse_params,update_totals
 
 popstat_files=sorted([i for i in glob.glob('../*_stats.h5') if i.find('10regions')==-1])
-print popstat_files
 ofilename='oneLocusQstatMeans.h5'
 out=pd.HDFStore(ofilename,'w',complevel=6,complib='zlib')
 out.close()

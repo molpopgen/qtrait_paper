@@ -12,8 +12,6 @@ def parse_params(fn):
 #def update_totals(filei,Totals,START,STOP):
 def update_totals(args):
     filei,Totals,START,STOP=args
-    print START,STOP
-    #print filei,START,STOP
     x=pd.read_hdf(filei,where='rep>=START&rep<STOP')
     x.reset_index(inplace=True)
     x.drop_duplicates(inplace=True)
@@ -30,8 +28,6 @@ def update_totals(args):
 
 def get_values(args):
     filei,START,STOP=args
-    print START,STOP
-    #print filei,START,STOP
     x=pd.read_hdf(filei,where='rep>=START&rep<STOP')
     x.reset_index(inplace=True)
     x.drop_duplicates(inplace=True)
@@ -43,7 +39,6 @@ def get_values(args):
 LOCK=mp.Lock()
 #def process_file(out,filei,pi):
 def process_file(args):
-    print args
     outfn,filei,pi=args
     START=0
     STOP=64
@@ -64,4 +59,3 @@ def process_file(args):
     out.close()
     LOCK.release()
     Totals=None
-    print "returning"
