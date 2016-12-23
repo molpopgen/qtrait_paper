@@ -57,7 +57,7 @@ def write_output(sampler,args,REPID,batch,mode):
             output.append(args.sampler,df)
         output.close()
     #else:
-    #    raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")
+    #    raise RuntimeError("uh oh: sampler type not recognized for output.  We shouldn't have gotten this far!")`
     return REPID
        
 def make_parser():
@@ -128,7 +128,7 @@ def main():
         elif args.sampler == 'stats':
             dummy=write_output(sampler,args,REPID,BATCH,'a')
         else:
-            dummy=write_output(sampler,args.outfile,REPID,BATCH,'a',args.popsize)
+            dummy=write_output(sampler,args,REPID,BATCH,'a')
         sampler=get_sampler_type(args.sampler,args.trait,len(pops),args.optimum)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,

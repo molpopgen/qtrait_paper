@@ -12,7 +12,7 @@ do
 	    echo $SEED
 	    echo $I
 	    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_load.h5
-	    qsub -N LOAD -q krt,krti,bio,sf,pub64 hpc/run_single_region.sh load $mu $ofile 1 $OPT 1 0.25 $SEED
+	    qsub -N LOAD -q krt,krti,bio,free64,free72i,pub64,abio -ckpt blcr hpc/run_single_region.sh load $mu $ofile 1 $OPT 1 0.25 $SEED
 	    done
 	done
 done
