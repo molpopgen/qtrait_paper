@@ -1,4 +1,7 @@
 import pandas as pd
+import multiprocessing as mp
+
+LOCK=mp.Lock()
 
 def process_file(args):
     g=args[0]
@@ -6,7 +9,6 @@ def process_file(args):
     opt=args[2]
     mu=args[3]
     OUTFILE=args[4]
-    out=pd.HDFStore(OUTFILE,'a',complevel=6,complib='zlib')
     temp=pd.DataFrame(g)
     d=pd.read_hdf(fn)
     d.reset_index(inplace=True)
@@ -18,8 +20,15 @@ def process_file(args):
     means['mu']=[mu]*len(means.index)
     del means['rep']
     del means['locus']
+    LOCK.acquire()
+    out=pd.HDFStore(OUTFILE,'a',complevel=6,complib='zlib')
     out.append('fixations',means)
     out.close()
+    LOCK.release()
+    temp=None
+    d=None
+    result=None
+    means=None
 
 def process_fixations(x,have_fixations = True):
     #This is the expected range of loci.
