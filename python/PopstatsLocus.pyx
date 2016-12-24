@@ -4,6 +4,7 @@ from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.stdio cimport printf
+from libcpp.limits cimport numeric_limits
 from fwdpy.gsl cimport *
 from cython_gsl.gsl_statistics cimport *
 from cython_gsl.gsl_matrix cimport *
@@ -16,8 +17,10 @@ from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler,mult
 
 from fwdpy.numeric_gsl cimport sum_of_squares 
 
-cdef extern from "gsl/gsl_sys.h":
-    int gsl_isnan(double) nogil
+cdef extern from "<cmath>" namespace "std" nogil:
+    bint isnan(float)
+    bint isnan(double)
+    bint isnan(long double)
 
 cdef extern from "<algorithm>" namespace "std" nogil:
     void reverse[iter](iter,iter)
@@ -117,6 +120,13 @@ cdef void popstats_locus_details(const multilocus_t * pop,
                 dummy+=1
 
     ssquares = sum_of_squares(GVALUES.get(),LOCI.get()) 
+    if isnan(ssquares.first):
+        for locus in range(VG.size()):
+            temp.locus=locus
+            temp.value=numeric_limits[double].quiet_NaN()
+            temp.rank=locus+1
+            f.push_back(temp)
+            return
 
     ssquares.second.resize(VG.size(),0.0)
     cdef vector[double] csum
