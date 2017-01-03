@@ -58,7 +58,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     ILOCI = gsl_matrix_view_array_with_tda(d.first.data(),N,nloci+1,nloci+1)
     cdef gsl_vector_ptr_t GVALUES
     #LOCI.reset(gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()+1))
-    #gsl_matrix_set_zero(LOCI.get())
+    gsl_matrix_set_zero(&ILOCI.matrix)
     GVALUES.reset(gsl_vector_alloc(pop.diploids.size()))
     gsl_vector_set_zero(GVALUES.get())
     for dip in range(pop.diploids.size()):
@@ -113,13 +113,12 @@ cdef void popstats_locus_details(const multilocus_t * pop,
         #LOCI.get().size2 -= invariant
 
     #Refill the matrix based on sorted order
-    cdef size_t dummy=0
     #cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2)
     m2 = gsl_matrix_view_array_with_tda(d.second.data(),N,ILOCI.matrix.size2-invariant,nloci+1)
     cdef gsl_vector_view col = gsl_matrix_column(&ILOCI.matrix,0)
     gsl_matrix_set_col(&m2.matrix,0,&col.vector)
     #for dip in range(pop.diploids.size()):
-    dummy=1
+    cdef size_t dummy=1
     for locus in VGindexes:
         if VG[locus] != 0.0:
             col = gsl_matrix_column(&ILOCI.matrix,locus+1)
