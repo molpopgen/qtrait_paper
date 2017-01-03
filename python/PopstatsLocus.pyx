@@ -106,11 +106,11 @@ cdef void popstats_locus_details(const multilocus_t * pop,
         #We cannot include these loci in the calculation,
         #and so we'll change size2 (no. columns) to reflect
         #that some columns have no variation
-        LOCI.get().size2 -= invariant
+        #LOCI.get().size2 -= invariant
 
     #Refill the matrix based on sorted order
     cdef size_t dummy=0
-    cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2)
+    cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2-invariant)
     cdef gsl_vector_view col = gsl_matrix_column(LOCI.get(),0)
     gsl_matrix_set_col(m2,0,&col.vector)
     #for dip in range(pop.diploids.size()):
