@@ -33,8 +33,7 @@ cdef struct statdata:
     unsigned generation
     unsigned locus
     unsigned rank
-    string stat
-    double value
+    double crsq,VG
 
 ctypedef vector[statdata] final_t
 
@@ -91,10 +90,6 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     cdef int invariant = count(VG.begin(),VG.end(),0.0)
     cdef statdata temp
     temp.generation=generation
-    if doVG:
-        temp.stat = string("cVG")
-    else:
-        temp.stat = string("cVW")
 
     if invariant > 0:
         if invariant == <int>VG.size():
@@ -103,7 +98,8 @@ cdef void popstats_locus_details(const multilocus_t * pop,
             #time point and return
             for locus in range(VG.size()):
                 temp.locus=locus
-                temp.value=0.0
+                temp.crsq=0.0
+                temp.VG=0.0
                 temp.rank=locus+1
                 f.push_back(temp)
             return 
@@ -114,23 +110,29 @@ cdef void popstats_locus_details(const multilocus_t * pop,
 
     #Refill the matrix based on sorted order
     cdef size_t dummy=0
-    for dip in range(pop.diploids.size()):
-        dummy=0
-        for locus in VGindexes:
-            if VG[locus] != 0.0:
-                for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
-                    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
-                    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
-                for mut in range(pop.gametes[pop.diploids[dip][locus].second].smutations.size()):
-                    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].second].smutations[mut]].s
-                    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
-                dummy+=1
-
+    cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2)
+    cdef gsl_vector_view col = gsl_matrix_column(LOCI.get(),0)
+    gsl_matrix_set_col(m2,0,&col.vector)
+    #for dip in range(pop.diploids.size()):
+    dummy=1
+    for locus in VGindexes:
+        if VG[locus] != 0.0:
+            col = gsl_matrix_column(LOCI.get(),locus+1)
+            gsl_matrix_set_col(m2,dummy,&col.vector)
+            #for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
+            #    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
+            #    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
+            #for mut in range(pop.gametes[pop.diploids[dip][locus].second].smutations.size()):
+            #    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].second].smutations[mut]].s
+            #    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
+            dummy+=1
+    LOCI.reset(m2)
     ssquares = sum_of_squares(GVALUES.get(),LOCI.get()) 
     if isnan(ssquares.first):
         for locus in range(VG.size()):
             temp.locus=locus
-            temp.value=numeric_limits[double].quiet_NaN()
+            temp.crsq=numeric_limits[double].quiet_NaN()
+            temp.VG=numeric_limits[double].quiet_NaN()
             temp.rank=locus+1
             f.push_back(temp)
             return
@@ -143,7 +145,8 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     dummy=0
     for locus in range(VGindexes.size()):
         temp.locus=VGindexes[locus]
-        temp.value=csum[locus]
+        temp.crsq=csum[locus]
+        temp.VG=VG[VGindexes[locus]]
         temp.rank=locus+1
         f.push_back(temp)
 
