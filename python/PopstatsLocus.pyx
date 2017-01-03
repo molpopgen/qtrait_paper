@@ -42,7 +42,8 @@ ctypedef custom_sampler[final_t] PopstatsLocus_t
 
 cdef void popstats_locus_details(const multilocus_t * pop,
         const unsigned generation,
-        final_t & f) nogil:
+        final_t & f,
+        const int doVG) nogil:
     #We need to get the 
     #contribution of each locus
     #to trait value 
@@ -58,7 +59,10 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     GVALUES.reset(gsl_vector_alloc(pop.diploids.size()))
     gsl_vector_set_zero(GVALUES.get())
     for dip in range(pop.diploids.size()):
-        gsl_vector_set(GVALUES.get(),dip,pop.diploids[dip][0].g)
+        if doVG:
+            gsl_vector_set(GVALUES.get(),dip,pop.diploids[dip][0].g)
+        else:
+            gsl_vector_set(GVALUES.get(),dip,pop.diploids[dip][0].w)
         for locus in range(pop.diploids[dip].size()):
             for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
                 s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
@@ -87,7 +91,10 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     cdef int invariant = count(VG.begin(),VG.end(),0.0)
     cdef statdata temp
     temp.generation=generation
-    temp.stat = string("cVG")
+    if doVG:
+        temp.stat = string("cVG")
+    else:
+        temp.stat = string("cVW")
 
     if invariant > 0:
         if invariant == <int>VG.size():
@@ -140,11 +147,38 @@ cdef void popstats_locus_details(const multilocus_t * pop,
         temp.rank=locus+1
         f.push_back(temp)
 
+cdef void VG_details_wrapper(const multilocus_t * pop,
+        const unsigned generation,
+        final_t & f) nogil:
+    popstats_locus_details(pop,generation,f,1)
+
+cdef void VW_details_wrapper(const multilocus_t * pop,
+        const unsigned generation,
+        final_t & f) nogil:
+    popstats_locus_details(pop,generation,f,0)
+
 cdef class PopstatsLocus(TemporalSampler):
+    """
+    Contribution of loci to variance in trait value
+    """
     def __cinit__(self,unsigned n):
         for i in range(n):
             self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[PopstatsLocus_t](new
-                PopstatsLocus_t(&popstats_locus_details)))
+                PopstatsLocus_t(&VG_details_wrapper)))
+    def get(self):
+        rv=[]
+        for i in range(self.vec.size()):
+            rv.append((<PopstatsLocus_t*>self.vec[i].get()).final())
+        return rv
+
+cdef class PopstatsLocus2(TemporalSampler):
+    """
+    Contribution of loci to variance in fitness
+    """
+    def __cinit__(self,unsigned n):
+        for i in range(n):
+            self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[PopstatsLocus_t](new
+                PopstatsLocus_t(&VW_details_wrapper)))
     def get(self):
         rv=[]
         for i in range(self.vec.size()):
