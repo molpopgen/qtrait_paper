@@ -13,7 +13,7 @@ from cython_gsl.gsl_blas cimport *
 from cython_gsl.gsl_linalg cimport * 
 from cython_gsl.gsl_math cimport * 
 from cython_gsl.gsl_sort cimport * 
-from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler,multilocus_t,uint,sample_sep_single_mloc
+from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
 
 from fwdpy.numeric_gsl cimport sum_of_squares 
 
@@ -36,12 +36,12 @@ cdef struct statdata:
     double crsq,VG
 
 ctypedef vector[statdata] final_t
-
-ctypedef custom_sampler[final_t] PopstatsLocus_t
+ctypedef pair[vector[double],vector[double]] data_t
+ctypedef custom_sampler_data[final_t,data_t] PopstatsLocus_t
 
 cdef void popstats_locus_details(const multilocus_t * pop,
         const unsigned generation,
-        final_t & f,
+        final_t & f,data_t & d,
         const int doVG) nogil:
     #We need to get the 
     #contribution of each locus
@@ -49,12 +49,16 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     #for each individual
     cdef unsigned nloci = pop.diploids[0].size()
     cdef unsigned N = pop.diploids.size()
+    if d.first.empty():
+        d.first.resize(N*(nloci+1))
+        d.second.resize(N*(nloci+1))
     cdef size_t dip,locus,mut
 
-    cdef gsl_matrix_ptr_t LOCI
+    #cdef gsl_matrix_ptr_t LOCI
+    ILOCI = gsl_matrix_view_array_with_tda(d.first.data(),N,nloci+1,nloci+1)
     cdef gsl_vector_ptr_t GVALUES
-    LOCI.reset(gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()+1))
-    gsl_matrix_set_zero(LOCI.get())
+    #LOCI.reset(gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()+1))
+    #gsl_matrix_set_zero(LOCI.get())
     GVALUES.reset(gsl_vector_alloc(pop.diploids.size()))
     gsl_vector_set_zero(GVALUES.get())
     for dip in range(pop.diploids.size()):
@@ -65,10 +69,10 @@ cdef void popstats_locus_details(const multilocus_t * pop,
         for locus in range(pop.diploids[dip].size()):
             for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
                 s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
-                gsl_matrix_set(LOCI.get(),dip,locus+1,gsl_matrix_get(LOCI.get(),dip,locus+1) + s)
+                gsl_matrix_set(&ILOCI.matrix,dip,locus+1,gsl_matrix_get(&ILOCI.matrix,dip,locus+1) + s)
             for mut in range(pop.gametes[pop.diploids[dip][locus].second].smutations.size()):
                 s=pop.mutations[pop.gametes[pop.diploids[dip][locus].second].smutations[mut]].s
-                gsl_matrix_set(LOCI.get(),dip,locus+1,gsl_matrix_get(LOCI.get(),dip,locus+1) + s)
+                gsl_matrix_set(&ILOCI.matrix,dip,locus+1,gsl_matrix_get(&ILOCI.matrix,dip,locus+1) + s)
 
     #First things first: 
     #We need to indexes referring to the loci
@@ -77,8 +81,8 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     VG.resize(pop.diploids[0].size(),0.0)
 
     cdef gsl_vector_view column
-    for dip in range(1,LOCI.get().size2):
-        column = gsl_matrix_column(LOCI.get(),dip)
+    for dip in range(1,ILOCI.matrix.size2):
+        column = gsl_matrix_column(&ILOCI.matrix,dip)
         VG[dip-1]=gsl_stats_variance(column.vector.data,column.vector.stride,column.vector.size)
 
     cdef vector[size_t] VGindexes
@@ -106,19 +110,20 @@ cdef void popstats_locus_details(const multilocus_t * pop,
         #We cannot include these loci in the calculation,
         #and so we'll change size2 (no. columns) to reflect
         #that some columns have no variation
-        LOCI.get().size2 -= invariant
+        #LOCI.get().size2 -= invariant
 
     #Refill the matrix based on sorted order
     cdef size_t dummy=0
-    cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2)
-    cdef gsl_vector_view col = gsl_matrix_column(LOCI.get(),0)
-    gsl_matrix_set_col(m2,0,&col.vector)
+    #cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2)
+    m2 = gsl_matrix_view_array_with_tda(d.second.data(),N,ILOCI.matrix.size2-invariant,nloci+1)
+    cdef gsl_vector_view col = gsl_matrix_column(&ILOCI.matrix,0)
+    gsl_matrix_set_col(&m2.matrix,0,&col.vector)
     #for dip in range(pop.diploids.size()):
     dummy=1
     for locus in VGindexes:
         if VG[locus] != 0.0:
-            col = gsl_matrix_column(LOCI.get(),locus+1)
-            gsl_matrix_set_col(m2,dummy,&col.vector)
+            col = gsl_matrix_column(&ILOCI.matrix,locus+1)
+            gsl_matrix_set_col(&m2.matrix,dummy,&col.vector)
             #for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
             #    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
             #    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
@@ -126,8 +131,8 @@ cdef void popstats_locus_details(const multilocus_t * pop,
             #    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].second].smutations[mut]].s
             #    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
             dummy+=1
-    LOCI.reset(m2)
-    ssquares = sum_of_squares(GVALUES.get(),LOCI.get()) 
+    #LOCI.reset(m2)
+    ssquares = sum_of_squares(GVALUES.get(),&m2.matrix) 
     if isnan(ssquares.first):
         for locus in range(VG.size()):
             temp.locus=locus
@@ -152,22 +157,23 @@ cdef void popstats_locus_details(const multilocus_t * pop,
 
 cdef void VG_details_wrapper(const multilocus_t * pop,
         const unsigned generation,
-        final_t & f) nogil:
-    popstats_locus_details(pop,generation,f,1)
+        final_t & f,data_t & d) nogil:
+    popstats_locus_details(pop,generation,f,d,1)
 
 cdef void VW_details_wrapper(const multilocus_t * pop,
         const unsigned generation,
-        final_t & f) nogil:
-    popstats_locus_details(pop,generation,f,0)
+        final_t & f,data_t & d) nogil:
+    popstats_locus_details(pop,generation,f,d,0)
 
 cdef class PopstatsLocus(TemporalSampler):
     """
     Contribution of loci to variance in trait value
     """
     def __cinit__(self,unsigned n):
+        cdef data_t d
         for i in range(n):
             self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[PopstatsLocus_t](new
-                PopstatsLocus_t(&VG_details_wrapper)))
+                PopstatsLocus_t(&VG_details_wrapper,d)))
     def get(self):
         rv=[]
         for i in range(self.vec.size()):
@@ -179,9 +185,10 @@ cdef class PopstatsLocus2(TemporalSampler):
     Contribution of loci to variance in fitness
     """
     def __cinit__(self,unsigned n):
+        cdef data_t data
         for i in range(n):
             self.vec.push_back(<unique_ptr[sampler_base]>unique_ptr[PopstatsLocus_t](new
-                PopstatsLocus_t(&VW_details_wrapper)))
+                PopstatsLocus_t(&VW_details_wrapper,data)))
     def get(self):
         rv=[]
         for i in range(self.vec.size()):
