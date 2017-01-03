@@ -15,7 +15,7 @@ from cython_gsl.gsl_math cimport *
 from cython_gsl.gsl_sort cimport * 
 from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
 
-from fwdpy.numeric_gsl cimport sum_of_squares 
+from fwdpy.numeric_gsl cimport sum_of_squares_buff,QRdecompBuffers
 
 cdef extern from "<cmath>" namespace "std" nogil:
     bint isnan(float)
@@ -35,8 +35,12 @@ cdef struct statdata:
     unsigned rank
     double crsq,VG
 
+cdef cppclass buffers:
+    vector[double] m1,m2
+    QRdecompBuffers b
+
 ctypedef vector[statdata] final_t
-ctypedef pair[vector[double],vector[double]] data_t
+ctypedef buffers data_t
 ctypedef custom_sampler_data[final_t,data_t] PopstatsLocus_t
 
 cdef void popstats_locus_details(const multilocus_t * pop,
@@ -49,13 +53,13 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     #for each individual
     cdef unsigned nloci = pop.diploids[0].size()
     cdef unsigned N = pop.diploids.size()
-    if d.first.empty():
-        d.first.resize(N*(nloci+1))
-        d.second.resize(N*(nloci+1))
+    if d.m1.empty():
+        d.m1.resize(N*(nloci+1))
+        d.m2.resize(N*(nloci+1))
     cdef size_t dip,locus,mut
 
     #cdef gsl_matrix_ptr_t LOCI
-    ILOCI = gsl_matrix_view_array_with_tda(d.first.data(),N,nloci+1,nloci+1)
+    ILOCI = gsl_matrix_view_array_with_tda(d.m1.data(),N,nloci+1,nloci+1)
     cdef gsl_vector_ptr_t GVALUES
     #LOCI.reset(gsl_matrix_alloc(pop.diploids.size(),pop.diploids[0].size()+1))
     gsl_matrix_set_zero(&ILOCI.matrix)
@@ -114,7 +118,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
 
     #Refill the matrix based on sorted order
     #cdef gsl_matrix * m2=gsl_matrix_alloc(LOCI.get().size1,LOCI.get().size2)
-    m2 = gsl_matrix_view_array_with_tda(d.second.data(),N,ILOCI.matrix.size2-invariant,nloci+1)
+    m2 = gsl_matrix_view_array_with_tda(d.m2.data(),N,ILOCI.matrix.size2-invariant,nloci+1)
     cdef gsl_vector_view col = gsl_matrix_column(&ILOCI.matrix,0)
     gsl_matrix_set_col(&m2.matrix,0,&col.vector)
     #for dip in range(pop.diploids.size()):
@@ -131,7 +135,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
             #    gsl_matrix_set(LOCI.get(),dip,dummy+1,gsl_matrix_get(LOCI.get(),dip,dummy+1) + s)
             dummy+=1
     #LOCI.reset(m2)
-    ssquares = sum_of_squares(GVALUES.get(),&m2.matrix) 
+    ssquares = sum_of_squares_buff(GVALUES.get(),&m2.matrix,d.b) 
     if isnan(ssquares.first):
         for locus in range(VG.size()):
             temp.locus=locus
