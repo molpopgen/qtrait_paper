@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #$ -pe openmp 64
-#$ -q bio,krt,krti,pub64,free64,free72i,abio
-#$ -ckpt blcr
+#$ -q bio,krt,krti,pub64
 #$ -R y
 cd $SGE_O_WORKDIR
 

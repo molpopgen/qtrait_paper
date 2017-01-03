@@ -14,7 +14,7 @@ do
 	    echo $I
 	    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_10regions_cumVG.h5
 	    #Skip sf queue b/c of possible RAM issues...
-	    qsub -N MLVG -q krt,krti,bio hpc/run_multi_region.sh lstats $mu $ofile 10 $OPT 1 0.25 $SEED 
+	    qsub -N MLVG -q krt,krti,sf,bio hpc/run_multi_region.sh lstats $mu $ofile 50 $OPT 1 0.25 $SEED 
 	    #qsub hpc/mloc_samples_time_additive.sh $mu $H2 H2_"$H2"_OPT_"$OPT"_mu_"$mu".mloc_samples.h5 $OPT 10 $SEED
 	done
     done
