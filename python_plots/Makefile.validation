@@ -1,7 +1,9 @@
 TARGET1=validation_summaries.h5
-
-all: $(TARGET1)
+PLOT1=images/validationVG.tiff
+all: $(TARGET1) $(PLOT1)
 
 $(TARGET1): ../validation_popstats.h5 summarize_validation_sims.py
 	python summarize_validation_sims.py
 
+$(PLOT1): $(TARGET1) plot_validation_VG.py
+	python plot_validation_VG.py
