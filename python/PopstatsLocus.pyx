@@ -125,7 +125,7 @@ cdef void popstats_locus_details(const multilocus_t * pop,
     cdef size_t dummy=1
     for locus in VGindexes:
         if VG[locus] != 0.0:
-            col = gsl_matrix_column(&ILOCI.matrix,locus+1)
+            col = gsl_matrix_column(&ILOCI.matrix,VGindexes[locus]+1)
             gsl_matrix_set_col(&m2.matrix,dummy,&col.vector)
             #for mut in range(pop.gametes[pop.diploids[dip][locus].first].smutations.size()):
             #    s=pop.mutations[pop.gametes[pop.diploids[dip][locus].first].smutations[mut]].s
