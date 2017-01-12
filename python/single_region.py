@@ -5,6 +5,7 @@ import numpy as np
 import gzip,argparse,sys,warnings,math
 import pandas as pd
 import multiprocessing as mp
+import sqlite3
 
 ##import local functions
 from single_region_common import *
@@ -38,15 +39,18 @@ def write_output(sampler,args,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
         ##Create a new file for each replicate so that file sizes
         ##don't get unwieldy
-        fn=args.outfile+'.batch'+str(batch)+'.h5'
-	output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
+        #fn=args.outfile+'.batch'+str(batch)+'.h5'
+	#output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
+        conn=sqlite3.connect(args.outfile)
         for di in sampler:
             df=pd.DataFrame(fp.tidy_trajectories(di,lambda x: x[1][-1][0] >= 8*args.popsize))
-            df['rep']=REPID*len(df.index)
-            df.reset_index(['rep'],inplace=True,drop=True)
-            output.append(args.sampler,df)
+            df['rep']=[REPID]*len(df.index)
+            df.to_sql('freqs',conn,if_exists='append',index_label='rep',index=False)
+            #df.reset_index(['rep'],inplace=True,drop=True)
+            #output.append(args.sampler,df)
             REPID+=1
-        output.close()
+        conn.close()
+        #output.close()
     else:
         ##Write in append mode
         output = pd.HDFStore(args.outfile,mode,complevel=6,complib='zlib')
