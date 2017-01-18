@@ -40,12 +40,13 @@ def write_output(sampler,args,REPID,batch,mode):
         ##Create a new file for each replicate so that file sizes
         ##don't get unwieldy
         #fn=args.outfile+'.batch'+str(batch)+'.h5'
-	#output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
+        #output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
         conn=sqlite3.connect(args.outfile)
         for di in sampler:
             df=pd.DataFrame(fp.tidy_trajectories(di,lambda x: x[1][-1][0] >= 8*args.popsize))
             df['rep']=[REPID]*len(df.index)
-            df.to_sql('freqs',conn,if_exists='append',index_label='rep',index=False)
+            df.set_index(['rep','generation'],drop=True,inplace=True)
+            df.to_sql('freqs',conn,if_exists='append')#,index_label=['rep','generation'],index=True)
             #df.reset_index(['rep'],inplace=True,drop=True)
             #output.append(args.sampler,df)
             REPID+=1

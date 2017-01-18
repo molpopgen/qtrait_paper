@@ -8,6 +8,7 @@ fwdpp_includes=re.sub('site-packages/','',fwdpp_includes)
 fwdpp_includes=re.sub(r'/__init__.+','',fwdpp_includes)
 p=re.compile(r'python3.\d+')
 f=p.findall(fwdpp_includes)
+fwdpp_includes=fwdpp_includes.replace('3.5','3.5m')
 def make_ext(modname, pyxfilename):
     from distutils.extension import Extension
     return Extension(name=modname,

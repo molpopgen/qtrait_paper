@@ -4,7 +4,8 @@
 #$ -pe openmp 64
 #$ -R y
 
-module load krthornt/thorntonlab
+#module load krthornt/thorntonlab
+module load krthornt/anaconda/3
 
 cd $SGE_O_WORKDIR
 sampler=$1
