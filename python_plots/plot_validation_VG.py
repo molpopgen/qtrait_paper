@@ -24,4 +24,4 @@ for row in range(len(sigmu)):
 for axi in range(len(sigmu)):
     ax[axi].legend(loc='best',prop={'size':10})
 
-plt.savefig('foo.tiff')
+plt.savefig('images/validationVG.tiff',dpi=600)
