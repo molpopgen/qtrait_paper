@@ -17,7 +17,7 @@ if __name__=="__main__":
     dbfile=sys.argv[1]
     outfile=sys.argv[2]
     P=mp.Pool()
-    args=[(dbfile,i) for i in range(100)]
+    args=[(dbfile,i) for i in range(1024)]
     results=P.map(run_query,args,16)
     P.close()
     P.join()
