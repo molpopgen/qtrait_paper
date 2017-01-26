@@ -1,0 +1,17 @@
+%.ages.gz : ../%.db
+	python traj2ages.py $< $@
+
+TARGETS=H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_traj.ages.gz \
+H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_traj.ages.gz \
+H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_traj.ages.gz \
+H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_traj.ages.gz \
+H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj.ages.gz \
+H2_1.0_OPT_1_mu_0.001_sigmu0.25_traj.ages.gz
+
+all: $(TARGETS)
+
+clean:
+	rm -f $(TARGETS)
+
+#H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_traj.ages.gz: ../H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_traj.db
+
