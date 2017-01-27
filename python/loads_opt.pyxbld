@@ -8,6 +8,9 @@ fwdpp_includes=re.sub('site-packages/','',fwdpp_includes)
 fwdpp_includes=re.sub(r'/__init__.+','',fwdpp_includes)
 p=re.compile(r'python3.\d+')
 f=p.findall(fwdpp_includes)
+#fwdpp_includes=fwdpp_includes.replace('3.5','3.5m')
+
+print(fwdpp_includes)
 for i in f:
     fwdpp_includes=re.sub(i,i+'m',fwdpp_includes)
 def make_ext(modname, pyxfilename):
