@@ -35,23 +35,35 @@ def get_sampler_type(samplerString, traitString,length,optimum):
         usage()
         sys.exit(0)
 
+LOCK=mp.Lock()
+
+def process_freqs(process_args):
+    args,REPID,df=process_args
+#def process_freqs(args,REPID,df):
+    df['rep']=[REPID]*len(df.index)
+    df.set_index(['rep','generation'],drop=True,inplace=True)
+    LOCK.acquire()
+    conn=sqlite3.connect(args.outfile)
+    df.to_sql('freqs',conn,if_exists='append')
+    conn.close()
+    LOCK.release()
+    df=None
+
 def write_output(sampler,args,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
-        ##Create a new file for each replicate so that file sizes
-        ##don't get unwieldy
-        #fn=args.outfile+'.batch'+str(batch)+'.h5'
-        #output = pd.HDFStore(fn,mode,complevel=6,complib='zlib')	
-        conn=sqlite3.connect(args.outfile)
-        for di in sampler:
-            df=pd.DataFrame(fp.tidy_trajectories(di,lambda x: x[1][-1][0] >= 8*args.popsize))
-            df['rep']=[REPID]*len(df.index)
-            df.set_index(['rep','generation'],drop=True,inplace=True)
-            df.to_sql('freqs',conn,if_exists='append')#,index_label=['rep','generation'],index=True)
-            #df.reset_index(['rep'],inplace=True,drop=True)
-            #output.append(args.sampler,df)
-            REPID+=1
-        conn.close()
-        #output.close()
+        P=mp.Pool(4)
+        for i in range(len(sampler)):
+            P.apply_async(process_freqs,[(args,REPID+i,sampler.fetch(i,freq_filter=lambda x:x[-1][0]>=8*args.popsize))])
+        P.close()
+        P.join()
+            #P=mp.Process(target=process_freqs,args=(args,REPID+i,sampler.fetch(i)))
+            #P.start()
+            #P.join()
+        #pool_args=[(args,REPID+i,sampler.fetch(i,freq_filter=lambda x:x[-1][0]>=8*args.popsize)) for i in range(len(sampler))]
+        #P=mp.Pool(args.ncores)
+        #P.imap_unordered(process_freqs,pool_args)
+        #P.close()
+        P.join()
     else:
         ##Write in append mode
         output = pd.HDFStore(args.outfile,mode,complevel=6,complib='zlib')
@@ -128,13 +140,14 @@ def main():
                                                  sigE,
                                                  optimum=0.0,
                                                  VS=args.VS)
-        if args.sampler == 'freq':
-            dummy=write_output(sampler,args,REPID,BATCH,'w')
-        elif args.sampler == 'stats':
-            dummy=write_output(sampler,args,REPID,BATCH,'a')
-        else:
-            dummy=write_output(sampler,args,REPID,BATCH,'a')
-        sampler=get_sampler_type(args.sampler,args.trait,len(pops),args.optimum)
+        if args.sampler != 'freq':
+            if args.sampler == 'freq':
+                dummy=write_output(sampler,args,REPID,BATCH,'w')
+            elif args.sampler == 'stats':
+                dummy=write_output(sampler,args,REPID,BATCH,'a')
+            else:
+                dummy=write_output(sampler,args,REPID,BATCH,'a')
+            sampler=get_sampler_type(args.sampler,args.trait,len(pops),args.optimum)
         qt.evolve_regions_qtrait_sampler_fitness(rng,pops,sampler,trait,
                                                  nlist,
                                                  0.0,
@@ -149,7 +162,7 @@ def main():
                                                  VS=args.VS)
         if args.sampler == 'freq':
             #Append this time!
-            REPID=write_output(sampler,args,REPID,BATCH,'a')
+            REPID=write_output(sampler,args,REPID,BATCH,'w')
         elif args.sampler == 'stats':
             REPID=write_output(sampler,args,REPID,BATCH,'a')
         else:
