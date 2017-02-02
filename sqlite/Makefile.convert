@@ -3,7 +3,7 @@ TARGETS=
 all: $(TARGETS)
 
 %.db: ../%.h5
-	python todb.py $< $@
+	python python/todb.py $< $@
 
 clean: 
 	rm -f $(TARGETS)
