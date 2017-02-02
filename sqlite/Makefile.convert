@@ -1,0 +1,9 @@
+TARGETS=
+
+all: $(TARGETS)
+
+%.db: ../%.h5
+	python todb.py $< $@
+
+clean: 
+	rm -f $(TARGETS)
