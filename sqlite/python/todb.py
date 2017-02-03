@@ -8,10 +8,10 @@ if __name__=="__main__":
     infile=sys.argv[1]
     dbname=sys.argv[2]
 
-    x=pd.read_hdf(infile,chunksize=1000000,iterator=True)
+    x=pd.read_hdf(infile,chunksize=100000,iterator=True)
     conn=sqlite3.connect(dbname)
     for chunk in x:
-        chunk.reset_index(inplace=True,drop=True)
+        chunk.reset_index(inplace=True)
         indexes=[]
         if 'rep' in chunk:
             indexes.append('rep')
