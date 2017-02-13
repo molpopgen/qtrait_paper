@@ -35,35 +35,11 @@ def get_sampler_type(samplerString, traitString,length,optimum):
         usage()
         sys.exit(0)
 
-LOCK=mp.Lock()
-
-def process_freqs(process_args):
-    args,REPID,df=process_args
-#def process_freqs(args,REPID,df):
-    df['rep']=[REPID]*len(df.index)
-    df.set_index(['rep','generation'],drop=True,inplace=True)
-    LOCK.acquire()
-    conn=sqlite3.connect(args.outfile)
-    df.to_sql('freqs',conn,if_exists='append')
-    conn.close()
-    LOCK.release()
-    df=None
-
 def write_output(sampler,args,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
-        P=mp.Pool(4)
-        for i in range(len(sampler)):
-            P.apply_async(process_freqs,[(args,REPID+i,sampler.fetch(i,freq_filter=lambda x:x[-1][0]>=8*args.popsize))])
-        P.close()
-        P.join()
-            #P=mp.Process(target=process_freqs,args=(args,REPID+i,sampler.fetch(i)))
-            #P.start()
-            #P.join()
-        #pool_args=[(args,REPID+i,sampler.fetch(i,freq_filter=lambda x:x[-1][0]>=8*args.popsize)) for i in range(len(sampler))]
-        #P=mp.Pool(args.ncores)
-        #P.imap_unordered(process_freqs,pool_args)
-        #P.close()
-        P.join()
+        tfilter=fp.TrajExistedPast(8*args.popsize)
+        sampler.to_sql(args.outfile,tfilter,onedb=True,label=REPID,threshold=args.threshold)
+        return REPID+len(sampler)
     else:
         ##Write in append mode
         output = pd.HDFStore(args.outfile,mode,complevel=6,complib='zlib')
@@ -101,7 +77,11 @@ def make_parser():
     parser.add_argument('popsize',type=int,help="Population size.  Simulation will run 10*N generations before and after optimum shift.")
     parser.add_argument('optimum',type=float,help="Optimum trait value.")
     parser.add_argument('--poolsize',type=int,default=10,help="Size of multiprocessing.Pool.  Only used when sampler == freq.")
+
+    #SQL options for freq sampler
+    parser.add_argument('--threshold',type=int,default=1000000,help="Number of record to process before flushing in-memory SQL database to disk.")
     return parser
+
 
 def main():
     parser=make_parser()
