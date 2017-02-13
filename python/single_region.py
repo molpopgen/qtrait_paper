@@ -38,7 +38,7 @@ def get_sampler_type(samplerString, traitString,length,optimum):
 def write_output(sampler,args,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
         tfilter=fp.TrajExistedPast(8*args.popsize)
-        sampler.to_sql(args.outfile,tfilter,onedb=True,label=REPID,threshold=args.threshold)
+        sampler.to_sql(args.outfile.encode('utf-8'),tfilter,onedb=True,label=REPID,threshold=args.threshold)
         return REPID+len(sampler)
     else:
         ##Write in append mode
