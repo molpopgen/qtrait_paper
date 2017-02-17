@@ -147,6 +147,11 @@ def main():
             REPID=write_output(sampler,args,REPID,BATCH,'a')
         else:
             REPID=write_output(sampler,args,REPID,BATCH,'a')
+    if args.sampler == 'freq':
+        #We need to index the database
+        conn=sqlite3.connect(args.outfile)
+        conn.execute("create index if not exists rep_gen on freqs(rep,generation);")
+        conn.close()
 
 if __name__ == "__main__":
     main()
