@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -q krt,krti,krti,bio,pub64,sf
+#$ -q krt,krti,krti,bio
 #$ -pe openmp 64
 #$ -R y
 
