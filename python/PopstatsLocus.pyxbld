@@ -1,23 +1,12 @@
 #This file should not need modification.  A copy/paste
 #to yourmodname.pyxbld should suffice
 import fwdpy as fp
-import re,sys
-fwdpp_includes=fp.__file__
-print(fwdpp_includes)
-fwdpp_includes=re.sub('lib','include',fwdpp_includes)
-fwdpp_includes=re.sub('site-packages/','',fwdpp_includes)
-fwdpp_includes=re.sub(r'/__init__.+','',fwdpp_includes)
-p=re.compile(r'python3.\d+')
-print(fwdpp_includes)
-f=p.findall(fwdpp_includes)
-print(f)
-fwdpp_includes=fwdpp_includes.replace('3.5','3.5m')
-print(fwdpp_includes)
+fwdpy_includes=fp.get_includes()
 def make_ext(modname, pyxfilename):
     from distutils.extension import Extension
     return Extension(name=modname,
                      sources=[pyxfilename],
                      language='c++',
-		     include_dirs=[fwdpp_includes],
+		     include_dirs=[fwdpy_includes],
 		     extra_compile_args=['-std=c++11','-DHAVE_INLINE'],
 		     libraries=['sequence','gsl','gslcblas','pthread'])
