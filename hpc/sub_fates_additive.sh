@@ -11,8 +11,8 @@ do
 	    SEED=`echo "$ISEED*$I"|bc -l`
 		    echo $SEED
 		    echo $I
-		    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_traj.db
-		    qsub -N FATES -q krt,krti,bio,sf,pub64 /share/kevin2/krthornt/qtrait_paper/hpc/run_single_region_fates.sh freq $mu $ofile 1 $OPT 1 0.25 $SEED
+		    ofile=H2_"$H2"_OPT_"$OPT"_mu_"$mu"_sigmu0.25_traj
+		    qsub -N FATES -q krt,krti,bio /share/kevin2/krthornt/qtrait_paper/hpc/run_single_region_fates.sh freq $mu $ofile 1 $OPT 1 0.25 $SEED
 	    	#qsub hpc/fates_additive.sh $mu $H2 $OPT $SEED  H2_"$H2"_OPT_"$OPT"_mu_"$mu".ages.h5 H2_"$H2"_OPT_"$OPT"_mu_"$mu".traj.h5
 		    I=$(($I+1))
 	done

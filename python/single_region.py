@@ -38,7 +38,7 @@ def get_sampler_type(samplerString, traitString,length,optimum):
 def write_output(sampler,args,REPID,batch,mode):
     if isinstance(sampler,fp.FreqSampler):
         tfilter=fp.TrajExistedPast(8*args.popsize)
-        sampler.to_sql(args.outfile.encode('utf-8'),tfilter,onedb=True,label=REPID,threshold=args.threshold)
+        sampler.to_sql(args.outfile.encode('utf-8'),tfilter,onedb=False,label=REPID,threshold=args.threshold)
         return REPID+len(sampler)
     else:
         ##Write in append mode
@@ -147,11 +147,6 @@ def main():
             REPID=write_output(sampler,args,REPID,BATCH,'a')
         else:
             REPID=write_output(sampler,args,REPID,BATCH,'a')
-    if args.sampler == 'freq':
-        #We need to index the database
-        conn=sqlite3.connect(args.outfile)
-        conn.execute("create index if not exists rep_gen on freqs(rep,generation);")
-        conn.close()
 
 if __name__ == "__main__":
     main()
