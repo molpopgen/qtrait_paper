@@ -8,9 +8,9 @@ source("filename2params.R")
 
 doc <- "Usage: summarise_loads.R [-i <infile> -o <outfile>]"
 
-opt <- docopt(doc)
+options <- docopt(doc)
 
-db <- src_sqlite(opt$infile)
+db <- src_sqlite(options$infile)
 
 data <- tbl(db,'data')
 
@@ -19,14 +19,14 @@ query <- data %>%
     group_by(generation,stat) %>%
     summarise(mvalue = mean(value))
 
-results = collect(query,n=5)
+results = collect(query)
 
-params = getparams(opt$infile)
+params = getparams(options$infile)
 results.tidy = spread(results,key=stat,value=mvalue) %>%
 	mutate(opt=params$opt) %>%
 	mutate(mu=params$mu)
 
-gzo=gzfile(opt$outfile,"w")
+gzo=gzfile(options$outfile,"w")
 
 write.table(results.tidy,gzo,quote=FALSE,
            row.names=FALSE)

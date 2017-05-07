@@ -35,11 +35,11 @@ query <- data %>%
               muts_per_dip = mean(total_muts)
               )
 params=getparams(options$infile)
-results = collect(query,n=5) %>% 
+results = collect(query) %>% 
 	mutate(opt = params$opt) %>%
 	mutate(mu = params$mu)
 
-gzo=gzfile(options$outfile)
+gzo=gzfile(options$outfile,"w")
 
 write.table(results,gzo,quote=FALSE,
            row.names=FALSE)
