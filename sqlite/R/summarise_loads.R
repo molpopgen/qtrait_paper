@@ -3,18 +3,12 @@
 suppressMessages(library(dplyr))
 suppressMessages(library(RSQLite))
 suppressMessages(library(docopt))
-
+source("filename2params.R")
 doc <- "Usage: summarise_loads.R [-i <infile> -o <outfile>]"
 
-opt <- docopt(doc)
+options <- docopt(doc)
 
-#if (opt$deps == "TRUE" || opt$deps == "FALSE") {
-#    opt$deps <- as.logical(opt$deps)
-#} else if (opt$deps == "NA") {
-#    opt$deps <- NA
-#}
-
-db <- src_sqlite(opt$infile)
+db <- src_sqlite(options$infile)
 
 data <- tbl(db,'data')
 
@@ -40,10 +34,12 @@ query <- data %>%
               hom_per_dip = mean(total_hom),
               muts_per_dip = mean(total_muts)
               )
+params=getparams(options$infile)
+results = collect(query,n=5) %>% 
+	mutate(opt = params$opt) %>%
+	mutate(mu = params$mu)
 
-results = collect(query,n=5)
-
-gzo=gzfile(opt$outfile)
+gzo=gzfile(options$outfile)
 
 write.table(results,gzo,quote=FALSE,
            row.names=FALSE)

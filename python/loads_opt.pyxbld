@@ -2,10 +2,11 @@
 #to yourmodname.pyxbld should suffice
 import fwdpy as fp
 fwdpy_includes=fp.get_includes()
+fwdpp_includes=fp.get_fwdpp_includes()
 def make_ext(modname, pyxfilename):
     from distutils.extension import Extension
     return Extension(name=modname,
                      sources=[pyxfilename],
                      language='c++',
-		     include_dirs=[fwdpy_includes],
+		     include_dirs=[fwdpy_includes,fwdpp_includes],
 		     extra_compile_args=['-std=c++11'])

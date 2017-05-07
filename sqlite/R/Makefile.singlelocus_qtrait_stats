@@ -1,0 +1,19 @@
+%.gz: ../%.db
+	./summarise_qtstats.R -i $< -o $@
+
+all: combined_single_locus_qstats.gz
+
+combined_single_locus_qstats.gz: H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_stats.gz \
+	H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_stats.gz \
+	H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_stats.gz \
+	H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_stats.gz \
+	H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_stats.gz \
+	H2_1.0_OPT_0.5_mu_0.005_sigmu0.25_stats.gz \
+	H2_1.0_OPT_1_mu_0.00025_sigmu0.25_stats.gz \
+	H2_1.0_OPT_1_mu_0.001_sigmu0.25_stats.gz \
+	H2_1.0_OPT_1_mu_0.005_sigmu0.25_stats.gz
+	./combine_files.R -o combined_single_locus_qstats.gz H2*_stats.gz
+
+clean:
+	find . -name '*_stats.gz' | xargs rm -f
+	rm -f combined_single_locus_qstats.gz

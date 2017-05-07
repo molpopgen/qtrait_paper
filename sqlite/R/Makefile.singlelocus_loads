@@ -1,8 +1,9 @@
 %.gz: ../%.db
 	./summarise_loads.R -i $< -o $@
 
+all: combined_single_locus_loads.gz
 
-all: H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_load.gz \
+combined_single_locus_loads.gz: H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_load.gz \
 	H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_load.gz \
 	H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_load.gz \
 	H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_load.gz \
@@ -11,6 +12,7 @@ all: H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_load.gz \
 	H2_1.0_OPT_1_mu_0.00025_sigmu0.25_load.gz \
 	H2_1.0_OPT_1_mu_0.001_sigmu0.25_load.gz \
 	H2_1.0_OPT_1_mu_0.005_sigmu0.25_load.gz
-
+	./combine_files.R -o combined_single_locus_loads.gz H2*_load.gz
 clean:
 	find . -name '*_load.gz' | xargs rm -f
+	rm -f combined_single_locus_loads.gz
