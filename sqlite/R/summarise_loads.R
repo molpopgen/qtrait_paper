@@ -20,7 +20,7 @@ data <- tbl(db,'data')
 #seg = load from w calc. only w/polymorphisms
 #total_het = number Aa sites / dip
 #total_hom = number aa sites / dip
-#total_muts = number mutations/dip
+#total_muts = number mutations/dip = total_het + 2*(total_hom)
 
 #Our query aggregates the 
 #means over sim replicate
