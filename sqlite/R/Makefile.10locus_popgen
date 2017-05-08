@@ -1,0 +1,15 @@
+%.gz: ../%.db
+	./summarise_10locus_popgen.R -i $< -o $@
+
+all: combined_10locus_popgen.gz
+
+combined_10locus_popgen.gz: H2_1.0_OPT_0.1_mu_0.00025_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_0.1_mu_0.001_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_0.1_mu_0.005_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_0.5_mu_0.00025_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_0.5_mu_0.001_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_0.5_mu_0.005_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_1_mu_0.00025_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_1_mu_0.001_sigmu0.25_10regions_popgen.gz \
+H2_1.0_OPT_1_mu_0.005_sigmu0.25_10regions_popgen.gz
+	./combine_files.R -o combined_10locus_popgen.gz H2*10regions_popgen.gz
