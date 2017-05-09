@@ -14,24 +14,18 @@ db <- src_sqlite(options$infile)
 
 data <- tbl(db,'data')
 
+params = getparams(options$infile)
 query <- data %>%
     #Drop the locus column, as we don't need it
-    select(-locus) %>%
+    select(-locus,-rep) %>% 
     filter(generation >= 8*5000) %>%
-    group_by(generation,variable) %>%
-    summarise(mvalue = mean(value))
+	group_by(generation) %>%
+	summarise_each(funs(mean),-generation,-opt,-mu) %>%
+	mutate(opt = params$opt) %>%
+	mutate(mu = params$mu)
 
 results = collect(query)
-
-params = getparams(options$infile)
-results.tidy = spread(results,key=variable,value=mvalue) %>%
-	mutate(opt=params$opt) %>%
-	mutate(mu=params$mu)
-
 gzo=gzfile(options$outfile,"w")
-
-write.table(results.tidy,gzo,quote=FALSE,
+write.table(results,gzo,quote=FALSE,
            row.names=FALSE)
-
 close(gzo)
-
