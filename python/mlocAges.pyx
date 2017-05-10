@@ -2,7 +2,7 @@
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector  
 from libcpp.memory cimport unique_ptr 
-from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler,multilocus_t,uint,sample_sep_single_mloc
+from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler,multilocus_t,uint,sample_separate_mlocus
 
 cdef struct mlocus_allele_age:
     unsigned generation

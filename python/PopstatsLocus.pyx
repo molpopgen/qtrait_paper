@@ -13,7 +13,7 @@ from cython_gsl.gsl_blas cimport *
 from cython_gsl.gsl_linalg cimport * 
 from cython_gsl.gsl_math cimport * 
 from cython_gsl.gsl_sort cimport * 
-from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler_data,multilocus_t,uint,sample_sep_single_mloc
+from fwdpy.fwdpy cimport TemporalSampler,GSLrng,sampler_base,custom_sampler_data,multilocus_t,uint,sample_separate_mlocus
 
 from fwdpy.numeric_gsl cimport sum_of_squares_buff,QRdecompBuffers
 
