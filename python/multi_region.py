@@ -8,7 +8,7 @@ import fwdpy.qtrait_mloc as qtm
 import numpy as np
 import pandas as pd
 import getopt
-import sys,math,gc
+import sys,math,gc,sqlite3,os
 
 def usage():
     print ("something went wrong")
@@ -73,13 +73,16 @@ def write_output(sampler,output,nloci,REPID):
 
 def write_fixations(pops,fixationsFileName,repid):
     x=fp.view_fixations(pops)
-    hdf=pd.HDFStore(fixationsFileName,'a',complevel=6,complib='zlib')
+    #hdf=pd.HDFStore(fixationsFileName,'a',complevel=6,complib='zlib')
+    con = sqlite3.connect(fixationsFileName)
     df=[pd.DataFrame(i) for i in x]
     for i in df:
         i['rep']=[repid]*len(i.index)
         repid+=1
-        hdf.append('fixations',i)
-    hdf.close()
+        i.to_sql('fixations',con,if_exists='append',index=False)
+        #hdf.append('fixations',i)
+    con.close()
+    #hdf.close()
 
 def main():
     try:
@@ -180,8 +183,8 @@ def main():
             fixationsFileName=a  
         elif o == "--t2":
             t2=int(a)
-	elif o == "--g2":
-	    G2=int(a)
+        elif o == "--g2":
+            G2=int(a)
         elif o == "--nstub":
             nstub=a
         elif o == '--sstub':
@@ -209,15 +212,15 @@ def main():
         usage()
         sys.exit(2)
     if G2 is None:
-	G2=10*N
+        G2=10*N
 
     #Can start working now:
     REP=0
     out=pd.HDFStore(ofile,"w",complevel=6,complib='zlib')
 
     if fixationsFileName is not None:
-        tfile=pd.HDFStore(fixationsFileName,'w')
-        tfile.close()
+        if os.path.exists(fixationsFileName):
+            os.remove(fixationsFileName)
         
     little_r_per_locus = rho/(4.0*float(N))
     mu_n_region=theta/(4.0*float(N))
@@ -267,6 +270,12 @@ def main():
             write_fixations(x,fixationsFileName,REP)
         REP+=len(x)
 
+
+    if fixationsFileName is not None:
+        con = sqlite3.connect(fixationsFileName)
+        con.execute("create index gen on fixations (generation)")
+        con.execute("create index gen_rep on fixations (generation,rep)")
+        con.close()
     out.close()
 
 if __name__ == "__main__":
