@@ -25,10 +25,10 @@ non_neutral_fixations = data %>%
 sweeps = collect(non_neutral_fixations)
 
 hard_sweeps = sweeps %>%
-    filter(g < 50000)
+    filter(g > 50000)
 
 soft_sweeps = sweeps %>%
-    filter(g > 50000)
+    filter(g < 50000)
 
 #Count no. of each type of sweep per locus 
 #and per replicate
@@ -43,17 +43,21 @@ soft_sweeps_per_locus = soft_sweeps %>%
     group_by(locus,rep) %>%
     mutate(nsoft=n())
 
+
 #Combine the last two results to get total of each
 #type of sweep per locus
 
-ttl_sweeps_per_locus = inner_join(hard_sweeps_per_locus,soft_sweeps_per_locus,by=c('rep','locus')) %>% distinct(rep,locus)
+ttl_sweeps_per_locus = full_join(hard_sweeps_per_locus,soft_sweeps_per_locus,by=c('rep','locus')) %>% distinct(rep,locus)
 
 #Still not done: need to fill in zero for loci
 #that had no sweeps at all
 
 rep_locus = data.frame(locus=rep(0:9,1024),rep=rep(0:1023,each=10))
 
-all_data = full_join(rep_locus,ttl_sweeps_per_locus,by=c('rep','locus'))
+params=getparams(options$infile)
+all_data = full_join(rep_locus,ttl_sweeps_per_locus,by=c('rep','locus')) %>%
+    mutate(opt=params$opt) %>%
+    mutate(mu=params$mu)
 
 #Joins put NA where there is no overlap,
 #which means no sweeps, so we set to 0
