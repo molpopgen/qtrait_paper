@@ -6,7 +6,7 @@ suppressMessages(library(RSQLite))
 suppressMessages(library(docopt))
 source("filename2params.R")
 
-doc <- "Usage: summarise_loads.R [-i <infile> -o <outfile>]"
+doc <- "Usage: summarise_qstats.R [-i <infile> -o <outfile>]"
 
 options <- docopt(doc)
 
