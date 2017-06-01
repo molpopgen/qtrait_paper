@@ -10,6 +10,7 @@ import fwdpy11.demography as fp11d
 import fwdpy11.model_params as fp11mp
 import fwdpy11.trait_values as fp11tv
 import fwdpy11.multilocus as fp11ml
+import fwdpy11.sampling
 import numpy as np
 import pandas as pd
 import sys,gc
@@ -19,7 +20,7 @@ import argparse
 import random
 import pickle
 import os
-import lzma
+import gzip
 import tarfile
 import concurrent.futures
 #import multiprocessing as mp
@@ -55,6 +56,7 @@ def make_parser():
     parser.add_argument('--theta','-t',type=float,default=100.0,metavar="THETA",help="4Nu")
     parser.add_argument('--rho','-r',type=float,default=100.0,metavar="RHO",help="4Nr")
     parser.add_argument('--seed','-S',type=int,default=None,help="RNG seed")
+    parser.add_argument('--nsam',type=int,default=250,help="Number of diploids to sample.")
     parser.add_argument('--ncores','-n',type=int,default=1)
     parser.add_argument('--nreps','-nr',type=int,default=1)
     parser.add_argument('--nloci','-nl',type=int,default=10)
@@ -64,8 +66,18 @@ def make_parser():
     parser.add_argument('--tarfile',type=str,default=None,help="If not None, merge all output into a single tar file.")
     return parser
 
+def get_matrix(pop,ndips):
+    dips = np.random.choice(pop.N,ndips,replace=False)
+    keys = fwdpy11.sampling.mutation_keys(pop,dips)
+    neutral_sorted_keys=[i for i in sorted(keys[0],key=lambda x,m=pop.mutations: m[x[0]].pos)]
+    selected_sorted_keys=[i for i in sorted(keys[1],key=lambda x,m=pop.mutations: m[x[0]].pos)]
+    m = fwdpy11.sampling.genotype_matrix(pop,dips,neutral_sorted_keys,selected_sorted_keys)
+    gw = [(pop.diploids[i][0].g,pop.diploids[i][0].w) for i in dips] 
+    return (m,gw)
+
 class Pickler(object):
-    def __init__(self,repid,gen1,gen2,filename):
+    def __init__(self,repid,nsam,gen1,gen2,filename):
+        self.nsam=nsam
         self.repid=repid
         self.gen1=gen1
         self.gen2=gen2
@@ -74,9 +86,11 @@ class Pickler(object):
         if os.path.exists(self.filename):
             os.remove(self.filename)
     def __call__(self,pop):
-        if (pop.generation >= self.gen1 and pop.generation < self.gen2 and pop.generation % 500 == 0.0) or (pop.generation >= self.gen2 and pop.generation % 10 == 0.0):
-            with lzma.open(self.filename,"ab",preset=9) as f:
-                pickle.dump((self.repid,pop),f,-1)
+        if (pop.generation >= self.gen1 and pop.generation < self.gen2 and pop.generation % 500 == 0.0) or (pop.generation >= self.gen2 and pop.generation % 50 == 0.0):
+            with gzip.open(self.filename,"ab") as f:
+                m=get_matrix(pop,self.nsam)
+                pickle.dump(m,f,-1)
+                #pickle.dump((self.repid,pop),f,-1)
             self.last_gen_recorded = pop.generation
 
 def run_replicate(argtuple):
@@ -108,14 +122,16 @@ def run_replicate(argtuple):
     #        print(str(j))
     #return
     params=fp11.model_params.MlocusParamsQ(**pdict)
-    ofilename = args.stub + '.rep' + str(repid) + '.lzma'
-    recorder=Pickler(repid,8*NANC,np.argmax(nlist == 1861),ofilename)
+    ofilename = args.stub + '.rep' + str(repid) + '.gz'
+    recorder=Pickler(repid,args.nsam,8*NANC,np.argmax(nlist == 1861),ofilename)
     pop=fp11.MlocusPop(NANC,args.nloci,locus_boundaries)
     fp11qt.evolve(rng,pop,params,recorder)
     #Make sure last gen got pickled!
     if recorder.last_gen_recorded != pop.generation:
         with open(ofilename,"ab") as f:
-            pickle.dump((repid,pop),f,-1)
+            with gzip.open(ofilename,"ab") as f:
+                m=get_matrix(pop,args.nsam)
+                pickle.dump(m,f,-1)
 
 if __name__ == "__main__":
     parser=make_parser()

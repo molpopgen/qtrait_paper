@@ -49,8 +49,8 @@ class Pickler(object):
             os.remove(self.filename)
     def __call__(self,pop):
         c1=(pop.generation >= 8*self.N and pop.generation < 10*self.N and pop.generation % 500 == 0.0)
-        c2=(pop.generation >= 10*self.N and pop.generation <= 12*self.N and pop.generation % 10 == 0.0)
-        c3=(pop.generation > 12*self.N and pop.generation <= 14*self.N and pop.generation % 50 == 0.0)
+        c2=(pop.generation >= 10*self.N and pop.generation <= 12*self.N and pop.generation % 50 == 0.0)
+        c3=(pop.generation > 12*self.N and pop.generation <= 14*self.N and pop.generation % 250 == 0.0)
         c4=(pop.generation > 14*self.N and pop.generation % 500 == 0.0)
         if c1 or c2 or c3 or c4: 
             with lzma.open(self.filename,"ab",preset=9) as f:
