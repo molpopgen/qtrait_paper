@@ -2,7 +2,10 @@
 \.sh.o$
 \.sh.e$
 \.cc
+\.hpp
 \.py
+\.pyx
+\.pyxbld
 \.R
 \.sh
 \.md
