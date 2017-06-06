@@ -14,4 +14,4 @@ picklefile=$4
 
 echo "Running on $HOSTNAME"
 echo "python python/TennessenQtraitMloc11.py --ncores 8 --nreps 8 --mu $mu --opt $opt --seed $seed --stub tennessen_pickle/$picklefile"
-/usr/bin/time -f "%e %M" -o tennessen_pickle/time.txt python python/TennessenQtraitMloc11.py --ncores 8 --nreps 8 --mu $mu --opt $opt --seed $seed --stub tennessen_pickle/$picklefile --tarfile tennessen_pickle/geno_matrices.mu$mu.opt$opt.tar
+/usr/bin/time -f "%e %M" -o tennessen_pickle/time.txt python python/TennessenQtraitMloc11.py --ncores 32 --nreps 64 --mu $mu --opt $opt --seed $seed --stub tennessen_pickle/$picklefile --tarfile tennessen_pickle/geno_matrices.mu$mu.opt$opt.tar

@@ -132,6 +132,9 @@ def run_replicate(argtuple):
             with gzip.open(ofilename,"ab") as f:
                 m=get_matrix(pop,args.nsam)
                 pickle.dump(m,f,-1)
+    pop.clear()
+    del pop
+    pop = None
     return ofilename
 
 if __name__ == "__main__":
