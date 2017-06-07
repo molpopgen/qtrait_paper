@@ -25,8 +25,8 @@ def make_parser():
     return parser
 
 def make_empty_summstats_array():
-    rv=np.array([(-1,-1,-1,-1,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan)]*11,
-            dtype=[('locus',np.int32),
+    rv=np.array([tuple([-1]*4+[np.nan]*7)]*11,
+                dtype=[('locus',np.int32),
                 ('window',np.int32),
                 ('repid',np.int32),
                 ('generation',np.int32),
@@ -43,7 +43,8 @@ def get_summstats(pop,repid,nsam):
     ind = np.random.choice(pop.N,nsam,replace=False)
     s = sample_separate(pop,ind)
     temp=make_empty_summstats_array()
-    rv=np.array([],temp.dtype)
+    #rv=np.array([],temp.dtype)
+    rv=[]
     locus=0
     for si,bi in zip(s,pop.locus_boundaries[1:]):
         sd=SimData(si[0])
@@ -54,7 +55,7 @@ def get_summstats(pop,repid,nsam):
             nSL=std_nSLiHS(w[i],0.05,0.1)
             temp[i]=(locus,int(i),repid,pop.generation,ps.tajimasd(),ps.thetapi(),
                 gs['H1'],gs['H12'],gs['H2H1'],nSL[0],nSL[1])
-        rv=np.append(rv,temp.copy())
+        rv.append(temp.copy())
         locus+=1
     return rv
 
@@ -72,32 +73,26 @@ def process_replicate(argtuple):
             try:
                 rec = pickle.load(f)
                 ss=get_summstats(rec[1],rec[0],args.nsam)
-                summstats.append(ss)
-                print(len(summstats))
+                summstats.extend(ss)
                 rec[1].clear()
             except:
                 break
-    
-    return True
+    os.path.remove(infile) 
+    return summstats
 
 if __name__ == "__main__":
     parser=make_parser()
     args=parser.parse_args(sys.argv[1:])
-    initial_seed = args.seed
-
+    np.random.seed(args.seed)
     if os.path.exists(args.tarfile) is False:
         raise RuntimeError(args.tarfile + " could not be found")
 
     tf=tarfile.open(args.tarfile,'r')
     files = tf.getnames()
     tf.close()
-    raw_args=[(i,args,j) for i,j in zip(np.random.choice(int(4e6),len(files),replace=False),files)]
-    print(raw_args[0])
-    rv=process_replicate(raw_args[0])
-    print(rv)
-    sys.exit(0)
+    raw_args=[(i,args,j) for i,j in zip(sorted(np.random.choice(int(4e6),len(files),replace=False)),files)]
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
-        futures = {executor.submit(process_replicate,i): i for i in raw_args[:1]}
+        futures = {executor.submit(process_replicate,i): i for i in raw_args}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
-            print(fn)
+            print(len(fn))
