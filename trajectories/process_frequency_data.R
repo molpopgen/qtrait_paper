@@ -36,7 +36,6 @@ for (infile in args)
     opt = s[[1]][4]
     mu=s[[1]][6]
     
-    print(paste(opt,mu))
     db <- src_sqlite(infile)
     db_tbl <- tbl(db,'freqs')
 
