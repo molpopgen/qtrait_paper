@@ -1,5 +1,5 @@
 #1. 10 loci separated by 50cM
-#2. Each locus is 11*theta and 11*rho long, where theta & rho are per-locus input params
+#2. Each locus is 10*theta and 10*rho long, where theta & rho are per-locus input params
 #3. The middle of each locus is where causative mutations happen at rate mu with 
 #   and sigmamu=0.25 and VS=1
 import fwdpy11 as fp11
@@ -77,8 +77,8 @@ def run_replicate(argtuple):
             'gvalue':fp11ml.MultiLocusGeneticValue([fp11tv.SlocusAdditiveTrait(2.0)]*args.nloci),
             'trait2w':fp11qt.GSSmo(env),
             'mutrates_s':[args.mu/float(args.nloci)]*args.nloci,
-            'mutrates_n':[float(args.nloci)*args.theta/float(4*NANC)]*args.nloci,
-            'recrates':[float(args.nloci)*args.rho/float(4*NANC)]*args.nloci,
+            'mutrates_n':[10*args.theta/float(4*NANC)]*args.nloci,
+            'recrates':[10*args.rho/float(4*NANC)]*args.nloci,
             }
     params=fp11.model_params.MlocusParamsQ(**pdict)
     ofilename = args.stub + '.rep' + str(repid) + '.pickle.lzma'
