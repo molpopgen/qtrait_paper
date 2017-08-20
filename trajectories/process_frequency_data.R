@@ -42,7 +42,7 @@ for (infile in args)
     #Do things per replicate
     #so that total RAM use is kept sane.
     #(This is slower, though)
-    for(id in seq(0,255))
+    for(id in seq(0,1023))
     {
         q <- db_tbl %>% 
     	    filter(repid == id)
