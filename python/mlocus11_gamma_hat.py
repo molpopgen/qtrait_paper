@@ -121,7 +121,7 @@ if __name__ == "__main__":
     of = gzip.open(args.outfile,'wb')
     of.close()
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
-        futures = {executor.submit(process_replicate, i)                   : i for i in raw_args[:1]}
+        futures = {executor.submit(process_replicate, i)                   : i for i in raw_args}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
             fndf = pd.DataFrame(fn)
