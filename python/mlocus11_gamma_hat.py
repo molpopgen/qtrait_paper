@@ -127,4 +127,4 @@ if __name__ == "__main__":
             fndf = pd.DataFrame(fn)
             fndf['mu'] = args.mu
             fndf['opt'] = args.opt
-            fndf.to_csv(args.outfile,compression='gzip',mode='a',sep='\t')
+            fndf.to_csv(args.outfile,compression='gzip',mode='a',sep='\t',index=False)
