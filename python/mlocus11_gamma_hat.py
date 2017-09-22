@@ -12,7 +12,6 @@ import concurrent.futures
 import numpy as np
 import pandas as pd
 import sqlite3
-import os
 
 
 def make_parser():
@@ -33,8 +32,6 @@ def process_replicate(argtuple):
     """
     """
     args, infile = argtuple
-    np.random.seed(seed)
-    sched = Scheduler(1)
     tf = tarfile.open(args.tarfile, 'r')
     ti = tf.getmember(infile)
     lzma_file = tf.extract(ti)
@@ -45,11 +42,13 @@ def process_replicate(argtuple):
     # are large-effect. Else, they are small.
     # Nuance is needed to note that this should
     # refer to |esize| of mutation.
-    threshold = 2.0 * math.sqrt(2.0) * sqrt(args.mu)
+    threshold = 2.0 * math.sqrt(2.0) * math.sqrt(args.mu)
     with lzma.open(infile, 'rb') as f:
         while True:
             try:
                 repid, pop = pickle.load(f)
+                if pop.generation < 8 * pop.N:
+                    continue
                 if pop.generation >= 10 * pop.N:
                     optimum = args.opt
                 traits = np.array(pop.diploids.trait_array())
@@ -65,59 +64,44 @@ def process_replicate(argtuple):
                 # Mark mutations that just arose:
                 muts_df['new_mutation'] = (muts_df.g == pop.generation)
 
+                # Slice up the DF a bunch of ways:
+                new_large = muts_df.query('large == 1 and new_mutation == 1')
+                new_small = muts_df.query('large == 0 and new_mutation == 1')
+                old_large = muts_df.query('large == 1 and new_mutation == 0')
+                old_small = muts_df.query('large == 0 and new_mutation == 0')
+
                 # Distance pop still has to adapt
-                # There is a problem due to over-shooting here!
+                # If distance is < 0, the population
+                # has "over-shot" the optimum.
                 distance = optimum - mean_pheno
 
-                # Slice up the DF a bunch of ways:
-                new_large_positive = muts_df.query(
-                    'large == 1 and new_mutation == 1 and s > 0')
-                new_large_negative = muts_df.query(
-                    'large == 1 and new_mutation == 1 and s < 0')
-                new_small_positive = muts_df.query(
-                    'large == 0 and new_mutation == 1 and s > 0')
-                new_small_negative = muts_df.query(
-                    'large == 0 and new_mutation == 1 and s < 0')
+                crit_value = abs(distance) / 2.0
+                if distance > 0:
+                    q = 's > 0 and s <= {}'.format(crit_value)
+                else:
+                    q = 's < 0 and s <= {}'.format(crit_value)
+                if threshold > crit_value:
+                    new_large_sweetspot = 0
+                else:
+                    new_large_sweetspot = len(new_large.query(q))
 
-                old_large_positive = muts_df.query(
-                    'large == 1 and new_mutation == 0 and s > 0')
-                old_large_negative = muts_df.query(
-                    'large == 1 and new_mutation == 0 and s < 0')
-                old_small_positive = muts_df.query(
-                    'large == 0 and new_mutation == 0 and s > 0')
-                old_small_negative = muts_df.query(
-                    'large == 0 and new_mutation == 0 and s < 0')
-
+                new_small_sweetspot = len(new_small.query(q))
                 # Add a summary as a big dict:
                 rv.append({'rep': repid,
                            'generation': pop.generation,
-                           'new_large_positive': len(new_large_positive),
-                           'new_large_negative': len(new_large_negative),
-                           'new_small_positive': len(new_small_positive),
-                           'new_small_negative': len(new_small_negative),
-                           'old_large_positive': len(old_large_positive),
-                           'old_large_negative': len(old_large_negative),
-                           'old_small_positive': len(old_small_positive),
-                           'old_small_negative': len(old_small_negative),
-                           'new_large_positive_mean_esize': new_large_positive.s.mean(),
-                           'new_large_negative_mean_esize': new_large_negative.s.mean(),
-                           'new_small_positive_mean_esize': new_small_positive.s.mean(),
-                           'new_small_negative_mean_esize': new_small_negative.s.mean(),
-                           'old_large_positive_mean_esize': old_large_positive.s.mean(),
-                           'old_large_negative_mean_esize': old_large_negative.s.mean(),
-                           'old_small_positive_mean_esize': old_small_positive.s.mean(),
-                           'old_small_negative_mean_esize': old_small_negative.s.mean(),
-                           'new_large_positive_mean_freq': new_large_positive.mcounts.mean() / float(2 * pop.N),
-                           'new_large_negative_mean_freq': new_large_negative.mcounts.mean() / float(2 * pop.N),
-                           'new_small_positive_mean_freq': new_small_positive.mcounts.mean() / float(2 * pop.N),
-                           'new_small_negative_mean_freq': new_small_negative.mcounts.mean() / float(2 * pop.N),
-                           'old_large_positive_mean_freq': old_large_positive.mcounts.mean() / float(2 * pop.N),
-                           'old_large_negative_mean_freq': old_large_negative.mcounts.mean() / float(2 * pop.N),
-                           'old_small_positive_mean_freq': old_small_positive.mcounts.mean() / float(2 * pop.N),
-                           'old_small_negative_mean_freq': old_small_negative.mcounts.mean() / float(2 * pop.N)
+                           'new_large': len(new_large),
+                           'new_small': len(new_small),
+                           'old_large': len(old_large),
+                           'old_small': len(old_small),
+                           'new_large_mean_esize': new_large.s.mean(),
+                           'new_small_mean_esize': new_small.s.mean(),
+                           'old_large_mean_esize': old_large.s.mean(),
+                           'old_small_mean_esize': old_small.s.mean(),
+                           'new_large_sweetspot': new_large_sweetspot,
+                           'new_small_sweetspot': new_small_sweetspot
                            })
-                except:
-                    break
+            except:
+                break
     os.remove(infile)
     return (rv)
 
@@ -125,7 +109,6 @@ def process_replicate(argtuple):
 if __name__ == "__main__":
     parser = make_parser()
     args = parser.parse_args(sys.argv[1:])
-    np.random.seed(args.seed)
     if os.path.exists(args.tarfile) is False:
         raise RuntimeError(args.tarfile + " could not be found")
 
@@ -141,15 +124,16 @@ if __name__ == "__main__":
     # print(x)
     # sys.exit(0)
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
-        futures = {executor.submit(process_replicate, i): i for i in raw_args}
+        futures = {executor.submit(process_replicate, i): i for i in raw_args[:1]}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
-            for dbname, data in zip(dbnames, fn):
-                conn = sqlite3.connect(dbname)
-                df = pd.DataFrame(data)
-                df.to_sql('data', conn, if_exists="append", index=False)
-                conn.close()
-    for dbname in dbnames:
-        conn = sqlite3.connect(dbname)
-        conn.execute("create index gen_rep if not exists on data")
-        conn.close()
+            print(fn)
+            #for dbname, data in zip(dbnames, fn):
+            #    conn = sqlite3.connect(dbname)
+            #    df = pd.DataFrame(data)
+            #    df.to_sql('data', conn, if_exists="append", index=False)
+            #    conn.close()
+    # for dbname in dbnames:
+    #     conn = sqlite3.connect(dbname)
+    #     conn.execute("create index gen_rep if not exists on data")
+    #     conn.close()
