@@ -7,6 +7,7 @@ import pickle
 import tarfile
 import argparse
 import lzma
+import gzip
 import math
 import concurrent.futures
 import numpy as np
@@ -22,7 +23,7 @@ def make_parser():
                         help=".tar file name containing replicates")
     parser.add_argument('--nprocs', '-p', type=int, default=1,
                         help="Number of processes to use")
-    parser.add_argument('--outfile', '-o', type=str, help="Output file name.")
+    parser.add_argument('--outfile', '-o', type=str, default=None,help="Output file name.")
     parser.add_argument('--mu', '-m', type=float, help="Mutation rate")
     parser.add_argument('--opt', '-O', type=float, help="New optimum value")
     return parser
@@ -55,14 +56,13 @@ def process_replicate(argtuple):
                 mean_pheno = traits['g'].mean()
                 muts = np.array(pop.mutations.array())
                 muts_df = pd.DataFrame(muts)
-                muts_df['mcounts'] = pop.mcounts
+                muts_df.loc[:, 'mcounts'] = pop.mcounts
                 # Reduce to extant variants affecting trait value:
-                muts_df = muts_df[(muts['mcounts'] > 0) &
-                                  (muts.neutral is False)]
+                muts_df = muts_df.query('mcounts > 0 and neutral == 0')
                 # Mark variants as large-effect or not:
-                muts_df['large'] = np.abs(muts_df.s) > threshold
+                muts_df.loc[:, 'large'] = np.abs(muts_df.s) > threshold
                 # Mark mutations that just arose:
-                muts_df['new_mutation'] = (muts_df.g == pop.generation)
+                muts_df.loc[:, 'new_mutation'] = (muts_df.g == pop.generation)
 
                 # Slice up the DF a bunch of ways:
                 new_large = muts_df.query('large == 1 and new_mutation == 1')
@@ -97,6 +97,8 @@ def process_replicate(argtuple):
                            'new_small_mean_esize': new_small.s.mean(),
                            'old_large_mean_esize': old_large.s.mean(),
                            'old_small_mean_esize': old_small.s.mean(),
+                           'old_large_mean_freq': float(old_large.mcounts.mean()) / float(2 * pop.N),
+                           'old_small_mean_freq': float(old_small.mcounts.mean()) / float(2 * pop.N),
                            'new_large_sweetspot': new_large_sweetspot,
                            'new_small_sweetspot': new_small_sweetspot
                            })
@@ -112,28 +114,17 @@ if __name__ == "__main__":
     if os.path.exists(args.tarfile) is False:
         raise RuntimeError(args.tarfile + " could not be found")
 
-    dbnames = []
-    # for d in dbnames:
-    #    if os.path.exists(d):
-    #        os.remove(d)
     tf = tarfile.open(args.tarfile, 'r')
     files = tf.getnames()
     tf.close()
     raw_args = [(args, j) for j in files]
-    # x=process_replicate(raw_args[0])
-    # print(x)
-    # sys.exit(0)
+    of = gzip.open(args.outfile,'wb')
+    of.close()
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
-        futures = {executor.submit(process_replicate, i): i for i in raw_args[:1]}
+        futures = {executor.submit(process_replicate, i)                   : i for i in raw_args[:1]}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
-            print(fn)
-            #for dbname, data in zip(dbnames, fn):
-            #    conn = sqlite3.connect(dbname)
-            #    df = pd.DataFrame(data)
-            #    df.to_sql('data', conn, if_exists="append", index=False)
-            #    conn.close()
-    # for dbname in dbnames:
-    #     conn = sqlite3.connect(dbname)
-    #     conn.execute("create index gen_rep if not exists on data")
-    #     conn.close()
+            fndf = pd.DataFrame(fn)
+            fndf['mu'] = args.mu
+            fndf['opt'] = args.opt
+            fndf.to_csv(args.outfile,compression='gzip',mode='a',sep='\t')
