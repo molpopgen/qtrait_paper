@@ -23,7 +23,8 @@ def make_parser():
                         help=".tar file name containing replicates")
     parser.add_argument('--nprocs', '-p', type=int, default=1,
                         help="Number of processes to use")
-    parser.add_argument('--outfile', '-o', type=str, default=None,help="Output file name.")
+    parser.add_argument('--outfile', '-o', type=str,
+                        default=None, help="Output file name.")
     parser.add_argument('--mu', '-m', type=float, help="Mutation rate")
     parser.add_argument('--opt', '-O', type=float, help="New optimum value")
     return parser
@@ -57,8 +58,8 @@ def process_replicate(argtuple):
                 muts = np.array(pop.mutations.array())
                 muts_df = pd.DataFrame(muts)
                 muts_df.loc[:, 'mcounts'] = pop.mcounts
-                # Reduce to extant variants affecting trait value:
-                muts_df = muts_df.query('mcounts > 0 and neutral == 0')
+                # Reduce to extant segregating variants affecting trait value:
+                muts_df = muts_df.query('mcounts > 0 and mcounts < {} and neutral == 0'.format(2*pop.N))
                 # Mark variants as large-effect or not:
                 muts_df.loc[:, 'large'] = np.abs(muts_df.s) > threshold
                 # Mark mutations that just arose:
@@ -88,6 +89,7 @@ def process_replicate(argtuple):
                 new_small_sweetspot = len(new_small.query(q))
                 # Add a summary as a big dict:
                 rv.append({'rep': repid,
+                           'zbar': mean_pheno,
                            'generation': pop.generation,
                            'new_large': len(new_large),
                            'new_small': len(new_small),
@@ -118,13 +120,14 @@ if __name__ == "__main__":
     files = tf.getnames()
     tf.close()
     raw_args = [(args, j) for j in files]
-    of = gzip.open(args.outfile,'wb')
+    of = gzip.open(args.outfile, 'wb')
     of.close()
-    with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
-        futures = {executor.submit(process_replicate, i)                   : i for i in raw_args}
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+        futures = {executor.submit(process_replicate, i): i for i in raw_args}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
             fndf = pd.DataFrame(fn)
             fndf['mu'] = args.mu
             fndf['opt'] = args.opt
-            fndf.to_csv(args.outfile,compression='gzip',mode='a',sep='\t',index=False)
+            fndf.to_csv(args.outfile, compression='gzip',
+                        mode='a', sep='\t', index=False)
