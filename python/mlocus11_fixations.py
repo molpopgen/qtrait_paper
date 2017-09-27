@@ -63,6 +63,7 @@ if __name__ == "__main__":
         for fut in concurrent.futures.as_completed(futures):
             repid, fixations = fut.result()
             conn = sqlite3.connect(dbname)
-            df=pd.DataFrame(data)
+            df=pd.DataFrame(fixations)
+            df['repid'] = [repid]*len(df.index)
             df.to_sql('data',conn,if_exists="append",index=False)
             conn.close()
