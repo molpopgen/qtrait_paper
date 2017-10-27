@@ -1,0 +1,75 @@
+library(dplyr)
+library(stringr)
+library(lattice)
+library(viridis)
+
+# NB: thetapi and hprime have labels swapped in the sqlite3 files!
+
+process_genome_scan <- function(filename)
+{
+    fs <- str_split(filename,regex('\\.'))[[1]]
+    fs[2]<-str_replace(fs[2],'mu','')
+    fs[4]<-str_replace(fs[4],'opt','')
+    mu <- as.numeric(paste(fs[2],fs[3],sep='.'))
+    opt <- as.numeric(paste(fs[4],fs[5],sep='.'))
+
+    dbname = paste("../../mlocus_pickle/",filename,sep="")
+    db <- src_sqlite(dbname)
+    dbt <- tbl(db,'data')
+
+    q <- dbt %>% 
+        select(-c(repid, locus)) %>%
+        mutate(dist=abs(window-5)) %>% 
+        group_by(generation,window,dist) %>%
+        summarise_each(funs(mean)) %>% 
+        mutate(mu=mu,opt=opt,scaled_time = (generation-50000)/5000)
+
+    dt = collect(q)
+    dt
+}
+
+save_image <- function(stat,img)
+{
+    trellis.device(device="pdf",file=paste(stat,".pdf",sep=""),height=10,width=10)
+    img
+    dev.off()
+}
+
+
+files <- dir(path="../../mlocus_pickle/",pattern="*.genome_scan.db")
+
+#data = data.frame()
+#
+#for (i in files)
+#{
+#    data = rbind(data,process_genome_scan(i))
+#}
+
+COLORS=viridis(length(unique(as.factor(data$dist))))
+KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
+         cex.title=1,points=FALSE,lines=TRUE,just=0.5)
+STRIP=strip.custom(strip.names = TRUE, 
+                   var.name = c(expression(z[o]),expression(mu)),bg=c("white"))
+
+tajdPlot = xyplot(tajd ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab="Mean Tajima's D",
+                  scales=list(cex=1),
+                  strip=STRIP)
+
+hprimePlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab="Mean H'")
+
+thetapiPlot = xyplot(hprime ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab="Mean Pi")
