@@ -38,12 +38,12 @@ save_image <- function(stat,img)
 
 files <- dir(path="../../mlocus_pickle/",pattern="*.genome_scan.db")
 
-#data = data.frame()
-#
-#for (i in files)
-#{
-#    data = rbind(data,process_genome_scan(i))
-#}
+data = data.frame()
+
+for (i in files)
+{
+    data = rbind(data,process_genome_scan(i))
+}
 
 COLORS=viridis(length(unique(as.factor(data$dist))))
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
@@ -59,17 +59,82 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   ylab="Mean Tajima's D",
                   scales=list(cex=1),
                   strip=STRIP)
+save_image("10_locus_tajd",tajdPlot)
 
 hprimePlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
-                  ylab="Mean H'")
+                  ylab="Mean H'",
+                  scales=list(cex=1),
+                  strip=STRIP)
+save_image("10_locus_hprime",hprimePlot)
 
 thetapiPlot = xyplot(hprime ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
-                  ylab="Mean Pi")
+                  ylab=expression(paste("Mean ",hat(theta)[pi])),
+                  scales=list(cex=1),
+                  strip=STRIP)
+save_image('10_locus_thetapi',thetapiPlot)
+
+H1Plot = xyplot(H1 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression("Mean ",H[1]),
+                  scales=list(cex=1),
+                  strip=STRIP,xlim=c(-0.05,0.1))
+save_image('10_locus_H1',H1Plot)
+
+H12Plot = xyplot(H12 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",H[12])),
+                  scales=list(cex=1),
+                  strip=STRIP,xlim=c(-0.05,0.1))
+save_image('10_locus_H12',H12Plot)
+
+H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",H[12])),
+                  scales=list(cex=1),
+                  strip=STRIP,xlim=c(-0.05,0.15))
+save_image('10_locus_H2H1',H2H1Plot)
+
+mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",H[12])),
+                  scales=list(cex=1),
+                  strip=STRIP,xlim=c(-2,4))
+save_image('10_locus_mean_nSL',mean_nSLPlot)
+
+# This one is garbage:
+max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  auto.key=KEY,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",H[12])),
+                  scales=list(cex=1),
+                  strip=STRIP,xlim=c(-2,4))
+
+
+
+
+
+
+
+
