@@ -88,6 +88,7 @@ def run_replicate(argtuple):
     env = [(0,0,1),(10*NANC,args.opt,1)]
     #print(mutrates_s)
     #print(mutrates_n)
+    #print([10*args.rho/float(4*NANC)]*args.nloci)
     #for i in enumerate(nregions):
     #    if len(nregions[i[0]])>0:
     #        print("the type is",type(i[1]))
@@ -95,6 +96,8 @@ def run_replicate(argtuple):
     #for i in enumerate(sregions):
     #    if len(sregions[i[0]])>0:
     #        print(i,i[1][0].b,i[1][0].e,i[1][0].w)
+    #for i in enumerate(recregions):
+    #    print(i,i[1][0].b,i[1][0].e)
     #sys.exit(0)
     pdict = {'nregions':nregions,
             'sregions':sregions,
