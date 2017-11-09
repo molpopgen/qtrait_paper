@@ -22,7 +22,7 @@ for (m in muvals)
             group_by(generation,window) %>%
             summarise_each(funs(mean),-generation,-locus,-repid) %>%
             mutate(opt=as.numeric(o)) %>%
-            mutate(mu=as.numeric(m))
+            mutate(mu=as.numeric(m)) %>%
             mutate(dwindow = abs(window-5.0))
 
         x = collect(query_win)
