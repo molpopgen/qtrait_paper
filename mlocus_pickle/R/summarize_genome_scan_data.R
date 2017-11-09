@@ -23,7 +23,9 @@ for (m in muvals)
             summarise_each(funs(mean),-generation,-locus,-repid) %>%
             mutate(opt=as.numeric(o)) %>%
             mutate(mu=as.numeric(m)) %>%
-            mutate(dwindow = abs(window-5.0))
+            mutate(dwindow = abs(window-5.0)) %>%
+            # swap column names b/c db are wrong
+            rename(thetapi=hprime,hprime=thetapi)
 
         x = collect(query_win)
         if( is.na(data) )
