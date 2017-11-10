@@ -89,7 +89,7 @@ def get_summstats(pop, repid, nsam, temp):
                         if np.isnan(max_nSL) or np.abs(bmax) > np.abs(max_nSL):
                             max_nSL = bmax
             temp[i] = np.array([(locus, int(i), repid, pop.generation, ps.tajimasd(),
-                                 ps.thetapi(), ps.hprime(),
+                                 ps.hprime(),ps.thetapi(),
                                  gs['H1'], gs['H12'], gs['H2H1'], mean_nSL, max_nSL)], dtype=temp.dtype)
             #print("done assigning ",i)
         #print("attempt concat")
