@@ -70,10 +70,10 @@ def get_summstats(pop, repid, nsam, temp):
             gs = garudStats(w[i])
 
             raw_nSL = nSLiHS(w[i])
-            raw_nSL = [i for i in raw_nSL if np.isfinite(i[0]) == 1 and i[2] > 3]
+            raw_nSL = [i for i in raw_nSL if np.isfinite(i[0]) == 1 and min(i[2],len(sd)-i[2]) > 3]
             nSL = np.array(raw_nSL)
             mean_nSL = nSL[:,0].mean()
-            bins = np.digitize(nSL[:,2],np.arange(0,args.nsam,5))
+            bins = np.digitize(nSL[:,2],np.arange(0,len(sd),5))
             max_nSL = np.nan
             for b in set(bins):
                 binscores = nSL[:,0][np.where(bins==b)[0]]
