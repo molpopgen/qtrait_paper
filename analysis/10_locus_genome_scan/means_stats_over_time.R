@@ -22,7 +22,8 @@ process_genome_scan <- function(filename)
         mutate(dist=abs(window-5)) %>% 
         group_by(generation,window,dist) %>%
         summarise_each(funs(mean)) %>% 
-        mutate(mu=mu,opt=opt,scaled_time = (generation-50000)/5000)
+        mutate(mu=mu,opt=opt,scaled_time = (generation-50000)/5000) %>%
+        rename(thetapi=hprime,hprime=thetapi)
 
     dt = collect(q)
     dt
@@ -31,7 +32,7 @@ process_genome_scan <- function(filename)
 save_image <- function(stat,img)
 {
     trellis.device(device="pdf",file=paste(stat,".pdf",sep=""),height=10,width=10)
-    img
+    print(img)
     dev.off()
 }
 
@@ -61,7 +62,7 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   strip=STRIP)
 save_image("10_locus_tajd",tajdPlot)
 
-hprimePlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+hprimePlot = xyplot(hprime ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -71,7 +72,7 @@ hprimePlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=di
                   strip=STRIP)
 save_image("10_locus_hprime",hprimePlot)
 
-thetapiPlot = xyplot(hprime ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
