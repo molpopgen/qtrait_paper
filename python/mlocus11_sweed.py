@@ -108,8 +108,8 @@ if __name__ == "__main__":
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
             data = pd.DataFrame(fn)
-            data['opt'] = args.opt*len(data.index)
-            data['mu'] = args.mu*len(data.index)
+            data['opt'] = [args.opt]*len(data.index)
+            data['mu'] = [args.mu]*len(data.index)
 
             data.to_sql('data',conn,index=False,if_exists='append')
     conn.close()
