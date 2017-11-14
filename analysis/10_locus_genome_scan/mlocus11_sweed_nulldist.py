@@ -17,7 +17,7 @@ NSAM = 100
 OUTFILE = ('sweed_nulldist.db')
 
 SweedResult = collections.namedtuple(
-    'SweedResult', ['LR', 'position', 'alpha'])
+    'SweedResult', ['LR', 'position', 'alpha', 'nmarkers'])
 SweedEntry = collections.namedtuple(
     'SweedEntry', ['position', 'x', 'n', 'folded'])
 
@@ -29,8 +29,8 @@ def do_work(args):
 
     dataFile = 'in.txt'
     resultsFile = 'SweeD_Report.run'
-    resultsFilePath = tdir +'/' + resultsFile
-    dataFilePath = tdir +'/' + dataFile
+    resultsFilePath = tdir + '/' + resultsFile
+    dataFilePath = tdir + '/' + dataFile
     nulldist = []
     # for ts in msprime.simulate(NSAM, mutation_rate=THETA / 4.,
     #                            recombination_rate=RHO / 4.,
@@ -62,12 +62,12 @@ def do_work(args):
                 LR = res['Likelihood'].iloc[LRmax]
                 alpha = res['Alpha'].iloc[LRmax]
                 pos = res['Position'].iloc[LRmax] / 1e6
-                nulldist.append(SweedResult(LR, pos, alpha))
-            for i in [resultsFilePath,dataFilePath]:
+                nulldist.append(SweedResult(LR, pos, alpha, len(res.index)))
+            for i in [resultsFilePath, dataFilePath]:
                 if os.path.exists(i):
                     os.remove(i)
         except:
-            for i in [resultsFilePath,dataFilePath]:
+            for i in [resultsFilePath, dataFilePath]:
                 if os.path.exists(i):
                     os.remove(i)
             continue
