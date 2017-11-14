@@ -16,7 +16,8 @@ RHO = 1000.
 NSAM = 100
 OUTFILE = ('sweed_nulldist.db')
 
-SweedResult = collections.namedtuple('SweedResult', ['LR', 'position', 'alpha'])
+SweedResult = collections.namedtuple(
+    'SweedResult', ['LR', 'position', 'alpha'])
 SweedEntry = collections.namedtuple(
     'SweedEntry', ['position', 'x', 'n', 'folded'])
 
@@ -28,28 +29,48 @@ def do_work(args):
 
     dataFile = 'in.txt'
     resultsFile = 'SweeD_Report.run'
+    resultsFilePath = tdir +'/' + resultsFile
+    dataFilePath = tdir +'/' + dataFile
     nulldist = []
-    for ts in msprime.simulate(NSAM, mutation_rate=THETA / 4.,
-                               recombination_rate=RHO / 4.,
-                               random_seed=int(seed), num_replicates=nreps):
-        data = []
-        for variant in ts.variants():
-            data.append(SweedEntry(
-                variant.position * 1e6, len(np.where(variant.genotypes == 1)[0]), NSAM, 0))
-        data_df = pd.DataFrame(data)
-        with open(tdir + '/' + dataFile, 'w') as f:
-            data_df.to_csv(f, sep='\t', index=False)
+    # for ts in msprime.simulate(NSAM, mutation_rate=THETA / 4.,
+    #                            recombination_rate=RHO / 4.,
+    #                            random_seed=int(seed), num_replicates=nreps):
+    seeds_used = []
+    while len(nulldist) < nreps:
+        try:
+            next_seed = int(np.random.choice(420000000, 1)[0])
+            while next_seed in seeds_used:
+                next_seed = int(np.random.choice(420000000, 1)[0])
+            seeds_used.append(next_seed)
+            ts = msprime.simulate(NSAM, mutation_rate=THETA / 4.,
+                                  recombination_rate=RHO / 4., random_seed=next_seed)
+            data = []
+            for variant in ts.variants():
+                data.append(SweedEntry(
+                    variant.position * 1e6, len(np.where(variant.genotypes == 1)[0]), NSAM, 0))
+            data_df = pd.DataFrame(data)
+            with open(dataFilePath, 'w') as f:
+                data_df.to_csv(f, sep='\t', index=False)
 
-        x = subprocess.run(['SweeD', '-name', 'run', '-input', dataFile,
-                            '-grid', '100'], stdout=subprocess.PIPE, cwd=tdir)
+            x = subprocess.run(['SweeD', '-name', 'run', '-input', dataFile,
+                                '-grid', '100'], stdout=subprocess.PIPE, cwd=tdir)
 
-        res = pd.read_csv(tdir + '/' + resultsFile,
-                          sep='\t', skiprows=2)
-        LRmax = res['Likelihood'].argmax()
-        LR = res['Likelihood'].iloc[LRmax]
-        alpha = res['Alpha'].iloc[LRmax]
-        pos = res['Position'].iloc[LRmax] / 1e6
-        nulldist.append(SweedResult(LR, pos, alpha))
+            if os.path.exists(resultsFilePath):
+                res = pd.read_csv(dataFilePath,
+                                  sep='\t', skiprows=2)
+                LRmax = res['Likelihood'].argmax()
+                LR = res['Likelihood'].iloc[LRmax]
+                alpha = res['Alpha'].iloc[LRmax]
+                pos = res['Position'].iloc[LRmax] / 1e6
+                nulldist.append(SweedResult(LR, pos, alpha))
+            for i in [resultsFilePath,dataFilePath]:
+                if os.path.exists(i):
+                    os.remove(i)
+        except:
+            for i in [resultsFilePath,dataFilePath]:
+                if os.path.exists(i):
+                    os.remove(i)
+            continue
     shutil.rmtree(tdir)
     return nulldist
 
