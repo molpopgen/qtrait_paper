@@ -37,7 +37,6 @@ def do_work(args):
     #                            random_seed=int(seed), num_replicates=nreps):
     seeds_used = []
     while len(nulldist) < nreps:
-        print("len =",len(nulldist),nreps)
         try:
             next_seed = int(np.random.choice(420000000, 1)[0])
             while next_seed in seeds_used:
@@ -56,7 +55,6 @@ def do_work(args):
             x = subprocess.run(['SweeD', '-name', 'run', '-input', dataFile,
                                 '-grid', '100'], stdout=subprocess.PIPE, cwd=tdir)
 
-            print("here")
             if os.path.exists(resultsFilePath):
                 res = pd.read_csv(resultsFilePath, sep="\t", skiprows=2, index_col=None)
                 LRmax = res['Likelihood'].argmax()
