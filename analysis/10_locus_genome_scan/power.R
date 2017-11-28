@@ -1,6 +1,7 @@
 library(dplyr)
 library(tibble)
 library(readr)
+library(stringr)
 ndist_db = src_sqlite("nulldist.db",create=F)
 ndist_data_table = tbl(ndist_db, 'data')
 
@@ -19,26 +20,40 @@ lower001 <- function(x)
 raw_dist = collect(ndist_data_table)
 critical_vals = raw_dist %>% summarise_all(funs(lower05,lower01,lower001))
 
-n = commandArgs(trailing=TRUE)
+files <- dir(path="../../mlocus_pickle/",pattern="*.genome_scan.db")
 
-infile = n[1]
-outfile = n[2]
+data = data.frame()
+for (infile in files)
+{
+    print(infile)
+    dbname = paste("../../mlocus_pickle/",infile,sep="")
+    indb = src_sqlite(dbname)
+    indb_table = tbl(indb,'data')
 
-indb = src_sqlite(infile)
-indb_table = tbl(indb,'data')
+    fs <- str_split(infile,regex('\\.'))[[1]]
+    fs[2]<-str_replace(fs[2],'mu','')
+    fs[4]<-str_replace(fs[4],'opt','')
+    mu <- as.numeric(paste(fs[2],fs[3],sep='.'))
+    opt <- as.numeric(paste(fs[4],fs[5],sep='.'))
 
-raw_data = collect(indb_table)
-power_query = raw_data %>% group_by(generation,locus,window) %>%
-    summarise(tajd05 = sum(tajd <= critical_vals$tajd_lower05)/n(),
-           tajd01 = sum(tajd <= critical_vals$tajd_lower01)/n(),
-           tajd001 = sum(tajd <= critical_vals$tajd_lower001)/n(),
-           hprime05 = sum(hprime <= critical_vals$hprime_lower05)/n(),
-           hprime01 = sum(hprime <= critical_vals$hprime_lower01)/n(),
-           hprime001 = sum(hprime <= critical_vals$hprime_lower001)/n(),
-           max_abs_nSL05 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower05)/n(),
-           max_abs_nSL01 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower01)/n(),
-           max_abs_nSL001 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower001)/n())
+    raw_data = collect(indb_table)
+    power_query = raw_data %>% group_by(generation,locus,window) %>%
+        summarise(tajd05 = sum(tajd <= critical_vals$tajd_lower05)/n(),
+               tajd01 = sum(tajd <= critical_vals$tajd_lower01)/n(),
+               tajd001 = sum(tajd <= critical_vals$tajd_lower001)/n(),
+               hprime05 = sum(hprime <= critical_vals$hprime_lower05)/n(),
+               hprime01 = sum(hprime <= critical_vals$hprime_lower01)/n(),
+               hprime001 = sum(hprime <= critical_vals$hprime_lower001)/n(),
+               max_abs_nSL05 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower05)/n(),
+               max_abs_nSL01 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower01)/n(),
+               max_abs_nSL001 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower001)/n()) %>%
+        mutate(mu=mu,opt=opt)
 
 
-power_results = collect(power_query)
-write_delim(power_results,outfile,delim="\t")
+    power_results = collect(power_query)
+    data = bind_rows(data,power_results)
+}
+
+of = gzfile("power.txt.gz","w")
+write_delim(data,of)
+close(of)
