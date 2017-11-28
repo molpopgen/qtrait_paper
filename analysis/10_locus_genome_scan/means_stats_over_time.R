@@ -21,9 +21,8 @@ process_genome_scan <- function(filename)
         select(-c(repid, locus)) %>%
         mutate(dist=abs(window-5)) %>% 
         group_by(generation,window,dist) %>%
-        summarise_each(funs(mean)) %>% 
-        mutate(mu=mu,opt=opt,scaled_time = (generation-50000)/5000) %>%
-        rename(thetapi=hprime,hprime=thetapi)
+        summarise_all(funs(mean)) %>% 
+        mutate(mu=mu,opt=opt,scaled_time = (generation-50000)/5000) 
 
     dt = collect(q)
     dt
@@ -43,7 +42,7 @@ data = data.frame()
 
 for (i in files)
 {
-    data = rbind(data,process_genome_scan(i))
+    data = bind_rows(data,process_genome_scan(i))
 }
 
 COLORS=viridis(length(unique(as.factor(data$dist))))
