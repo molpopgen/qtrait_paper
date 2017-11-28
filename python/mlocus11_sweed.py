@@ -100,7 +100,7 @@ if __name__ == "__main__":
     tf = tarfile.open(args.tarfile, 'r')
     files = tf.getnames()
     tf.close()
-    raw_args = [(i, 'tdir' + str(i), args, j) for i, j in zip(
+    raw_args = [(i, 'tdir' + str(args.mu) + '.' + str(args.opt) + '.' + str(i), args, j) for i, j in zip(
         sorted(np.random.choice(int(4e6), len(files), replace=False)), files)]
     conn = sqlite3.connect(args.outfile)
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
