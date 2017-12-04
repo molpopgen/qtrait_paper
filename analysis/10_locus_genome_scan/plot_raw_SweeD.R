@@ -18,8 +18,17 @@ LRplot = xyplot(meanLR ~ scaled_time| as.factor(opt)*as.factor(mu),
                   scales=list(cex=1),
                   strip=STRIP)
 
-
 trellis.device(device="pdf",file="Sweed_LR_raw.pdf",height=10,width=10, color=FALSE)
 print(LRplot)
 dev.off()
 
+alpha_plot = xyplot(mean_alpha ~ scaled_time| as.factor(opt)*as.factor(mu),
+                type='l',data=x,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab="Mean estimate of 2Ns",
+                  scales=list(cex=1),
+                  strip=STRIP)
+
+trellis.device(device="pdf",file="Sweed_alpha_raw.pdf",height=10,width=10, color=FALSE)
+print(alpha_plot)
+dev.off()
