@@ -1,5 +1,6 @@
 library(data.table)
 library(lattice)
+library(viridis)
 source("latticebw.R")
 
 muvals = c("0.00025", "0.001", "0.005")
@@ -27,7 +28,7 @@ for (m in muvals)
 data$scaled_time = (data$generation-50000)/5000.0
 XLIM=c(-0.02,0.1)
 STRIP=strip.custom(var.name=expression(z[0]),strip.levels=c(T,T),sep=" = ",bg=0,fg=0,style=1)
-XLAB="Time since optimum shift (units of N generation)"
+XLAB="Time since optimum shift (units of N generations)"
 LWD=c(3,3,3)
 LTY=c("solid","dashed","dotdash")
 KEYTEXT = c(expression(paste(mu," = ",2.5e-4)),
@@ -37,14 +38,32 @@ KEY = list(
            space = "top", points = FALSE, lines = TRUE,
            text=KEYTEXT,
             columns = 3)
-VGplot=xyplot(VG~scaled_time|opt,group=mu,data=data,type='l',layout=c(1,3),
+COLORS=viridis(length(KEYTEXT))
+# VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
+#        xlim=XLIM,
+#        scales=list(x=list(tick.number=10)),
+#        xlab=XLAB,
+#        ylab="Genetic variance",
+#        par.settings=simpleTheme(col=COLORS,lwd=3),
+#        #par.settings=bwtheme,
+#        strip=STRIP,
+#        auto.key = KEY
+#        )
+VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
        scales=list(x=list(tick.number=10)),
        xlab=XLAB,
        ylab="Genetic variance",
-       par.settings=bwtheme,
+       par.settings=simpleTheme(col=COLORS,lwd=3),
+       #par.settings=bwtheme,
        strip=STRIP,
-       auto.key = KEY
+       auto.key = KEY,
+       panel=function(x,y,group.number,...)
+       {
+           EVG = 4*unique(data$mu)[group.number]
+           panel.xyplot(x,y,col=COLORS[group.number],lwd=3,...)
+           panel.abline(h=EVG,lty="dotdash",col=COLORS[group.number],lwd=2)
+       }
        )
 pdf("slocusVG.pdf")
 VGplot
@@ -59,8 +78,9 @@ xyplot(tbar~scaled_time|opt,group=mu,data=data,type='l',layout=c(1,3),
        scales=list(x=list(tick.number=10)),
        xlab=XLAB,
        ylab=expression(bar(z)),
-       par.settings=bwtheme,
+       par.settings=simpleTheme(col=COLORS,lwd=3),
+       #par.settings=bwtheme,
        strip=STRIP,
-       auto.key = KEY,
+       auto.key = KEY
        )
 dev.off()
