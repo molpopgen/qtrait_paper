@@ -25,8 +25,8 @@ for (m in muvals)
 }
 
 #Lattice graphics, FTW
-data$scaled_time = (data$generation-50000)/5000.0
-XLIM=c(-0.02,0.1)
+data$scaled_time = (data$generation-50000)/50000.0
+XLIM=c(-0.02,0.05)
 STRIP=strip.custom(var.name=expression(z[0]),strip.levels=c(T,T),sep=" = ",bg=0,fg=0,style=1)
 XLAB="Time since optimum shift (units of N generations)"
 LWD=c(3,3,3)
