@@ -31,13 +31,14 @@ STRIP=strip.custom(var.name=expression(z[0]),strip.levels=c(T,T),sep=" = ",bg=0,
 XLAB="Time since optimum shift (units of N generations)"
 LWD=c(3,3,3)
 LTY=c("solid","dashed","dotdash")
-KEYTEXT = c(expression(paste(mu," = ",2.5e-4)),
-            expression(paste(mu," = ",1e-3)),        
-            expression(paste(mu," = ",5e-3)))
+#Seriously, fuckR:
+KEYTEXT = c(expression(paste(mu,"=",2.5 %*% 10^-4)), 
+            expression(paste(mu,"=",1 %*% 10^-3)),        
+            expression(paste(mu,"=",5 %*% 10^-3)))
 KEY = list(
-           space = "top", points = FALSE, lines = TRUE,
+           space = "top", points =FALSE, lines = TRUE,
            text=KEYTEXT,
-            columns = 3)
+            columns = 2,cex=0.65)
 COLORS=viridis(length(KEYTEXT))
 # VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
 #        xlim=XLIM,
@@ -51,7 +52,7 @@ COLORS=viridis(length(KEYTEXT))
 #        )
 VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
-       scales=list(x=list(tick.number=10)),
+       scales=list(x=list(tick.number=10),alternating=F),
        xlab=XLAB,
        ylab="Genetic variance",
        par.settings=simpleTheme(col=COLORS,lwd=3),
@@ -65,17 +66,18 @@ VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
            panel.abline(h=EVG,lty="dotdash",col=COLORS[group.number],lwd=2)
        }
        )
-pdf("slocusVG.pdf")
-VGplot
+trellis.device(device="pdf",file="slocusVG.pdf")
+trellis.par.set("fontsize",list(text=18))
+print(VGplot)
 dev.off()
-tiff("slocusVG.tiff")
-VGplot
+trellis.device(device="tiff",file="slocusVG.tiff")
+trellis.par.set("fontsize",list(text=18))
+print(VGplot)
 dev.off()
 
-pdf("slocusZbar.pdf")
-xyplot(tbar~scaled_time|opt,group=mu,data=data,type='l',layout=c(1,3),
+zbar=xyplot(tbar~scaled_time|opt,group=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
-       scales=list(x=list(tick.number=10)),
+       scales=list(x=list(tick.number=10),alternating=F),
        xlab=XLAB,
        ylab=expression(bar(z)),
        par.settings=simpleTheme(col=COLORS,lwd=3),
@@ -83,4 +85,8 @@ xyplot(tbar~scaled_time|opt,group=mu,data=data,type='l',layout=c(1,3),
        strip=STRIP,
        auto.key = KEY
        )
+trellis.device(device="pdf",file="slocusZbar.pdf")
+
+trellis.par.set("fontsize",list(text=18))
+print(zbar)
 dev.off()
