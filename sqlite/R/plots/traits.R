@@ -27,14 +27,16 @@ for (m in muvals)
 #Lattice graphics, FTW
 data$scaled_time = (data$generation-50000)/50000.0
 XLIM=c(-0.02,0.05)
-STRIP=strip.custom(var.name=expression(z[0]),strip.levels=c(T,T),sep=" = ",bg=0,fg=0,style=1)
+STRIP=strip.custom(strip.names=TRUE,var.name=expression(z[0]),
+                   strip.levels=c(T,T),sep=" = ",bg=0,fg=0,style=1)
+
 XLAB="Time since optimum shift (units of N generations)"
 LWD=c(3,3,3)
 LTY=c("solid","dashed","dotdash")
 #Seriously, fuckR:
-KEYTEXT = c(expression(paste(mu,"=",2.5 %*% 10^-4)), 
-            expression(paste(mu,"=",1 %*% 10^-3)),        
-            expression(paste(mu,"=",5 %*% 10^-3)))
+KEYTEXT = c(expression(paste(mu," = ",2.5 %*% 10^-4)), 
+            expression(paste(mu," = ",1 %*% 10^-3)),        
+            expression(paste(mu," = ",5 %*% 10^-3)))
 KEY = list(
            space = "top", points =FALSE, lines = TRUE,
            text=KEYTEXT,
@@ -50,7 +52,7 @@ COLORS=viridis(length(KEYTEXT))
 #        strip=STRIP,
 #        auto.key = KEY
 #        )
-VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
+VGplot=xyplot(VG~scaled_time|as.factor(opt),groups=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
        scales=list(x=list(tick.number=10),alternating=F),
        xlab=XLAB,
@@ -75,7 +77,7 @@ trellis.par.set("fontsize",list(text=18))
 print(VGplot)
 dev.off()
 
-zbar=xyplot(tbar~scaled_time|opt,group=mu,data=data,type='l',layout=c(1,3),
+zbar=xyplot(tbar~scaled_time|as.factor(opt),group=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
        scales=list(x=list(tick.number=10),alternating=F),
        xlab=XLAB,
