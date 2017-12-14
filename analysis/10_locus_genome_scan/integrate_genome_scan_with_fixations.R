@@ -17,6 +17,7 @@ library(dbplyr)
 library(stringr)
 library(viridis)
 library(lattice)
+library(RSQLite)
 
 process_genome_scan <- function(filename, fixations)
 {
@@ -38,7 +39,10 @@ process_genome_scan <- function(filename, fixations)
         # We need to recode those with 0.
         # The join also mangles mu/opt for loci w/no sweeps,
         # so we need to put that back in.
-        replace_na(list(h100=0,h200=0,h=0,soft=0,ttl_sweeps=0,opt = dbopt, mu = dbmu))
+        replace_na(list(h100=0,h200=0,h=0,soft=0,ttl_sweeps=0,opt = dbopt, mu = dbmu)) %>%
+        # replace_na changes our int to numeric
+        mutate(h100 = as.integer(h100),h200 = as.integer(h200), h = as.integer(h),
+               soft = as.integer(soft), ttl_sweeps = as.integer(ttl_sweeps))
     dt
 }
 
@@ -47,27 +51,29 @@ fixations = read_delim("raw_fixations.txt.gz",delim=" ")
 #See note in file header above re: why we remove none here
 fixations = fixations %>% filter(sweep_type != 'none') %>%
     group_by(repid,locus,mu,opt) %>%
-    summarise(h100 = length(which(sweep_type == 'hard' & g <= 5e4 + 100)),
-              h200 = length(which(sweep_type == 'hard' & g > 5e4 + 100 & g <= 5e4 + 200)),
-              h = length(which(sweep_type == 'hard' & g > 5e4 + 200)),
-              soft = length(which(sweep_type == 'soft'))) %>%
+    summarise(h100 = as.integer(length(which(sweep_type == 'hard' & g <= 5e4 + 100))),
+              h200 = as.integer(length(which(sweep_type == 'hard' & g > 5e4 + 100 & g <= 5e4 + 200))),
+              h = as.integer(length(which(sweep_type == 'hard' & g > 5e4 + 200))),
+              soft = as.integer(length(which(sweep_type == 'soft')))) %>%
     mutate(ttl_sweeps = h100 + h200 + h + soft)
 
 files <- dir(path="../../mlocus_pickle/",pattern="*.genome_scan.db")
 
 
-ofile = gzfile("genome_scan_with_sweep_counts.gz","wb")
-dummy = 0
+DBname="genome_scan_with_sweep_counts.sqlite3"
+if(file.exists(DBname))
+{
+    file.remove(DBname)
+}
+DB = src_sqlite(DBname,create=T)
 for (i in files)
 {
     dfi = process_genome_scan(i,fixations)
-    if (dummy==0)
-    {
-        write_delim(dfi,ofile,delim=" ",append=F)
-    } else
-    {
-        write_delim(dfi,ofile,delim=" ",append=T)
-    }
-    dummy = dummy + 1
+    dbWriteTable(DB$con, "data", dfi,append=TRUE)
 }
-close(ofile)
+
+# create DB indexes
+dbSendQuery(DB$con, "create INDEX h100i on data(h100)")
+dbSendQuery(DB$con, "create INDEX h200i on data(h200)")
+dbSendQuery(DB$con, "create INDEX hi on data(h)")
+dbSendQuery(DB$con, "create INDEX si on data(soft)")
