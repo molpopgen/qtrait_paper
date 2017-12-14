@@ -1,12 +1,18 @@
 # Notes: sweep_type = none
 # means fixation prior to optimum shift
 
-# The current problem in this script is
-# that some loci have hard and soft sweeps.
-# It is not clear which one is getting assigned
-# in the join.
+# This script takes the pop gen statistic data 
+# over time and tacks on how many sweeps of various 
+# types happened at each locus.  The sweeps are 
+# categorized as follows: 
+# h100 = hard, within first 100 gens of optimum shift
+# h200 = hard, > 100 and <= 200 gens post-shift
+# h = hard, > 200 gens post-shift
+# soft = from standing variation
+# ttl_sweeps = sum of all of the above
 library(readr)
 library(dplyr)
+library(tidyr)
 library(dbplyr)
 library(stringr)
 library(viridis)
@@ -26,39 +32,42 @@ process_genome_scan <- function(filename, fixations)
     dbt <- tbl(db,'data')
 
     dt = collect(dbt) %>%
-        full_join(f,by=c('repid','locus'))
-
-    print(head(dt))
-    dt$sweep_type[which(is.na(dt$sweep_type))] = "none"
-    print(unique(dt$sweep_type))
-
-    h = dt %>% filter(sweep_type == 'hard')
-    nh = dt %>% filter(sweep_type != 'hard')
-
-    h$sweep_type[which(h$g <= 5e4+100)] = 'hard_recent'
-    h$sweep_type[which(h$g > 5e4+100 & h$g <= 5e4+200)] = 'hard_less_recent'
-    
-    dt = rbind(h,nh)
+        full_join(f,by=c('repid','locus')) %>%
+        # The full join will put NA values
+        # for all loci that had no sweeps at all.
+        # We need to recode those with 0.
+        # The join also mangles mu/opt for loci w/no sweeps,
+        # so we need to put that back in.
+        replace_na(list(h100=0,h200=0,h=0,soft=0,ttl_sweeps=0,opt = dbopt, mu = dbmu))
     dt
 }
 
 fixations = read_delim("raw_fixations.txt.gz",delim=" ")
-fixations = fixations %>% filter(sweep_type != 'none')
+
+#See note in file header above re: why we remove none here
+fixations = fixations %>% filter(sweep_type != 'none') %>%
+    group_by(repid,locus,mu,opt) %>%
+    summarise(h100 = length(which(sweep_type == 'hard' & g <= 5e4 + 100)),
+              h200 = length(which(sweep_type == 'hard' & g > 5e4 + 100 & g <= 5e4 + 200)),
+              h = length(which(sweep_type == 'hard' & g > 5e4 + 200)),
+              soft = length(which(sweep_type == 'soft'))) %>%
+    mutate(ttl_sweeps = h100 + h200 + h + soft)
 
 files <- dir(path="../../mlocus_pickle/",pattern="*.genome_scan.db")
 
-data = data.frame()
 
-x=process_genome_scan(files[3],fixations)
-x=x%>%
-    group_by(sweep_type,generation) %>%
-    summarise(md=mean(tajd))
-
-p=xyplot(md~generation,data=x,group=sweep_type,auto.key=TRUE)
-trellis.device(device="pdf",file="test.pdf")
-print(p)
-dev.off()
-# for (i in files)
-# {
-#     data = bind_rows(data,process_genome_scan(i, fixations))
-# }
+ofile = gzfile("genome_scan_with_sweep_counts.gz","wb")
+dummy = 0
+for (i in files)
+{
+    dfi = process_genome_scan(i,fixations)
+    if (dummy==0)
+    {
+        write_delim(dfi,ofile,delim=" ",append=F)
+    } else
+    {
+        write_delim(dfi,ofile,delim=" ",append=T)
+    }
+    dummy = dummy + 1
+}
+close(ofile)
