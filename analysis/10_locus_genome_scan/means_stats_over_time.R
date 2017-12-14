@@ -49,7 +49,7 @@ for (i in files)
 COLORS=viridis(length(unique(as.factor(data$dist))))
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
-STRIP=strip.custom(strip.names = TRUE, 
+STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(z[o]),expression(mu)),bg=c("white"))
 
 tajdPlot = xyplot(tajd ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
