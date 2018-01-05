@@ -11,7 +11,7 @@ import math
 
 popstatFiles = ['../sqlite/H2_1.0_OPT_1_mu_0.005_sigmu0.25_stats.db','../sqlite/H2_1.0_OPT_1_mu_0.001_sigmu0.25_stats.db','../sqlite/H2_1.0_OPT_1_mu_0.00025_sigmu0.25_stats.db']
 trajFiles = ['H2_1.0_OPT_1_mu_0.005_sigmu0.25_traj_merged.db','H2_1.0_OPT_1_mu_0.001_sigmu0.25_traj_merged.db','H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj_merged.db']
-oFiles = ['H2_1.0_OPT_1_mu_0.005_sigmu0.25_traj_trajectories.pdf','H2_1.0_OPT_1_mu_0.001_sigmu0.25_traj_trajectories.pdf','H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj_trajectories.pdf']
+oFiles = ['trajectories_himu.pdf', 'trajectories_medmu.pdf', 'trajectories_lomu.pdf']
 # popstatFiles = ['../sqlite/H2_1.0_OPT_1_mu_0.00025_sigmu0.25_stats.db']
 # trajFiles = ['H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj_merged.db']
 # oFiles = ['H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj_trajectories.pdf']
@@ -100,7 +100,7 @@ for statfile, trajfile, ofile in zip(popstatFiles, trajFiles, oFiles):
 
         label = "_nolabel_"
         if math.fabs(esize) > 0.1:
-             label=r'$e = $'+'{0:.2f}'.format(esize)+ r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
+             label=r'$\gamma = $'+'{0:.2f}'.format(esize)+ r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
         axBOTTOM.plot(fix_i.scaled_time,fix_i.freq,#color=fix_color,
                      alpha=min(1.0,4.0*math.fabs(esize)),
                      #linestyle=fix_style,
@@ -116,7 +116,7 @@ for statfile, trajfile, ofile in zip(popstatFiles, trajFiles, oFiles):
         #                  linewidth=2,
         #                  color = cmap(1.0 - math.fabs(esize)/MAX_ESIZE),
         #                  label = "_nolegend_")
-    axBOTTOM.legend(loc="upper right",ncol=1,title=r'$e = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small',frameon=False)
+    axBOTTOM.legend(loc="upper right",ncol=1,title=r'$\gamma = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small',frameon=False)
     #axBOTTOM.legend(bbox_to_anchor=(1.2,1),ncol=1,title=r'$e = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small')
     axBOTTOM.set_ylabel("Mutation frequency")
         
@@ -137,7 +137,7 @@ for statfile, trajfile, ofile in zip(popstatFiles, trajFiles, oFiles):
         origin=i.origin.mean()
         label = "_nolegend_"
         if math.fabs(esize) > 0.1 and ENTRIES < 5:
-            label=r'$e = $'+'{0:0.2f}'.format(esize)+r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
+            label=r'$\gamma = $'+'{0:0.2f}'.format(esize)+r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
             ENTRIES += 1
         axBOTTOM.plot(i.scaled_time,i.freq,
                      linewidth=2,
@@ -152,7 +152,7 @@ for statfile, trajfile, ofile in zip(popstatFiles, trajFiles, oFiles):
     # axBOTTOM.text(3.3,0.9,'Soft sweep,\n'+r'$e = 0.06$,'+'\n'+r'$o = -0.23$')#+',\n'+r'$s\approx 0.002$')
     plt.xlabel("Time since optimum shift (units of N generations)")
     axBOTTOM.set_ylabel("Mutation frequency")
-    axBOTTOM.legend(loc="upper right",ncol=1,title=r'$e = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small',frameon=False)
+    axBOTTOM.legend(loc="upper right",ncol=1,title=r'$\gamma = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small',frameon=False)
     # axBOTTOM.hlines(0.35,0.75,3.5)
     # axBOTTOM.vlines(0.75,0.325,0.35)
     # axBOTTOM.vlines(3.5,0.325,0.35)
