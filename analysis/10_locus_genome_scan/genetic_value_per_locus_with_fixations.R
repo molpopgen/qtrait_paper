@@ -51,6 +51,7 @@ fixations = fixations %>% filter(sweep_type != 'none') %>%
 files <- dir(path="../../mlocus_pickle/",pattern="*.genetic_values_per_locus.db")
 
 d = data.frame() 
+d2 = data.frame()
 for (i in files)
 {
     x = process_gvalues(i, fixations)
@@ -69,13 +70,23 @@ for (i in files)
     nosweeps = subset(x, ttl_sweeps == 0) %>%
         rename(nosweepsg = g) %>%
         gather(key=g,value=value,nosweepsg)
+    somesweeps = subset(x, ttl_sweeps > 0) %>%
+        rename(somesweepsg = g) %>%
+        gather(key=g,value=value,somesweepsg)
     d = rbind(d,soft,h100,h200,h,nosweeps)
+    d2 = rbind(d2,somesweeps,nosweeps)
 }
 
 d = d %>%
     group_by(opt,mu,generation,g) %>%
     summarise(mean_g_per_locus = mean(value)) %>%
     mutate(scaled_time = (generation-5e4)/5e4)
+
+d2 = d2 %>%
+    group_by(opt,mu,generation,g) %>%
+    summarise(mean_g_per_locus = mean(value)) %>%
+    mutate(scaled_time = (generation-5e4)/5e4)
+
 
 KEY=list(space="top",columns=3,title="",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
@@ -92,5 +103,21 @@ p = xyplot(mean_g_per_locus ~ scaled_time|as.factor(opt)*as.factor(mu),data=d,
           strip=STRIP,xlim=c(-0.01,0.05))
 
 trellis.device(device="png",file="test.png")
+print(p)
+dev.off()
+
+KEY=list(space="top",title="",
+         cex.title=1,points=FALSE,lines=TRUE,just=0.5)
+COLORS=viridis(length(unique(as.factor(d2$g))))
+p = xyplot(mean_g_per_locus ~ scaled_time|as.factor(opt)*as.factor(mu),data=d2,
+           type='l',
+           lwd=3,
+           group = g, par.settings=simpleTheme(col=COLORS,lwd=3),
+          auto.key=KEY, xlab="Time since optimum shift (units of N generations)",
+          ylab="Mean value of statistic.",
+          scales=list(cex=1,alternating=F),
+          strip=STRIP,xlim=c(-0.01,0.05))
+
+trellis.device(device="png",file="test2.png")
 print(p)
 dev.off()
