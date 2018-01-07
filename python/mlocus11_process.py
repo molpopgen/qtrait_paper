@@ -72,22 +72,24 @@ def get_summstats(pop, repid, nsam, temp):
             raw_nSL = nSLiHS(w[i])
             raw_nSL = [i for i in raw_nSL if np.isfinite(i[0]) == 1 and i[2] > 3]
             nSL = np.array(raw_nSL)
-            mean_nSL = nSL[:,0].mean()
-            bins = np.digitize(nSL[:,2],np.arange(0,2*args.nsam,5))
+            mean_nSL = np.nan
             max_nSL = np.nan
-            for b in set(bins):
-                binscores = nSL[:,0][np.where(bins==b)[0]]
-                if len(binscores) > 1:
-                    bmean = binscores.mean()
-                    sd = binscores.std()
-                    # if np.isfinite(bmean) == 0:
-                    #     print(bscores)
-                    #     sys.exit(0)
-                    if sd > 0.0:
-                        binscores = (binscores - bmean)/sd
-                        bmax = binscores[np.where(np.abs(binscores) == max(np.abs(binscores)))[0]][0]
-                        if np.isnan(max_nSL) or np.abs(bmax) > np.abs(max_nSL):
-                            max_nSL = bmax
+            if len(nSL) > 0:
+                mean_nSL = nSL[:,0].mean()
+                bins = np.digitize(nSL[:,2],np.arange(0,2*args.nsam,5))
+                for b in set(bins):
+                    binscores = nSL[:,0][np.where(bins==b)[0]]
+                    if len(binscores) > 1:
+                        bmean = binscores.mean()
+                        sd = binscores.std()
+                        # if np.isfinite(bmean) == 0:
+                        #     print(bscores)
+                        #     sys.exit(0)
+                        if sd > 0.0:
+                            binscores = (binscores - bmean)/sd
+                            bmax = binscores[np.where(np.abs(binscores) == max(np.abs(binscores)))[0]][0]
+                            if np.isnan(max_nSL) or np.abs(bmax) > np.abs(max_nSL):
+                                max_nSL = bmax
             temp[i] = np.array([(locus, int(i), repid, pop.generation, ps.tajimasd(),
                                  ps.hprime(),ps.thetapi(),
                                  gs['H1'], gs['H12'], gs['H2H1'], mean_nSL, max_nSL)], dtype=temp.dtype)
@@ -166,10 +168,12 @@ def process_replicate(argtuple):
                 summstats = np.concatenate([summstats, ss])
                 # print("here5")
                 rec[1].clear()
+            except EOFError:
+                os.remove(infile)
+                return (summstats, gvalues, vg_over_time)
             except:
-                break
-    os.remove(infile)
-    return (summstats, gvalues, vg_over_time)
+                os.remove(infile)
+                raise
 
 
 if __name__ == "__main__":
@@ -193,7 +197,7 @@ if __name__ == "__main__":
     # x=process_replicate(raw_args[0])
     # print(x)
     # sys.exit(0)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ProcessPoolExecutor() as executor:
         futures = {executor.submit(process_replicate, i): i for i in raw_args}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
