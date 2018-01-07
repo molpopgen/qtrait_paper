@@ -72,12 +72,15 @@ TOP=0
 MID=0
 BOTTOM=0
 
-for statfile, trajfile in zip(reversed(popstatFiles), reversed(trajFiles)):
-    print("starting")
+muvals = [0.005, 0.001, 0.00025]
+for statfile, trajfile,mu in zip(reversed(popstatFiles), reversed(trajFiles), reversed(muvals)):
 
     axTOP = TOPS[TOP]
     axMID = MIDS[MID]
     axBOTTOM = BOTTOMS[BOTTOM]
+
+    ghat = 2.0*math.sqrt(2.0)*math.sqrt(mu)
+    print("starting",ghat)
 
     # Read in trait value data for this rep
     con = sqlite3.connect(statfile)
@@ -122,13 +125,15 @@ for statfile, trajfile in zip(reversed(popstatFiles), reversed(trajFiles)):
     FIXATIONS=sorted(FIXATIONS,key = lambda F : F.esize.min(),reverse=True)
     #plot fixations
 
+    ENTRIES=0
     for fix_i in FIXATIONS:
         esize=fix_i.esize.mean()
         origin=fix_i.origin.mean()
 
         label = "_nolabel_"
-        if math.fabs(esize) > 0.1:
-             label=r'$\gamma = $'+'{0:.2f}'.format(esize)+ r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
+        if math.fabs(esize) > ghat and ENTRIES < 5:
+            label=r'$\gamma = $'+'{0:.2f}'.format(esize)+ r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
+            ENTRIES += 1
         axMID.plot(fix_i.scaled_time,fix_i.freq,#color=fix_color,
                      alpha=min(1.0,4.0*math.fabs(esize)),
                      #linestyle=fix_style,
@@ -153,7 +158,7 @@ for statfile, trajfile in zip(reversed(popstatFiles), reversed(trajFiles)):
         esize=i.esize.mean()
         origin=i.origin.mean()
         label = "_nolegend_"
-        if math.fabs(esize) > 0.1 and ENTRIES < 5:
+        if math.fabs(esize) > ghat and ENTRIES < 5:
             label=r'$\gamma = $'+'{0:0.2f}'.format(esize)+r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
             ENTRIES += 1
         axBOTTOM.plot(i.scaled_time,i.freq,
