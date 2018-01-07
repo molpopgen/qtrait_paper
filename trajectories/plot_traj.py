@@ -16,14 +16,15 @@ oFiles = ['trajectories_himu.pdf', 'trajectories_medmu.pdf', 'trajectories_lomu.
 # trajFiles = ['H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj_merged.db']
 # oFiles = ['H2_1.0_OPT_1_mu_0.00025_sigmu0.25_traj_trajectories.pdf']
 
-matplotlib.rcParams.update({'font.size': 18})
-matplotlib.rcParams.update({'legend.fontsize': 14})
+matplotlib.rcParams.update({'font.size': 6})
+matplotlib.rcParams.update({'legend.fontsize': 4})
 ##Create a colormap
 cmap = matplotlib.cm.get_cmap('viridis')
 
 from matplotlib import gridspec
 #fig=plt.figure(figsize=(20,30))
-fig=plt.figure(figsize=(30,20))
+fig=plt.figure(figsize=(12,6))
+fig = plt.figure()
 gs = gridspec.GridSpec(3,3,height_ratios=(0.5,1,1))
 #Set up the axes here
 _T1 = plt.subplot(gs[0])
@@ -101,15 +102,15 @@ for statfile, trajfile in zip(reversed(popstatFiles), reversed(trajFiles)):
     #PLot mean trait value
     axTOP.plot(pstats.scaled_time[pstats.stat=='tbar'],
              pstats.value[pstats.stat=='tbar'],
-                 color='blue',alpha=0.75,linewidth=2.5,label="Mean trait value")
+                 color='blue',alpha=0.75,linewidth=1.5,label="Mean trait value")
     # axTOP.plot(pstats.scaled_time[pstats.stat=='varw'],
     #          pstats.value[pstats.stat=='varw'].multiply(100.0),
     #              color='green',alpha=0.75,linewidth=2.5,label=r'$100 \times V(w)$')
     #10xVG, so that it shows up
     axTOP.plot(pstats.scaled_time[pstats.stat=='tbar'],
              5.0*pstats.value[pstats.stat=='VG'],
-                 color='purple',linestyle='solid',linewidth=2.5,alpha=1,label=r'$5 \times V(G)$')
-    axTOP.legend(loc='upper right',frameon=False)#loc='upper left')
+                 color='purple',linestyle='solid',linewidth=1.5,alpha=1,label=r'$5 \times V(G)$')
+    axTOP.legend(loc='center right',frameon=False)#loc='upper left')
 
     ##SORT FIXATIONS BY EFFECT SIZE
     FIXATIONS=[]
@@ -131,11 +132,11 @@ for statfile, trajfile in zip(reversed(popstatFiles), reversed(trajFiles)):
         axMID.plot(fix_i.scaled_time,fix_i.freq,#color=fix_color,
                      alpha=min(1.0,4.0*math.fabs(esize)),
                      #linestyle=fix_style,
-                     linewidth=2,
+                     linewidth=1.5,
                      color = cmap(1.0 - math.fabs(esize)/MAX_ESIZE),
                      #color=cmap(100.0*(esize*esize)),
                      label=label)
-    axMID.legend(loc="upper right",ncol=1,title=r'$\gamma = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small',frameon=False)
+    axMID.legend(loc="center right",ncol=1,title=r'$\gamma = \mathrm{effect\ size}$,'+'\n'+ r'$o = \mathrm{origination\ time}$',fontsize='small',frameon=False)
 
     #Now, deal with losses
     #We will collect them into a list, for sorting
@@ -156,7 +157,7 @@ for statfile, trajfile in zip(reversed(popstatFiles), reversed(trajFiles)):
             label=r'$\gamma = $'+'{0:0.2f}'.format(esize)+r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
             ENTRIES += 1
         axBOTTOM.plot(i.scaled_time,i.freq,
-                     linewidth=2,
+                     linewidth=1.5,
                      color = cmap(1.0 - math.fabs(esize)/MAX_ESIZE),
                      alpha=min(1.0,4.0*math.fabs(esize)),label=label)
          
