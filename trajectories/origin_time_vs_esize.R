@@ -56,20 +56,22 @@ STRIP=strip.custom(strip.names = TRUE,
 data$scaled_origin = (data$origin - 5e4)/5e3
 
 p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
-            mu = data$mu,sojourn=data$n/5e3,xlim=c(-0.25,0.25),
+            mu = data$mu,sojourn=data$n/5e3,optima=data$opt,,xlim=c(-0.25,0.25),
             par.settings=simpleTheme(cex=0.5,alpha.points=0.5),
             auto.key=KEY, xlab="Origin time of fixation",
             ylab=expression(paste("Effect size (",gamma,")")),
             scales=list(cex=1,alternating=F,x=list(rot=45)),
             strip=STRIP,
-            panel=function(x, y,mu,sojourn,...,subscripts){
+            panel=function(x, y,mu,sojourn,optima,...,subscripts){
             panel_sojourn = sojourn[subscripts]
+            gamma_overshoots = unique(optima[subscripts])/2
             panel.xyplot(x[x<0 & x+panel_sojourn<0 ],y[x<0 & x+panel_sojourn<0],col="black",pch=22)
             panel.xyplot(x[x<0 & x+panel_sojourn>0 ],y[x<0 & x+panel_sojourn>0],col="red",pch=16)
             panel.xyplot(x[x>0],y[x>0],pch=15)#,col="blue")
             panel_mu = unique(mu[subscripts])
             ghat = 2*sqrt(2)*sqrt(panel_mu)
             panel.abline(h=ghat)
+            panel.abline(h=gamma_overshoots,lty="dotdash")
             panel.abline(v=0.0,lty="dotted")
 })
 
