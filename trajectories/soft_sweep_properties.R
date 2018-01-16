@@ -49,17 +49,19 @@ STRIP=strip.custom(strip.names = TRUE,
 #COLORS=c("black")
 
 p = xyplot(esize~freq_at_shift|as.factor(mu)*as.factor(opt),data=data,
-           mu = data$mu,
+           mu = data$mu,optima=data$opt,
           par.settings=simpleTheme(pch=16,cex=0.5,alpha.points=0.5),
           auto.key=KEY, xlab="Mutation frequency at optimum shift",
           ylab=expression(paste("Effect size (",gamma,")")),
           scales=list(cex=1,alternating=F,x=list(rot=45)),
           strip=STRIP,
-           panel=function(x, y,mu,...,subscripts){
+           panel=function(x, y,mu,optima,...,subscripts){
             panel.xyplot(x,y)
             panel_mu = unique(mu[subscripts])
            ghat = 2*sqrt(2)*sqrt(panel_mu)
             panel.abline(h=ghat)
+            gamma_overshoots = unique(optima[subscripts])/2
+            panel.abline(h=gamma_overshoots,lty="dotdash")
     })
 
 
