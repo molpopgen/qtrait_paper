@@ -60,7 +60,7 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   ylab="Mean Tajima's D",
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
-save_image("10_locus_tajd",tajdPlot)
+save_image("MeanTajdTenLoci",tajdPlot)
 
 hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
@@ -70,7 +70,7 @@ hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt),group=dis
                   ylab="Mean H'",
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
-save_image("10_locus_hprime",hprimePlot)
+save_image("MeanHprimeTenLoci",hprimePlot)
 
 thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
@@ -80,7 +80,7 @@ thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt),group=d
                   ylab=expression(paste("Mean ",hat(theta)[pi])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
-save_image('10_locus_thetapi',thetapiPlot)
+save_image('MeanPiTenLoci',thetapiPlot)
 
 H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
@@ -90,7 +90,7 @@ H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   ylab=expression("Mean ",H[1]),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.1))
-save_image('10_locus_H1',H1Plot)
+save_image('MeanH1TenLoci',H1Plot)
 
 H12Plot = xyplot(H12 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
@@ -100,7 +100,7 @@ H12Plot = xyplot(H12 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.1))
-save_image('10_locus_H12',H12Plot)
+save_image('MeanH12TenLoci',H12Plot)
 
 H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
@@ -110,7 +110,7 @@ H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.15))
-save_image('10_locus_H2H1',H2H1Plot)
+save_image('MeanH2H1TenLoci',H2H1Plot)
 
 mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
@@ -120,7 +120,7 @@ mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-2,4))
-save_image('10_locus_mean_nSL',mean_nSLPlot)
+save_image('MeannSLTenLoci',mean_nSLPlot)
 
 # This one is garbage:
 max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
@@ -131,11 +131,3 @@ max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(mu)*as.factor(opt)
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-2,4))
-
-
-
-
-
-
-
-
