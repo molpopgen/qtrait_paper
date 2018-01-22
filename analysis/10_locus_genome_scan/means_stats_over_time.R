@@ -50,9 +50,9 @@ COLORS=viridis(length(unique(as.factor(data$dist))))
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
-                   var.name = c(expression(z[o]),expression(mu)),bg=c("white"))
+                   var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 
-tajdPlot = xyplot(tajd ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -62,7 +62,7 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   strip=STRIP)
 save_image("10_locus_tajd",tajdPlot)
 
-hprimePlot = xyplot(hprime ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -72,7 +72,7 @@ hprimePlot = xyplot(hprime ~ scaled_time| as.factor(opt)*as.factor(mu),group=dis
                   strip=STRIP)
 save_image("10_locus_hprime",hprimePlot)
 
-thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -82,7 +82,7 @@ thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(opt)*as.factor(mu),group=d
                   strip=STRIP)
 save_image('10_locus_thetapi',thetapiPlot)
 
-H1Plot = xyplot(H1 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -92,7 +92,7 @@ H1Plot = xyplot(H1 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   strip=STRIP,xlim=c(-0.05,0.1))
 save_image('10_locus_H1',H1Plot)
 
-H12Plot = xyplot(H12 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+H12Plot = xyplot(H12 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -102,7 +102,7 @@ H12Plot = xyplot(H12 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   strip=STRIP,xlim=c(-0.05,0.1))
 save_image('10_locus_H12',H12Plot)
 
-H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -112,7 +112,7 @@ H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
                   strip=STRIP,xlim=c(-0.05,0.15))
 save_image('10_locus_H2H1',H2H1Plot)
 
-mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
@@ -123,7 +123,7 @@ mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(opt)*as.factor(mu),group
 save_image('10_locus_mean_nSL',mean_nSLPlot)
 
 # This one is garbage:
-max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(opt)*as.factor(mu),group=dist,
+max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
