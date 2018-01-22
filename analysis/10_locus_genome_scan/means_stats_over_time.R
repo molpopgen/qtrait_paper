@@ -117,7 +117,7 @@ mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
-                  ylab=expression(paste("Mean ",H[12])),
+                  ylab=expression(paste("Mean ",n[SL])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-2,4))
 save_image('MeannSLTenLoci',mean_nSLPlot)
