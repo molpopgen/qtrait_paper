@@ -11,7 +11,7 @@ soft=collect(dbt) %>%
     mutate(n=n())%>%
     select(-pos,-origin) %>%
     group_by(opt,mu,large) %>%
-    summarise(mesize_soft=mean(esize),msojourn_soft=mean(sojourn_time)/5e3,mean_soft=mean(n))
+    summarise(mesize_soft=mean(abs(esize)),msojourn_soft=mean(sojourn_time)/5e3,mean_soft=mean(n))
 
 hard=collect(dbt) %>%
     mutate(large = ifelse(abs(esize) >= 2*sqrt(2)*sqrt(mu),T,F)) %>%
@@ -20,7 +20,7 @@ hard=collect(dbt) %>%
     mutate(n=n())%>%
     select(-pos,-origin) %>%
     group_by(opt,mu,large) %>%
-    summarise(mesize_hard=mean(esize),msojourn_hard=mean(sojourn_time)/5e3,mean_hard=mean(n))
+    summarise(mesize_hard=mean(abs(esize)),msojourn_hard=mean(sojourn_time)/5e3,mean_hard=mean(n))
 
 old=collect(dbt) %>%
     mutate(large = ifelse(abs(esize) >= 2*sqrt(2)*sqrt(mu),T,F)) %>%
@@ -29,7 +29,7 @@ old=collect(dbt) %>%
     mutate(n=n())%>%
     select(-pos,-origin) %>%
     group_by(opt,mu,large) %>%
-    summarise(mesize_old=mean(esize),msojourn_old=mean(sojourn_time)/5e3,mean_old=mean(n))
+    summarise(mesize_old=mean(abs(esize)),msojourn_old=mean(sojourn_time)/5e3,mean_old=mean(n))
 
 final = left_join(soft,hard,by=c("opt","mu","large"))
 final = left_join(final,old,by=c("opt","mu","large"))
