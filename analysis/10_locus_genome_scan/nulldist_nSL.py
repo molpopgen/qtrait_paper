@@ -19,7 +19,7 @@ RHO = 1000. / 11.
 NREPS = 50000  # per process
 
 StatHolder = namedtuple(
-    'StatHolder', ['nbig'])
+    'StatHolder', ['pbig2', 'pbig3'])
 
 
 def do_work(local_seed):
@@ -34,7 +34,9 @@ def do_work(local_seed):
             i[0]) == 1 and min(i[2], NSAM - i[2]) > 3]
         nSL = np.array(raw_nSL)
         bins = np.digitize(nSL[:, 2], np.arange(0, NSAM, 5))
-        nbig=0
+        nbig2 = 0
+        nbig3 = 0
+        nscores=0
         for b in set(bins):
             binscores = nSL[:, 0][np.where(bins == b)[0]]
             if len(binscores) > 1:
@@ -42,9 +44,12 @@ def do_work(local_seed):
                 sd = binscores.std()
                 if sd > 0.0 and np.isfinite(sd):
                     binscores = (binscores - bmean) / sd
-                    gt2 = np.where(np.abs(binscores>=2.0))[0]
-                    nbig+=len(gt2)
-        nulldist.append(StatHolder(nbig))
+                    nscores+=len(binscores)
+                    gt2 = np.where(np.abs(binscores >= 2.0))[0]
+                    nbig2 += len(gt2)
+                    gt3 = np.where(np.abs(binscores >= 3.0))[0]
+                    nbig3 += len(gt3)
+        nulldist.append(StatHolder(nbig2/nscores, nbig3/nscores))
     return nulldist
 
 
