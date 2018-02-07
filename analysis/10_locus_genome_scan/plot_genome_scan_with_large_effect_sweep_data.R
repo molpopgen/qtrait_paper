@@ -78,7 +78,7 @@ H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(type),g
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
-                  ylab=expression("Mean ",H[1]),
+                  ylab=expression(paste("Mean ",H[1])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.1))
 save_image('MeanH1TenLociLargeEffectOnly',H1Plot)
