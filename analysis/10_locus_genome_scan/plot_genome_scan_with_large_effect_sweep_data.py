@@ -73,15 +73,15 @@ for n,g in groups:
             palette='viridis',#jitter=True,
             edgecolor='none', alpha=1)
     axes[i].get_legend().set_visible(False)
-    axes[i].set_title(r'$z_o = $'+'{0:0.2f}'.format(n[0])+', $\mu = $'+'{0:0.3f}'.format(n[1]))
+    axes[i].set_title(r'$z_o = $'+'{0:0.4f}'.format(n[0])+', $\mu = $'+'{0:0.3f}'.format(n[1]))
     i+=1
 for i in [0,1,2,3,4,5]:
     axes[i].get_xaxis().set_visible(False)
 for i in [1,2,4,5,7,8]:
     axes[i].get_yaxis().set_visible(False)
-axes[0].set_ylabel("Time since optimum shift")
-axes[3].set_ylabel("Time since optimum shift")
-axes[6].set_ylabel("Time since optimum shift")
+axes[0].set_ylabel("Origin time of fixation")
+axes[3].set_ylabel("Origin time of fixation")
+axes[6].set_ylabel("Origin time of fixation")
 axes[8].set_xlabel('')
 axes[6].set_xlabel('')
 axes[7].set_xlabel("Type of sweep")
@@ -95,6 +95,3 @@ cb = matplotlib.colorbar.ColorbarBase(cbar_ax,cmap=colormap,
 # cb.set_label(r'$\gamma$',rotation='vertical')
 #fig.colorbar(scalarmappaple, cax=cbar_ax)
 fig.savefig('test2.png')
-
-
-df
