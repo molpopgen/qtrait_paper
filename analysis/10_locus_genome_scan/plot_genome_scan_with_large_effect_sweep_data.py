@@ -10,7 +10,7 @@ import sys
 
 df = pd.read_csv('raw_fixations.txt.gz',sep=' ')
 df = df[df.sweep_type != 'none']
-df['scaled_time'] = (df.g - 5e4)/5e4
+df['scaled_time'] = (df.g - 5e4)/5e3
 df['ghat'] = 2.0*np.sqrt(2.0)*np.sqrt(df.mu)
 #df = df[df.s.abs() > df.ghat]
 
