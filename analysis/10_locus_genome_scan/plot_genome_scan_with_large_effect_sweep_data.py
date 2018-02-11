@@ -45,7 +45,8 @@ fp = sns.factorplot(x='detailed_type',y='scaled_time',
         col='mu',row='opt',data=df,hue='s',palette=p,
         kind='swarm',legend=False)
 plt.subplots_adjust(left=0.1, right=0.8, wspace=0.05)
-print(fp.axes)
+for ax in fp.axes.flatten():
+    ax.set_ylim(-0.5,1.5)
 fp.set_ylabels('Origin time of fixation')
 fp.set_xlabels('Type of sweep')
 #fp.savefig('test3.png')
