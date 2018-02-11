@@ -53,6 +53,8 @@ fp.set_xlabels('Type of sweep')
 cbar_ax = fp.fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cb = matplotlib.colorbar.ColorbarBase(cbar_ax,cmap=colormap,
         norm=normalize)
+cb.set_ticks([0.1,0.25,0.5,0.75,0.9])
+cb.set_ticklabels(['{0:0.2f}'.format(scipy.stats.norm.ppf(i,scale=0.25)) for i in [0.1,0.25,0.5,0.75,0.9]])
 
 fp.savefig('test2.png')
 
