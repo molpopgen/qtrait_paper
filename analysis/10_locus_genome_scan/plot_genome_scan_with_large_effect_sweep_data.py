@@ -30,13 +30,29 @@ colormap = cm.viridis
 normalize = mcolors.Normalize(vmin=0,vmax=1)
 p = {i:colormap(normalize(scipy.stats.norm.cdf(i,scale=0.25))) for i in df.s}
     
+fig = plt.figure(figsize=(10,10))
 fp = sns.factorplot(x='sweep_type',y='scaled_time',
         col='mu',row='opt',data=df,hue='s',palette=p,
         row_order=[1.0,0.5,0.1],
         #row_order=[i for i in df.opt.unique()].reverse(),
         kind='swarm',legend=False)
 plt.subplots_adjust(left=0.1, right=0.8, wspace=0.05)
+zo=['0.1','0.5','1.0']
+mu=['0.00025','0.001','0.005']
 for ax in fp.axes.flatten():
+    # Here, we reformat the
+    # subplot titles to use
+    # the appropriate notation
+    t = ax.get_title()
+    zz=None
+    for z in zo:
+        if z in t:
+            zz=z
+    mm=None
+    for m in mu:
+        if m in t:
+            mm=m
+    ax.set_title(r'$z_o = $'+zz+', '+r'$\mu = $'+mm)
     ax.set_ylim(-0.5,1.5)
 fp.set_ylabels('Origin time of fixation')
 fp.set_xlabels('Type of sweep')
@@ -48,5 +64,5 @@ cb = matplotlib.colorbar.ColorbarBase(cbar_ax,cmap=colormap,
 cb.set_ticks([0.1,0.25,0.5,0.75,0.9])
 cb.set_ticklabels(['{0:0.2f}'.format(scipy.stats.norm.ppf(i,scale=0.25)) for i in [0.1,0.25,0.5,0.75,0.9]])
 
-fp.savefig('test2.png')
+fp.savefig('TenLocusLargeEffectSizeFixationsSwarm.pdf')
 
