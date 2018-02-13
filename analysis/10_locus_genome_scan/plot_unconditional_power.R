@@ -4,7 +4,7 @@ library(dplyr)
 library(stringr)
 library(viridis)
 
-p = read_delim('power_tidied.txt.gz',delim=" ")
+p = read_delim('nsig_per_window_tidied.txt.gz',delim=" ")
 
 save_image <- function(stat,img)
 {
@@ -24,19 +24,25 @@ for(SI in unique(p$stat))
 {
     s = p %>% filter(stat==SI,alpha==0.05) %>% mutate(dist=as.integer(abs(window-5))) %>%
         group_by(generation,mu,opt,stat,dist) %>%
-        summarise(mval=mean(value)) %>%
-        mutate(scaled_time = (generation-5e4)/5e3)
+        summarise(total=sum(value)) %>%
+        mutate(scaled_time = (generation-5e4)/5e3,
+               # The adjustment is due to all windows
+               # other than the selected one have
+               # stats that are pooled via the dist
+               # factor, meaning 2x the number
+               # of observations.
+               adjustment = ifelse(dist == 0,1,2))
 
     COLORS=viridis(length(unique(as.factor(s$dist))))
-    PLOT = xyplot(mval~scaled_time | as.factor(mu)*as.factor(opt),
+    PLOT = xyplot(total/(adjustment*256*11)~scaled_time | as.factor(mu)*as.factor(opt),
                   group=dist,data=s,type='l',
                   xlim=XLIM,
-                  par.settings=simpleTheme(col=COLORS),
+                  par.settings=simpleTheme(col=COLORS,lwd=3),
                   auto.key=KEY,
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,
                   xlab="Time since optimum shift (units of N generations)",
-                  ylab="Power (averaged across unlinked loci)")
+                  ylab=expression(paste("Power at ",alpha," = 0.05")))
 
 
     STAT=str_to_upper(SI)

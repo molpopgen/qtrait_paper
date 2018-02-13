@@ -38,15 +38,15 @@ for (infile in files)
 
     raw_data = collect(indb_table)
     power_query = raw_data %>% group_by(generation,locus,window) %>%
-        summarise(tajd05 = sum(tajd <= critical_vals$tajd_lower05)/n(),
-               tajd01 = sum(tajd <= critical_vals$tajd_lower01)/n(),
-               tajd001 = sum(tajd <= critical_vals$tajd_lower001)/n(),
-               hprime05 = sum(hprime <= critical_vals$hprime_lower05)/n(),
-               hprime01 = sum(hprime <= critical_vals$hprime_lower01)/n(),
-               hprime001 = sum(hprime <= critical_vals$hprime_lower001)/n(),
-               max_abs_nSL05 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower05)/n(),
-               max_abs_nSL01 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower01)/n(),
-               max_abs_nSL001 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower001)/n()) %>%
+        summarise(tajd05 = sum(tajd <= critical_vals$tajd_lower05),
+               tajd01 = sum(tajd <= critical_vals$tajd_lower01),
+               tajd001 = sum(tajd <= critical_vals$tajd_lower001),
+               hprime05 = sum(hprime <= critical_vals$hprime_lower05),
+               hprime01 = sum(hprime <= critical_vals$hprime_lower01),
+               hprime001 = sum(hprime <= critical_vals$hprime_lower001),
+               max_abs_nSL05 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower05),
+               max_abs_nSL01 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower01),
+               max_abs_nSL001 = sum(max_abx_nSL <= critical_vals$max_abs_nSL_lower001)) %>%
         mutate(mu=mu,opt=opt)
 
 
@@ -54,6 +54,6 @@ for (infile in files)
     data = bind_rows(data,power_results)
 }
 
-of = gzfile("power.txt.gz","w")
+of = gzfile("nsig_per_window.txt.gz","w")
 write_delim(data,of)
 close(of)
