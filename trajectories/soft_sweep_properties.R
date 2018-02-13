@@ -67,9 +67,9 @@ p = xyplot(esize~freq_at_shift|as.factor(mu)*as.factor(opt),data=data,
 
 
 
-trellis.device(device="pdf",file="SoftSweepFreqEsize.pdf",height=10,width=10)
-print(p)
-dev.off()
+# trellis.device(device="pdf",file="SoftSweepFreqEsize.pdf",height=10,width=10)
+# print(p)
+# dev.off()
 
 y = data %>% group_by(mu,opt) %>%
     summarise(mo=min(origin))
