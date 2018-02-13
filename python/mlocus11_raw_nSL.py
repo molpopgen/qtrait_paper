@@ -12,7 +12,7 @@ import os
 import collections
 from libsequence.polytable import SimData
 from libsequence.windows import Windows
-from libsequence.summstats import  nSLiHS
+from libsequence.summstats import  nSLiHS, PolySIM
 from libsequence.parallel import Scheduler
 from fwdpy11.sampling import sample_separate
 
@@ -32,9 +32,9 @@ def make_parser():
                         default=42, help="Random number seed")
     return parser
 
-Datum=collections.namedtuple("Datum",['repid','generation','locus','window','score','daf'])
+Datum=collections.namedtuple("Datum",['repid','generation','locus','window','pbig2','pbig3'])
 
-def get_raw_nSL(pop, repid, nsam):
+def get_outlier_nSL(pop, repid, nsam):
     """
     The 'genome scan' bit.
     """
@@ -43,18 +43,39 @@ def get_raw_nSL(pop, repid, nsam):
     rv=[]
     for si, bi, locus_index in zip(s, pop.locus_boundaries, range(len(s))):
         neut, sel = si
-        neut.extend([i for i in sel])
-        neut = sorted(neut,key = lambda x: x[0])
+        ## neut.extend([i for i in sel])
+        ## neut = sorted(neut,key = lambda x: x[0])
         sd = SimData(neut)
         w = Windows(sd, 1.0, 1.0, bi[0], bi[1])
         for i in range(len(w)):
             ps = PolySIM(w[i])
-            gs = garudStats(w[i])
-
             raw_nSL = nSLiHS(w[i])
-            raw_nSL = [i for i in raw_nSL if np.isfinite(i[0]) == 1]
-            x =[Datum(repid,pop.generation,locus_index,window,i[0],i[2]) for i in raw_nSL]
-            rv.extend(x)
+            raw_nSL = [X for X in raw_nSL if np.isfinite(X[0]) == 1 and X[2] > 3]
+            nSL = np.array(raw_nSL)
+            nbig2 = 0
+            nbig3 = 0
+            nscores=0
+            if len(nSL) > 0:
+                bins = np.digitize(nSL[:,2],np.arange(0,2*args.nsam,5))
+                for b in set(bins):
+                    binscores = nSL[:,0][np.where(bins==b)[0]]
+                    if len(binscores) > 1:
+                        bmean = binscores.mean()
+                        sd = binscores.std()
+                        # if np.isfinite(bmean) == 0:
+                        #     print(bscores)
+                        #     sys.exit(0)
+                        if sd > 0.0 and np.isfinite(sd):
+                            binscores = (binscores - bmean)/sd
+                            nscores += len(binscores)
+                            abs_nSL_gt_2 = np.where(np.abs(binscores) >= 2.0)[0]
+                            nbig2 += len(abs_nSL_gt_2)
+                            abs_nSL_gt_3 = np.where(np.abs(binscores) >= 3.0)[0]
+                            nbig3 += len(abs_nSL_gt_3)
+            if nscores > 0:
+                rv.append(Datum(repid,pop.generation,locus_index,i,nbig2/nscores,nbig3/nscores))
+            else:
+                rv.append(Datum(repid,pop.generation,locus_index,i,0,0))
     return rv
 
 
@@ -70,7 +91,9 @@ def process_replicate(argtuple):
         while True:
             try:
                 rec = pickle.load(f)
-                nSL.extend(get_raw_nSL(pop,repid,args.nsam))
+                repid=rec[0]
+                pop=rec[1]
+                nSL.extend(get_outlier_nSL(pop,repid,args.nsam))
             except EOFError:
                 os.remove(infile)
                 return (nSL,)
@@ -96,9 +119,8 @@ if __name__ == "__main__":
     raw_args = [(i, args, j) for i, j in zip(
         sorted(np.random.choice(int(4e6), len(files), replace=False)), files)]
     # x=process_replicate(raw_args[0])
-    # print(x)
     # sys.exit(0)
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=args.nprocs) as executor:
         futures = {executor.submit(process_replicate, i): i for i in raw_args}
         for fut in concurrent.futures.as_completed(futures):
             fn = fut.result()
