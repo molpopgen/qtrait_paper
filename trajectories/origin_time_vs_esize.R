@@ -71,6 +71,7 @@ p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
             panel_mu = unique(mu[subscripts])
             ghat = 2*sqrt(2)*sqrt(panel_mu)
             panel.abline(h=ghat,lwd=2)
+            panel.abline(h=-ghat,lwd=2)
             panel.abline(h=gamma_overshoots,lty="dotdash",lwd=2)
             panel.abline(v=0.0,lty="dotted",lwd=2)
 })

@@ -60,15 +60,16 @@ p = xyplot(esize~freq_at_shift|as.factor(mu)*as.factor(opt),data=data,
             panel_mu = unique(mu[subscripts])
            ghat = 2*sqrt(2)*sqrt(panel_mu)
             panel.abline(h=ghat,lwd=2)
+            panel.abline(h=-ghat,lwd=2)
             gamma_overshoots = unique(optima[subscripts])/2
             panel.abline(h=gamma_overshoots,lty="dotdash",lwd=2)
     })
 
 
 
-trellis.device(device="pdf",file="SoftSweepFreqEsize.pdf",height=10,width=10)
-print(p)
-dev.off()
+# trellis.device(device="pdf",file="SoftSweepFreqEsize.pdf",height=10,width=10)
+# print(p)
+# dev.off()
 
 y = data %>% group_by(mu,opt) %>%
     summarise(mo=min(origin))
@@ -87,6 +88,7 @@ p = xyplot((50000-origin)/5e3~freq_at_shift|as.factor(mu)*as.factor(opt),data=da
             panel_mu = unique(mu[subscripts])
            ghat = 2*sqrt(2)*sqrt(panel_mu)
             panel.abline(h=ghat,lwd=2)
+            panel.abline(h=-ghat,lwd=2)
     })
 
 
