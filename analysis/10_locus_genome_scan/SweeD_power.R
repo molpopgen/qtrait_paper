@@ -40,21 +40,19 @@ power = x %>%
            scaled_time=(generation-50000)/50000)
 
 COLORS=viridis(length(cvals))
-STRIP=strip.custom(strip.names = TRUE, 
-                   var.name = c(expression(z[o]),expression(mu)),bg=c("white"))
 KEY=list(space="top",columns=3,title="Nominal significance level",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 STRIP=strip.custom(strip.names = TRUE, 
-                   var.name = c(expression(z[o]),expression(mu)),bg=c("white"))
-powerPlot = xyplot(power ~ scaled_time| as.factor(opt)*as.factor(mu),group=alpha_rej,
+                   var.name = c(expression(mu),expression(z[o])),bg=c("white"))
+powerPlot = xyplot(power ~ scaled_time| as.factor(mu)*as.factor(opt),group=alpha_rej,
                   type='l',data=power,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Power of composite likelihood ratio test",
-                  scales=list(cex=1),
+                  scales=list(cex=1,alternating=F),
                   strip=STRIP)
 
-trellis.device(device="pdf",file=paste("SweeD_raw_power.pdf",sep=""),height=10,width=10)
+trellis.device(device="pdf",file=paste("SweeDRawPower.pdf",sep=""),height=10,width=10)
 print(powerPlot)
 dev.off()
