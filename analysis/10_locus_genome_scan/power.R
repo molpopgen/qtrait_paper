@@ -1,3 +1,10 @@
+# This script begins the process of calculating
+# power per window.
+# power.R
+# power_gather.R
+# plot_unconditional_power.R
+# The result is the probability of detecting
+# a window at a specific alpha
 library(dplyr)
 library(tibble)
 library(readr)
