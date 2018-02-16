@@ -1,11 +1,13 @@
 # The mean number of loci with
 # at least one window significant
 # at level alpha, where we vary alpha
+library(tidyr)
 library(dplyr)
 library(tibble)
 library(readr)
 library(stringr)
 library(lattice)
+library(viridis)
 
 ndist_db = src_sqlite("nulldist.db",create=F)
 ndist_data_table = tbl(ndist_db, 'data')
@@ -43,7 +45,7 @@ for (infile in files)
 
     raw_data = collect(indb_table)
     # Is there at least one window significant at alpha?
-    sigwin_query = raw_data %>%
+    sigwin_query = raw_data %>%        
          group_by(generation,locus,repid) %>%
         summarise(tajd05w = ifelse(sum(tajd <= critical_vals$tajd_lower05)>0,1,0),
                tajd01w = ifelse(sum(tajd <= critical_vals$tajd_lower01)>0,1,0),
@@ -53,7 +55,7 @@ for (infile in files)
                hprime001w = ifelse(sum(hprime <= critical_vals$hprime_lower001)>0,1,0))
 
     #Get how many loci have at least one sig window per rep
-    sigwin = collect(sigwin_query,n=50)
+    sigwin = collect(sigwin_query)
     sigwin = sigwin %>%
         group_by(repid,generation) %>%
         summarise(tajd05l = sum(tajd05w),
@@ -70,14 +72,47 @@ for (infile in files)
                   hprime01 = mean(hprime01l),
                   hprime001 = mean(hprime001l)) %>%
         mutate(mu=mu,opt=opt)
+    sigwin = sigwin %>% gather(stat, value, tajd05:hprime001) %>% extract(stat, c('stat', 'alpha'), '([^0-9]+)([0-9]+)') %>% mutate(alpha=as.numeric(paste0('.', alpha)))
+
     print(sigwin)
     data = bind_rows(data,sigwin)
 }
 
-p = xyplot(tajd05~generation | as.factor(mu)*as.factor(opt),
-           data=data,type='l')
+KEY=list(space="top",title="Per-window significance threshold",
+         cex.title=1,points=FALSE,lines=TRUE,just=0.5)
+COLORS=viridis(length(unique(as.factor(data$alpha))))
 
-trellis.device(device="pdf",file="test.pdf",height=10,width=10)
+print(COLORS)
+STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
+                   var.name = c(expression(mu),expression(z[o])),bg=c("white"))
+data=data%>%mutate(scaled_time=(generation-5e4)/5e3)
+p = xyplot(value~scaled_time | as.factor(mu)*as.factor(opt),
+           data=subset(data,str_detect(stat,"tajd")==T),type='l',
+           group=as.factor(alpha),
+          par.settings=simpleTheme(col=COLORS,lwd=3),
+           strip=STRIP,
+          auto.key=KEY,
+          xlim=c(-0.5,4),
+          xlab="Time since optimum shift (units of N generations)",
+          ylab=expression("Mean number of loci with at least one significant window"),
+          scales=list(alternating=F))
+
+trellis.device(device="pdf",file="MeanNoSigLociTajD.pdf",height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
+print(p)
+dev.off()
+p = xyplot(value~scaled_time | as.factor(mu)*as.factor(opt),
+           data=subset(data,str_detect(stat,"tajd")==F),type='l',
+           group=as.factor(alpha),
+          par.settings=simpleTheme(col=COLORS,lwd=3),
+           strip=STRIP,
+          auto.key=KEY,
+          xlim=c(-0.5,4),
+          xlab="Time since optimum shift (units of N generations)",
+          ylab=expression("Mean number of loci with at least one significant window"),
+          scales=list(alternating=F))
+
+trellis.device(device="pdf",file="MeanNoSigLociHprime.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
