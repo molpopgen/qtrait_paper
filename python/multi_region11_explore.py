@@ -145,7 +145,7 @@ def run_replicate(argtuple):
         F = generate_gaussian_function_to_minimize(ghat, args.plarge)
         sigmu = get_gaussian_sigma(F)
 
-    sregions = [[fp11.GaussianS(j[0] + 5., j[0] + 6., args.mu, args.sigmu, coupled=False)]
+    sregions = [[fp11.GaussianS(j[0] + 5., j[0] + 6., args.mu, sigmu, coupled=False)]
                 for i, j in zip(range(args.nloci), locus_boundaries)]
     interlocus_rec = fp11ml.binomial_rec(rng, [0.5] * (args.nloci - 1))
     nlist = np.array([NANC] * 20 * NANC, dtype=np.uint32)
@@ -161,6 +161,7 @@ def run_replicate(argtuple):
              'mutrates_s': [args.mu / float(args.nloci)] * args.nloci,
              'mutrates_n': [10 * args.theta / float(4 * NANC)] * args.nloci,
              'recrates': [10 * args.rho / float(4 * NANC)] * args.nloci,
+             'prune_selected': False
              }
     params = fp11.model_params.MlocusParamsQ(**pdict)
     recorder = Recorder(repid, NANC, args.nsam)
