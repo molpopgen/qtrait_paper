@@ -8,8 +8,8 @@ do
         do
             for vsopt in 1 0.5 0.1
             do
-                db1=mu"$mu$".opt"$opt".plarge"$plarge".vsopt"$vsopt".stats.sqlite3
-                db2=mu"$mu$".opt"$opt".plarge"$plarge".vsopt"$vsopt".scan.sqlite3
+                db1=mu"$mu".opt"$opt".plarge"$plarge".vsopt"$vsopt".stats.sqlite3
+                db2=mu"$mu".opt"$opt".plarge"$plarge".vsopt"$vsopt".scan.sqlite3
                 qsub -q krti,krt,bio hpc/mlocus11_xtra.sh $mu $opt $RANDOM $plarge $vsopt mlocus11_xtra_sims/$db1 mlocus11_xtra_sims/$db2
             done
         done
