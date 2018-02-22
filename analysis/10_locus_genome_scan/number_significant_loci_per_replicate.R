@@ -12,17 +12,18 @@ library(viridis)
 ndist_db = src_sqlite("nulldist.db",create=F)
 ndist_data_table = tbl(ndist_db, 'data')
 
+BONF=10*11
 lower05 <- function(x)
 {
-    return(as.numeric(quantile(x,0.05)))
+    return(as.numeric(quantile(x,0.05/BONF)))
 }
 lower01 <- function(x)
 {
-    return(as.numeric(quantile(x,0.01)))
+    return(as.numeric(quantile(x,0.01/BONF)))
 }
 lower001 <- function(x)
 {
-    return(as.numeric(quantile(x,0.001)))
+    return(as.numeric(quantile(x,0.001/BONF)))
 }
 raw_dist = collect(ndist_data_table)
 critical_vals = raw_dist %>% summarise_all(funs(lower05,lower01,lower001))
@@ -79,11 +80,12 @@ for (infile in files)
 }
 
 KEY=list(space="top",title="Per-window significance threshold",
+         columns=3,
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 COLORS=viridis(length(unique(as.factor(data$alpha))))
 
 print(COLORS)
-STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
+STRIP=strip.custom(strip.names = TRUE,sep=" = ",
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 data=data%>%mutate(scaled_time=(generation-5e4)/5e3)
 p = xyplot(value~scaled_time | as.factor(mu)*as.factor(opt),
