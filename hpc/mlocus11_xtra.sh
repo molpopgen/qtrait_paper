@@ -2,7 +2,6 @@
 
 #$ -q krt,krti,bio
 #$ -pe openmp 64-72
-#$ -ckpt blcr
 
 module load krthornt/anaconda/3
 
