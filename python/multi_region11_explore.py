@@ -65,7 +65,7 @@ def make_parser():
 
 DataPoint = namedtuple('DataPoint', ['generation', 'VG', 'zbar', 'wbar'])
 GenomeScanDataPoint = namedtuple(
-    'GenomeScanDataPoint', ['generation', 'locus', 'window', 'D', 'Hprime'])
+    'GenomeScanDataPoint', ['generation', 'locus', 'window', 'D', 'Hprime','H1','H12','H2H1'])
 
 
 def get_summstats(pop, nsam, generation):
@@ -84,8 +84,11 @@ def get_summstats(pop, nsam, generation):
         w = Windows(sd, 1.0, 1.0, bi[0], bi[1])
         for i in range(len(w)):
             ps = PolySIM(w[i])
+            gs = garudStats(w[i])
             rv.append(GenomeScanDataPoint(
-                generation, locus, i, ps.tajimasd(), ps.hprime()))
+                generation, locus, i,
+                ps.tajimasd(), ps.hprime(),
+                gs['H1'], gs['H12'], gs['H2H1']))
         locus += 1
     return rv
 
