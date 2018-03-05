@@ -24,6 +24,7 @@ soft=df[df.sweep_type=='soft']
 
 df = df[(df.detailed_type=='HL')|(df.detailed_type=='SL')]
 
+df['sweep_type'] = df['sweep_type'].map({'hard':'New\nmutation','soft':'Standing\nvariation'})
 # Create a color palette mapping effect sizes
 # to the cdf of the DES
 colormap = cm.viridis
