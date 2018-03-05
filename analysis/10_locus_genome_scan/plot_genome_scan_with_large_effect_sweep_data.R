@@ -41,7 +41,7 @@ save_image <- function(stat,img)
 
 X=rbind(hard_only,soft_only)
 X=X%>%
-    mutate(type=ifelse(nhard>0,'Hard sweep','Soft sweep'))
+    mutate(type=ifelse(nhard>0,'New mutation','Standing var.'))
 tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(type),group=dist,
                   type='l',data=X,
                   par.settings=simpleTheme(col=COLORS),
