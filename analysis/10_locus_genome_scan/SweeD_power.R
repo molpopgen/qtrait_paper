@@ -30,6 +30,9 @@ print(head(x))
 #         sum_sig01 = ifelse(sum(sig01) > 0, 1, 0),
 #         sum_sig00001 = ifelse(sum(sig00001) > 0, 1, 0))
 # 
+
+# Here n = no. replicates * no. loci, and
+# is therefore Bonferroni-corrected
 power = x %>%
     group_by(generation,mu,opt) %>% 
     summarise(power05 = sum(sig05)/n(),
@@ -40,7 +43,7 @@ power = x %>%
            scaled_time=(generation-50000)/50000)
 
 COLORS=viridis(length(cvals))
-KEY=list(space="top",columns=3,title="Nominal significance level",
+KEY=list(space="top",columns=3,title="Significance level (Bonferroni correction)",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 STRIP=strip.custom(strip.names = TRUE, 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
