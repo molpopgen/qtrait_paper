@@ -49,7 +49,7 @@ for(i in files)
 }
 KEY=list(space="top",columns=3,title="",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
-STRIP=strip.custom(strip.names = TRUE, 
+STRIP=strip.custom(strip.names = TRUE,sep=" = ",
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 #COLORS=c("black")
 
@@ -58,7 +58,7 @@ data$scaled_origin = (data$origin - 5e4)/5e3
 p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
             mu = data$mu,sojourn=data$n/5e3,optima=data$opt,xlim=c(-0.25,0.25),
             par.settings=simpleTheme(cex=0.5,alpha.points=0.5),
-            auto.key=KEY, xlab="Origin time of fixation",
+            auto.key=KEY, xlab="Origin time of fixation (units of N generations)",
             ylab=expression(paste("Effect size (",gamma,")")),
             scales=list(cex=1,alternating=F,x=list(rot=45)),
             strip=STRIP,
