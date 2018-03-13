@@ -9,10 +9,11 @@ x = x %>% group_by(generation,mu,opt) %>%
     summarise(meanLR = mean(LR), mean_alpha = mean(alpha)) %>%
     mutate(scaled_time = (generation - 50000)/5000)
 
-STRIP=strip.custom(strip.names = TRUE, 
+STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 LRplot = xyplot(meanLR ~ scaled_time| as.factor(mu)*as.factor(opt),
                 type='l',data=x,
+                  par.settings=simpleTheme(),
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean composite likelihood ratio statistic",
                   xlim=c(-0.5,1.0),
