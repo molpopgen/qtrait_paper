@@ -40,8 +40,8 @@ for fi, i in zip(files, range(len(files))):
     #     r'$log_{10}$' + ' frequency at optimum shift', 'Effect size (' + r'$\gamma$' + ')')
     p.ax_joint.text(-3.5, 7, r'$z_o = $' +
                     '{0:0.2f}'.format(opt) + '\n' + r'$\mu = $' + '{0:0.5f}'.format(mu))
-    p.ax_marg_y.axhline(y=x.sojourn_time.mean(), linestyle='dashed',linewidth=4)
-    p.ax_marg_y.axhline(y=x.sojourn_time.median(), linestyle='dotted',linewidth=4)
+    # p.ax_marg_y.axhline(y=x.sojourn_time.mean(), linestyle='dashed',linewidth=4)
+    # p.ax_marg_y.axhline(y=x.sojourn_time.median(), linestyle='dotted',linewidth=4)
     # p.ax_joint.axvline(x=np.log10(0.05), linestyle='dashed')
     # Depending on where this plot will end up when merged,
     # we want to suppress axis label and tick output
