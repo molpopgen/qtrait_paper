@@ -29,13 +29,11 @@ process_genome_scan <- function(filename, fixations)
 }
 
 fixations_raw = read_delim("raw_fixations.txt.gz",delim=" ")
-
 fixations = fixations_raw %>%
-    filter(sweep_type != 'none',(g-5e4)/5e4<1e2/5e4,
+    filter(sweep_type != 'none',(g-5e4)/5e3<1e2/5e3,
            abs(s) >= 2*sqrt(2)*sqrt(mu)) %>%
     group_by(repid,locus,mu,opt) %>%
     summarise(nhard=length(which(sweep_type=='hard')),nsoft=length(which(sweep_type=='soft')))
-
 
 # print(fixations)
 # print(subset(fixations,nhard>1&nsoft>1))
