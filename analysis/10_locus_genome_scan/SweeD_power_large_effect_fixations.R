@@ -1,8 +1,10 @@
 library(dplyr)
 library(readr)
+library(tidyr)
 library(lattice)
 library(viridis)
 
+    
 sweep_count_db=src_sqlite('genome_scan_with_large_effect_sweep_counts.sqlite3')
 sweep_count_table=tbl(sweep_count_db,'data')
 
@@ -14,6 +16,9 @@ sweep_counts=collect(sweep_counts_q)%>%
     distinct()
 
 sweed=read_delim("SweeD_Sig.txt.gz",delim=" ")
+power = sweed  %>%
+    group_by(generation,mu,opt) %>% 
+    summarise(ssig05 = sum(sig05))
 print(unique(sweed$sig05))
 
 sweed_plus_fixations=sweed %>%
@@ -32,7 +37,12 @@ soft_only = sweed_plus_fixations %>%
 meanLRdata=rbind(hard_only,soft_only) %>%
     group_by(generation,opt,mu,sweep_type) %>%
     summarise(mLR=mean(LR),s05=sum(sig05),n=n()) %>%
-    mutate(scaled_time=(generation-5e4)/5e3)
+    mutate(scaled_time=(generation-5e4)/5e3) %>%
+    full_join(power,by=c('generation','mu','opt'))
+
+# print(head(subset(meanLRdata,sweep_type=='New mutation')))
+# print(head(subset(meanLRdata,sweep_type=='Standing variation')))
+# q("no")
 
 print(meanLRdata[which(meanLRdata$generation == 50000),])
 print(unique(meanLRdata$sweep_type))
@@ -77,14 +87,14 @@ save_image('MeanSweeDLRLargeEffectOnly',Plot)
 # print(unique(power$sweep_type))
 # print(unique(power$n))
 print(unique(meanLRdata$n))
-Plot = xyplot(s05/n ~ scaled_time| as.factor(mu)*as.factor(opt),#:as.factor(sweep_type),
+Plot = xyplot(s05/ssig05 ~ scaled_time| as.factor(mu)*as.factor(opt), #:as.factor(sweep_type),
               group=sweep_type,lwd=2,
                   type='l',data=meanLRdata,
                   par.settings=standard.theme("pdf",color=FALSE),
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
-                  ylab="Mean composite LR statistic",
+                  ylab="Fraction of significant loci with large-effect substitution",
                   scales=list(x=list(at=seq(-0.4,1.0,0.2),rot=45),alternating=F),
                   strip=STRIP,xlim=c(-0.5,1)
                   )
-save_image('SweeDPowerLargeEffectOnly',Plot)
+save_image('FractionSweeDLargeEffect',Plot)
