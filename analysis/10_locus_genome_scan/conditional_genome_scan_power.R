@@ -139,7 +139,8 @@ p=xyplot(fracD~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
        # }
         )
 
-trellis.device(device='pdf',file='TajDFractionSigLargeEffect.pdf')
+trellis.device(device='pdf',file='TajDFractionSigLargeEffect.pdf',height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
 
@@ -160,7 +161,8 @@ p=xyplot(fracH~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
        # }
         )
 
-trellis.device(device='pdf',file='HprimeFractionSigLargeEffect.pdf')
+trellis.device(device='pdf',file='HprimeFractionSigLargeEffect.pdf',height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
 
