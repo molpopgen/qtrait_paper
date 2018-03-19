@@ -45,7 +45,7 @@ power = x %>%
 COLORS=viridis(length(cvals))
 KEY=list(space="top",columns=3,title="Significance level (Bonferroni correction)",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
-STRIP=strip.custom(strip.names = TRUE, 
+STRIP=strip.custom(strip.names = TRUE,sep=" = ",
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 powerPlot = xyplot(power ~ scaled_time| as.factor(mu)*as.factor(opt),group=alpha_rej,
                   type='l',data=power,
@@ -57,5 +57,6 @@ powerPlot = xyplot(power ~ scaled_time| as.factor(mu)*as.factor(opt),group=alpha
                   strip=STRIP,xlim=c(-0.5,1))
 
 trellis.device(device="pdf",file=paste("SweeDRawPower.pdf",sep=""),height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
 print(powerPlot)
 dev.off()

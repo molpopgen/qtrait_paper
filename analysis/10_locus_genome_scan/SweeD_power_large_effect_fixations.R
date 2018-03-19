@@ -60,10 +60,13 @@ save_image <- function(stat,img)
     dev.off()
 }
 
+bwtheme=standard.theme("pdf",color=FALSE)
+bwtheme$fontsize$text = 18
+
 Plot = xyplot(mLR ~ scaled_time| as.factor(mu)*as.factor(opt),#:as.factor(sweep_type),
               group=sweep_type,lwd=2,
                   type='l',data=meanLRdata,
-                  par.settings=standard.theme("pdf",color=FALSE),
+                  par.settings=bwtheme,
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean composite LR statistic",
@@ -90,7 +93,7 @@ print(unique(meanLRdata$n))
 Plot = xyplot(s05/ssig05 ~ scaled_time| as.factor(mu)*as.factor(opt), #:as.factor(sweep_type),
               group=sweep_type,lwd=2,
                   type='l',data=meanLRdata,
-                  par.settings=standard.theme("pdf",color=FALSE),
+                  par.settings=bwtheme,
                   auto.key=KEY,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Fraction of significant loci with large-effect substitution",

@@ -21,6 +21,7 @@ LRplot = xyplot(meanLR ~ scaled_time| as.factor(mu)*as.factor(opt),
                   strip=STRIP)
 
 trellis.device(device="pdf",file="SweeDLRRaw.pdf",height=10,width=10, color=FALSE)
+trellis.par.set("fontsize",list(text=18))
 print(LRplot)
 dev.off()
 
@@ -32,5 +33,6 @@ alpha_plot = xyplot(mean_alpha ~ scaled_time| as.factor(mu)*as.factor(opt),
                   strip=STRIP)
 
 trellis.device(device="pdf",file="SweedAlphaRaw.pdf",height=10,width=10, color=FALSE)
+trellis.par.set("fontsize",list(text=18))
 print(alpha_plot)
 dev.off()
