@@ -23,101 +23,104 @@ process_gvalues <- function (filename, fixations)
     dbt = tbl(db,'data')
 
     g = collect(dbt) %>%
-        full_join(f,by=c('repid','locus')) %>%
-        # The full join will put NA values
-        # for all loci that had no sweeps at all.
-        # We need to recode those with 0.
-        # The join also mangles mu/opt for loci w/no sweeps,
-        # so we need to put that back in.
-        replace_na(list(h100=0,h200=0,h=0,soft=0,ttl_sweeps=0,opt = dbopt, mu = dbmu)) %>%
-        # replace_na changes our int to numeric
-        mutate(h100 = as.integer(h100),h200 = as.integer(h200), h = as.integer(h),
-               soft = as.integer(soft), ttl_sweeps = as.integer(ttl_sweeps))
+        group_by(repid,generation) %>%
+        mutate(rank = dense_rank(desc(abs(g)))) %>%
+        mutate(opt=dbopt,mu=dbmu) %>%
+        full_join(f,by=c('generation','opt','mu','repid','locus')) %>%
+        drop_na() %>%
+        group_by(generation,rank,sweep_type) %>%
+        summarise(meanD = mean(tajd),meanH=mean(hprime),mg=mean(g)) %>%
+        mutate(opt=dbopt,mu=dbmu)
+        
     DBI::dbDisconnect(db)
     g
 }
 
-fixations = read_delim("raw_fixations.txt.gz",delim=" ")
+fixations_db=DBI::dbConnect(RSQLite::SQLite(),"genome_scan_with_large_effect_sweep_counts.sqlite3")
+fixations_t = tbl(fixations_db,'data')
+fixations = collect(fixations_t)
 
-#See note in file header above re: why we remove none here
-fixations = fixations %>% filter(sweep_type != 'none') %>%
-    group_by(repid,locus,mu,opt) %>%
-    summarise(h100 = as.integer(length(which(sweep_type == 'hard' & g <= 5e4 + 100))),
-              h200 = as.integer(length(which(sweep_type == 'hard' & g > 5e4 + 100 & g <= 5e4 + 200))),
-              h = as.integer(length(which(sweep_type == 'hard' & g > 5e4 + 200))),
-              soft = as.integer(length(which(sweep_type == 'soft')))) %>%
-    mutate(ttl_sweeps = h100 + h200 + h + soft)
+fixations = fixations %>%
+    mutate(sweep_type = ifelse(nhard > 0 & nsoft == 0,
+                               'New mutation',
+                               ifelse(nsoft>0&nhard==0,
+                                      'Standing var.','none'))) %>%
+    # Retain genome scan info 
+    # only for window w/selected
+    # fixations
+    filter(sweep_type != 'none',window==5)
+
+DBI::dbDisconnect(fixations_db)
 
 files <- dir(path="../../mlocus_pickle/",pattern="*.genetic_values_per_locus.db")
 
-d = data.frame() 
-d2 = data.frame()
-for (i in files)
+d = NA
+for (i in files) #[1:1])
 {
     x = process_gvalues(i, fixations)
-    soft = subset(x, soft > 0  & ttl_sweeps == soft) %>%
-        rename(softg=g) %>%
-        gather(key=g,value=value,softg)
-    h100 = subset(x, h100 == 1 & ttl_sweeps == h100) %>%
-        rename(h100g=g) %>%
-        gather(key=g,value=value,h100g)
-    h200 = subset(x, h200 == 1 & ttl_sweeps == h200) %>%
-        rename(h200g=g) %>%
-        gather(key=g,value=value,h200g)
-    h = subset(x, h == 1 & ttl_sweeps == h) %>%
-        rename(hg=g) %>%
-        gather(key=g,value=value,hg)
-    nosweeps = subset(x, ttl_sweeps == 0) %>%
-        rename(nosweepsg = g) %>%
-        gather(key=g,value=value,nosweepsg)
-    somesweeps = subset(x, ttl_sweeps > 0) %>%
-        rename(somesweepsg = g) %>%
-        gather(key=g,value=value,somesweepsg)
-    d = rbind(d,soft,h100,h200,h,nosweeps)
-    d2 = rbind(d2,somesweeps,nosweeps)
+    if(is.na(d))
+    {
+        d=x
+    }
+    else
+    {
+        d=rbind(d,x)
+    }
 }
-
 d = d %>%
-    group_by(opt,mu,generation,g) %>%
-    summarise(mean_g_per_locus = mean(value)) %>%
-    mutate(scaled_time = (generation-5e4)/5e4)
-
-d2 = d2 %>%
-    group_by(opt,mu,generation,g) %>%
-    summarise(mean_g_per_locus = mean(value)) %>%
-    mutate(scaled_time = (generation-5e4)/5e4)
-
+    mutate(scaled_time = (generation-5e4)/5e3)
 
 KEY=list(space="top",columns=3,title="",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
-STRIP=strip.custom(strip.names = TRUE, 
-                   var.name = c(expression(z[o]),expression(mu)),bg=c("white"))
-COLORS=viridis(length(unique(as.factor(d$g))))
-p = xyplot(mean_g_per_locus ~ scaled_time|as.factor(opt)*as.factor(mu),data=d,
+STRIP=strip.custom(strip.names = TRUE, sep=" = ",
+                   var.name = c(expression(mu),expression(z[o])),bg=c("white"))
+COLORS=rev(viridis(length(unique(as.factor(d$rank)))))
+p = xyplot((mg/opt)~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
            type='l',
-           lwd=3,
-           group = g, par.settings=simpleTheme(col=COLORS,lwd=3),
-          auto.key=KEY, xlab="Time since optimum shift (units of N generations)",
-          ylab="Mean value of statistic.",
-          scales=list(cex=1,alternating=F),
-          strip=STRIP,xlim=c(-0.01,0.05))
-
-trellis.device(device="png",file="test.png")
+           group=rank,
+           strip=STRIP,
+           #auto.key=KEY,
+           par.settings=simpleTheme(col=COLORS,lwd=3),
+           scales=list(cex=0.75,alternating=F),
+           xlab="Time since optimum shift (units of N generations)",
+           ylab=expression(paste("Contribution of locus to adaptation, ",over(bar(g), z[o]))),
+           xlim=c(-0.1,0.25),
+           ylim=c(0.0,1.1),
+           data=subset(d,opt > 0.1)
+           )
+trellis.device(device="pdf",file="MeanGeneticValuePerLocusLargeEffect.pdf",height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
-
-KEY=list(space="top",title="",
-         cex.title=1,points=FALSE,lines=TRUE,just=0.5)
-COLORS=viridis(length(unique(as.factor(d2$g))))
-p = xyplot(mean_g_per_locus ~ scaled_time|as.factor(opt)*as.factor(mu),data=d2,
+p = xyplot(meanD~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
            type='l',
-           lwd=3,
-           group = g, par.settings=simpleTheme(col=COLORS,lwd=3),
-          auto.key=KEY, xlab="Time since optimum shift (units of N generations)",
-          ylab="Mean value of statistic.",
-          scales=list(cex=1,alternating=F),
-          strip=STRIP,xlim=c(-0.01,0.05))
-
-trellis.device(device="png",file="test2.png")
+           group=rank,
+           strip=STRIP,
+           #auto.key=KEY,
+           par.settings=simpleTheme(col=COLORS,lwd=3),
+           scales=list(cex=0.75,alternating=F),
+           xlab="Time since optimum shift (units of N generations)",
+           ylab="Mean Tajima's D",
+           xlim=c(-0.1,3),
+           data=subset(d,opt > 0.1)
+           )
+trellis.device(device="pdf",file="MeanTajDPerLocusLargeEffect.pdf",height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
+print(p)
+dev.off()
+p = xyplot(meanH~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
+           type='l',
+           group=rank,
+           strip=STRIP,
+           #auto.key=KEY,
+           par.settings=simpleTheme(col=COLORS,lwd=3),
+           scales=list(cex=0.75,alternating=F),
+           xlab="Time since optimum shift (units of N generations)",
+           ylab="Mean H'",
+           xlim=c(-0.1,3),
+           data=subset(d,opt > 0.1)
+           )
+trellis.device(device="pdf",file="MeanHprimePerLocusLargeEffect.pdf",height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
