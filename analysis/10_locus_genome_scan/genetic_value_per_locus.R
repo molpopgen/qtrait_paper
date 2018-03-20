@@ -67,7 +67,7 @@ p = xyplot((mg/opt)~scaled_time|as.factor(mu)*as.factor(opt),
            xlim=c(-0.1,0.25),
            ylim=c(0.0,1.1),
            data=d)
-trellis.device(device="pdf",file="MeanGeneticValuePerLocus.pdf")
+trellis.device(device="pdf",file="MeanGeneticValuePerLocus.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
