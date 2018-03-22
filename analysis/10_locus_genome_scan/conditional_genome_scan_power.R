@@ -129,8 +129,15 @@ for(i in 2:length(ICOLORS))
                 alpha=i/length(ICOLORS))
     COLORS[i]=ncolor
 }
+nlines = length(unique(data$dist))
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
-         cex.title=1,points=FALSE,lines=TRUE,just=0.5)
+         cex.title=1,#points=FALSE,
+         lines=list(col=rev(COLORS)),
+         #lines=list(lty=rep(1,nlines),lwd=rep(3,nlines),col=rev(COLORS)),
+         just=0.5,
+         #col = text color...
+         # col=rev(COLORS),
+         text=list(as.character(sort(unique(data$dist)))))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 #p=xyplot(nDsig/(n*adjustment*11)~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
@@ -141,10 +148,10 @@ p=xyplot(fracD~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
          #group=dist,
          group=factor(dist,levels=rev(sort(unique(data$dist)))),
          #group=factor(dist,levels=sort(unique(data$dist))),
-         lwd=3,
+         #lwd=3,
          data=data,
          par.settings=simpleTheme(col=COLORS),
-         auto.key=KEY,
+         key=KEY,
          xlim=XLIM,
          xlab="Time since optimum shift (units of N generations)",
          ylab="Fraction of significant loci with large-effect fixations",
@@ -168,7 +175,7 @@ p=xyplot(fracH~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
          data=data,
          lwd=3,
          par.settings=simpleTheme(col=COLORS),
-         auto.key=KEY,
+         key=KEY,
          xlim=XLIM,
          xlab="Time since optimum shift (units of N generations)",
          ylab="Fraction of significant loci with large-effect fixations",
