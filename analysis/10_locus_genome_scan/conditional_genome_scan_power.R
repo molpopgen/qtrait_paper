@@ -114,7 +114,17 @@ data = data %>%
 # print(head(subset(data,sweep_type=="Standing var.")))
 # q("no")
 
-COLORS=viridis(length(unique(as.factor(data$dist))))
+ICOLORS=rev(viridis(length(unique(as.factor(data$dist)))))
+COLORS=array()
+COLORS[1]=ICOLORS[1]
+for(i in 2:length(ICOLORS))
+{
+    ncolor = rgb(as.integer(col2rgb(ICOLORS[i])[1,])/255,
+                as.integer(col2rgb(ICOLORS[i])[2,])/255,
+                as.integer(col2rgb(ICOLORS[i])[3,])/255,
+                alpha=1.0 -(i-1)/length(ICOLORS))
+    COLORS[i]=ncolor
+}
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
