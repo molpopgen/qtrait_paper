@@ -25,7 +25,7 @@ soft_only = dbt %>%
 hard_only=collect(hard_only)
 soft_only=collect(soft_only)
 
-COLORS=viridis(length(unique(as.factor(hard_only$dist))))
+COLORS=rev(viridis(length(unique(as.factor(hard_only$dist)))))
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
