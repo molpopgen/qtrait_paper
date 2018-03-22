@@ -114,15 +114,19 @@ data = data %>%
 # print(head(subset(data,sweep_type=="Standing var.")))
 # q("no")
 
-ICOLORS=rev(viridis(length(unique(as.factor(data$dist)))))
+#ICOLORS=rev(viridis(length(unique(as.factor(data$dist)))))
+ICOLORS=viridis(length(unique(as.factor(data$dist))))
 COLORS=array()
-COLORS[1]=ICOLORS[1]
+COLORS[1] = rgb(as.integer(col2rgb(ICOLORS[1])[1,])/255,
+            as.integer(col2rgb(ICOLORS[1])[2,])/255,
+            as.integer(col2rgb(ICOLORS[1])[3,])/255,
+            alpha=1/length(ICOLORS))
 for(i in 2:length(ICOLORS))
 {
     ncolor = rgb(as.integer(col2rgb(ICOLORS[i])[1,])/255,
                 as.integer(col2rgb(ICOLORS[i])[2,])/255,
                 as.integer(col2rgb(ICOLORS[i])[3,])/255,
-                alpha=1.0 -(i-1)/length(ICOLORS))
+                alpha=i/length(ICOLORS))
     COLORS[i]=ncolor
 }
 KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
@@ -134,7 +138,10 @@ STRIP=strip.custom(strip.names = TRUE,sep=" = ",
 XLIM=c(-0.5,4)
 p=xyplot(fracD~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
          type='l',
-         group=dist,
+         #group=dist,
+         group=factor(dist,levels=rev(sort(unique(data$dist)))),
+         #group=factor(dist,levels=sort(unique(data$dist))),
+         lwd=3,
          data=data,
          par.settings=simpleTheme(col=COLORS),
          auto.key=KEY,
@@ -156,8 +163,10 @@ dev.off()
 
 p=xyplot(fracH~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
          type='l',
-         group=dist,
+         #group=dist,
+         group=factor(dist,levels=rev(sort(unique(data$dist)))),
          data=data,
+         lwd=3,
          par.settings=simpleTheme(col=COLORS),
          auto.key=KEY,
          xlim=XLIM,
