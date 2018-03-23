@@ -33,8 +33,6 @@ for(SI in unique(p$stat))
                # of observations.
                adjustment = ifelse(dist == 0,1,2))
 
-    print(sort(unique(s$dist)))
-    COLORS=viridis(length(unique(as.factor(s$dist))))
     ICOLORS=viridis(length(unique(as.factor(s$dist))))
     COLORS=array()
     COLORS[1] = rgb(as.integer(col2rgb(ICOLORS[1])[1,])/255,
