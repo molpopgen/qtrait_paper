@@ -46,76 +46,103 @@ for (i in files)
     data = bind_rows(data,process_genome_scan(i))
 }
 
-COLORS=rev(viridis(length(unique(as.factor(data$dist)))))
-KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
-         cex.title=1,points=FALSE,lines=TRUE,just=0.5)
+# COLORS=rev(viridis(length(unique(as.factor(data$dist)))))
+# KEY=list(space="top",columns=3,title="Distance from window with causal mutations.",
+#          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
+ICOLORS=viridis(length(unique(as.factor(data$dist))))
+COLORS=array()
+COLORS[1] = rgb(as.integer(col2rgb(ICOLORS[1])[1,])/255,
+            as.integer(col2rgb(ICOLORS[1])[2,])/255,
+            as.integer(col2rgb(ICOLORS[1])[3,])/255,
+            alpha=1/length(ICOLORS))
+for(i in 2:length(ICOLORS))
+{
+    ncolor = rgb(as.integer(col2rgb(ICOLORS[i])[1,])/255,
+                as.integer(col2rgb(ICOLORS[i])[2,])/255,
+                as.integer(col2rgb(ICOLORS[i])[3,])/255,
+                alpha=i/length(ICOLORS))
+    COLORS[i]=ncolor
+}
+KEY=list(space="top",columns=3,
+         title="Distance from window with causal mutations.",
+         cex.title=1,#points=FALSE,
+         lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
+         just=0.5,
+         text=list(as.character(sort(unique(data$dist)))))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 
-tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean Tajima's D",
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
 save_image("MeanTajdTenLoci",tajdPlot)
 
-hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean H'",
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
 save_image("MeanHprimeTenLoci",hprimePlot)
 
-thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",hat(theta)[pi])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
 save_image('MeanPiTenLoci',thetapiPlot)
 
-H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",H[1])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.1))
 save_image('MeanH1TenLoci',H1Plot)
 
-H12Plot = xyplot(H12 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+H12Plot = xyplot(H12 ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.1))
 save_image('MeanH12TenLoci',H12Plot)
 
-H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+H2H1Plot = xyplot(H2H1 ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,xlim=c(-0.05,0.15))
 save_image('MeanH2H1TenLoci',H2H1Plot)
 
-mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",n[SL])),
                   scales=list(cex=1,alternating=F),
@@ -123,10 +150,11 @@ mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group
 save_image('MeannSLTenLoci',mean_nSLPlot)
 
 # This one is garbage:
-max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),group=dist,
+max_abs_nSLPlot = xyplot(max_abx_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
                   type='l',data=data,
                   par.settings=simpleTheme(col=COLORS),
-                  auto.key=KEY,
+                  key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",H[12])),
                   scales=list(cex=1,alternating=F),
