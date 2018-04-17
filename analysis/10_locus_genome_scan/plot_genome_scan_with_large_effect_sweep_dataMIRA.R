@@ -47,7 +47,7 @@ for(i in 2:length(ICOLORS))
     COLORS[i]=ncolor
 }
 KEY=list(space="top",columns=3,
-         title="Distance from window with causal mutations.",
+#         title="Distance from window with causal mutations.",
          cex.title=1,#points=FALSE,
          lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
          just=0.5,
@@ -57,13 +57,13 @@ STRIP=strip.custom(strip.names = TRUE,sep=" = ",
 
 save_image <- function(stat,img)
 {
-    trellis.device(device="pdf",file=paste(stat,".pdf",sep=""),height=5,width=10)
+    trellis.device(device="pdf",file=paste(stat,".pdf",sep=""),height=4,width=6)
     trellis.par.set("fontsize",list(text=12))
     print(img)
     dev.off()
 }
 
-X=subset(X,opt==1.0)
+X=subset(X,opt==1.0 & mu != 1e-3)
 
 hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(type),
                   group=factor(dist,levels=rev(sort(unique(X$dist)))),

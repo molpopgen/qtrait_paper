@@ -47,7 +47,7 @@ for (i in files)
     }
 }
 print(warnings())
-d = d %>% filter(opt==1) %>%
+d = d %>% filter(opt==1,mu!=1e-3) %>%
     mutate(scaled_time = (generation-5e4)/5e3)
 
 KEY=list(space="top",columns=3,title="",
@@ -61,13 +61,13 @@ p = xyplot((mg/opt)~scaled_time|as.factor(mu)*as.factor(opt),
            strip=STRIP,
            #auto.key=KEY,
            par.settings=simpleTheme(col=COLORS,lwd=3),
-           scales=list(cex=1,alternating=F),
+           scales=list(cex=1,alternating=F,x=list(rot=45)),
            xlab="Time since optimum shift (units of N generations)",
            ylab=expression(paste("Contribution of locus to adaptation, ",over(bar(g), z[o]))),
            xlim=c(-0.1,0.25),
            ylim=c(0.0,1.1),
            data=d)
-trellis.device(device="pdf",file="MeanGeneticValuePerLocusMIRA.pdf",height=4,width=10)
+trellis.device(device="pdf",file="MeanGeneticValuePerLocusMIRA.pdf",height=4,width=6)
 trellis.par.set("fontsize",list(text=12))
 print(p)
 dev.off()
