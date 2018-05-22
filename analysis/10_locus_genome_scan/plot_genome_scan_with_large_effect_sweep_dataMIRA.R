@@ -46,12 +46,12 @@ for(i in 2:length(ICOLORS))
                 alpha=i/length(ICOLORS))
     COLORS[i]=ncolor
 }
-KEY=list(space="top",columns=3,
-#         title="Distance from window with causal mutations.",
-         cex.title=1,#points=FALSE,
-         lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
-         just=0.5,
-         text=list(as.character(sort(unique(X$dist)))))
+# KEY=list(space="top",columns=3,
+# #         title="Distance from window with causal mutations.",
+#          cex.title=1,#points=FALSE,
+#          lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
+#          just=0.5,
+#          text=list(as.character(sort(unique(X$dist)))))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 
@@ -69,7 +69,7 @@ hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor
                   group=factor(dist,levels=rev(sort(unique(X$dist)))),
                   type='l',data=X,
                   par.settings=simpleTheme(col=COLORS),
-                  key=KEY, lwd=3,
+                   lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean H'",
                   xlim=c(-1,5),

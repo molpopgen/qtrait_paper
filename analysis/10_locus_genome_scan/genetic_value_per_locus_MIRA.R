@@ -53,7 +53,7 @@ d = d %>% filter(opt==1,mu!=1e-3) %>%
 KEY=list(space="top",columns=3,title="",
          cex.title=1,points=FALSE,lines=TRUE,just=0.5)
 STRIP=strip.custom(strip.names = TRUE, sep=" = ",
-                   var.name = c(expression(mu),expression(z[o])),bg=c("white"))
+                   var.name = c(expression(paste('Mutation rate, ',mu)),expression(paste('Optimal trait value, ',z[o]))),bg=c("white"))
 COLORS=rev(viridis(length(unique(as.factor(d$rank)))))
 p = xyplot((mg/opt)~scaled_time|as.factor(mu)*as.factor(opt),
            type='l',
@@ -63,8 +63,8 @@ p = xyplot((mg/opt)~scaled_time|as.factor(mu)*as.factor(opt),
            par.settings=simpleTheme(col=COLORS,lwd=3),
            scales=list(cex=1,alternating=F,x=list(rot=45)),
            xlab="Time since optimum shift (units of N generations)",
-           ylab=expression(paste("Contribution of locus to adaptation, ",over(bar(g), z[o]))),
-           xlim=c(-0.1,0.25),
+           ylab="Mean genetic value of locus.",
+           xlim=c(-0.025,0.25),
            ylim=c(0.0,1.1),
            data=d)
 trellis.device(device="pdf",file="MeanGeneticValuePerLocusMIRA.pdf",height=4,width=6)
