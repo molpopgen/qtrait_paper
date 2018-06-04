@@ -46,7 +46,7 @@ for (f in files)
     print(file.exists(dbname))
     db <- src_sqlite(dbname)
     dbt <- tbl(db,'data')
-    dt = collect(dbt)
+    dt = collect(dbt) %>% mutate(opt=dbopt,mu=dbmu)
     if(is.na(omax))
     {
         omax=dt
@@ -60,7 +60,7 @@ for (f in files)
 #print(head(omax))
 
 fixations=collect(fdbt)
-DATA = left_join(fixations,omax,by=c("repid","generation","locus","window"))
+DATA = left_join(fixations,omax,by=c("repid","generation","locus","window","mu","opt"))
 print(head(DATA))
 hard_only = DATA %>%
     select(-c(repid, locus)) %>%
@@ -126,7 +126,7 @@ tajdPlot = xyplot(omegamax ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor
                   ylab=expression(paste("Mean ",omega[max])),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP,
-                  xlim=c(-0.2,0.2)
+                  xlim=c(-0.05,0.15)
                   )
 save_image('MeanOmegaMaxTenLociLargeEffectOnly',tajdPlot)
 # 
