@@ -22,15 +22,27 @@ process_gvalues <- function (filename, fixations)
     db = DBI::dbConnect(RSQLite::SQLite(),dbname)
     dbt = tbl(db,'data')
 
-    g = collect(dbt) %>%
-        group_by(repid,generation) %>%
-        mutate(rank = dense_rank(desc(abs(g)))) %>%
-        mutate(opt=dbopt,mu=dbmu) %>%
-        full_join(f,by=c('generation','opt','mu','repid','locus')) %>%
-        drop_na() %>%
+    g = collect(dbt) %>% mutate(opt=dbopt,mu=dbmu) %>%
+        group_by(repid,generation) %>% mutate(rank = dense_rank(desc(abs(g)))) %>%
+        inner_join(f,by=c('generation','repid','locus','mu','opt')) %>%
         group_by(generation,rank,sweep_type) %>%
         summarise(meanD = mean(tajd),meanH=mean(hprime),mg=mean(g)) %>%
-        mutate(opt=dbopt,mu=dbmu)
+        mutate(opt=dbopt,mu=dbmu) %>%
+        filter(sweep_type != 'none')
+    # print(paste(unique(g$opt),unique(g$mu)))
+    # print(g)
+    # print(names(g))
+    # print("leaving")
+    # q("no")
+    # g = collect(dbt) %>%
+    #     group_by(repid,generation) %>%
+    #     mutate(rank = dense_rank(desc(abs(g)))) %>%
+    #     mutate(opt=dbopt,mu=dbmu) %>%
+    #     full_join(f,by=c('generation','opt','mu','repid','locus')) %>%
+    #     drop_na() %>%
+    #     group_by(generation,rank,sweep_type) %>%
+    #     summarise(meanD = mean(tajd),meanH=mean(hprime),mg=mean(g)) %>%
+    #     mutate(opt=dbopt,mu=dbmu)
         
     DBI::dbDisconnect(db)
     g
@@ -48,7 +60,7 @@ fixations = fixations %>%
     # Retain genome scan info 
     # only for window w/selected
     # fixations
-    filter(sweep_type != 'none',window==5)
+    filter(window==5)
 
 DBI::dbDisconnect(fixations_db)
 
@@ -57,6 +69,7 @@ files <- dir(path="../../mlocus_pickle/",pattern="*.genetic_values_per_locus.db"
 d = NA
 for (i in files) #[1:1])
 {
+    print(paste("processing",i))
     x = process_gvalues(i, fixations)
     if(is.na(d))
     {
@@ -92,33 +105,36 @@ trellis.device(device="pdf",file="MeanGeneticValuePerLocusLargeEffect.pdf",heigh
 trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
-p = xyplot(meanD~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
+d2 = d %>% filter(opt>0.1,rank<3) %>% mutate(G = ifelse(sweep_type == 'New mutation',ifelse(rank==1,"N1","N2"),ifelse(rank==1,"S1","S2")))
+p = xyplot(meanD~scaled_time|as.factor(mu)*as.factor(opt),#:as.factor(sweep_type),
            type='l',
-           group=rank,
+           group=G,
            strip=STRIP,
-           #auto.key=KEY,
-           par.settings=simpleTheme(col=COLORS,lwd=3),
+           par.settings=simpleTheme(col=c(COLORS[1],COLORS[2],COLORS[1],COLORS[2]),
+                                    lty=c("solid","solid","dashed","dashed"),lwd=3),
            scales=list(cex=0.75,alternating=F),
            xlab="Time since optimum shift (units of N generations)",
            ylab="Mean Tajima's D",
            xlim=c(-0.1,3),
-           data=subset(d,opt > 0.1)
+           #data=subset(d,opt > 0.1&rank<3)
+           data=d2
            )
 trellis.device(device="pdf",file="MeanTajDPerLocusLargeEffect.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
-p = xyplot(meanH~scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
+p = xyplot(meanH~scaled_time|as.factor(mu)*as.factor(opt),#:as.factor(sweep_type),
            type='l',
-           group=rank,
+           group=G,
            strip=STRIP,
            #auto.key=KEY,
-           par.settings=simpleTheme(col=COLORS,lwd=3),
+           par.settings=simpleTheme(col=c(COLORS[1],COLORS[2],COLORS[1],COLORS[2]),
+                                    lty=c("solid","solid","dashed","dashed"),lwd=3),
            scales=list(cex=0.75,alternating=F),
            xlab="Time since optimum shift (units of N generations)",
            ylab="Mean H'",
            xlim=c(-0.1,3),
-           data=subset(d,opt > 0.1)
+           data=d2
            )
 trellis.device(device="pdf",file="MeanHprimePerLocusLargeEffect.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
