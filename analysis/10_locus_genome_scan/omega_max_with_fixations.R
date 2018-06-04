@@ -66,14 +66,14 @@ hard_only = DATA %>%
     select(-c(repid, locus)) %>%
     filter(nhard>0,nsoft==0,opt>0.1) %>%
     mutate(dist = abs(window-5)) %>%
-    group_by(generation,window,dist,opt,mu) %>%
+    group_by(generation,dist,opt,mu) %>%
     summarise_all(funs(mean)) %>% 
     mutate(scaled_time = (generation-50000)/5000) 
 soft_only = DATA %>%
     select(-c(repid, locus)) %>%
     filter(nhard==0,nsoft>0,opt>0.1) %>%
     mutate(dist = abs(window-5)) %>%
-    group_by(generation,window,dist,opt,mu) %>%
+    group_by(generation,dist,opt,mu) %>%
     summarise_all(funs(mean)) %>% 
     mutate(scaled_time = (generation-50000)/5000) 
 
