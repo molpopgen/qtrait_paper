@@ -129,4 +129,22 @@ tajdPlot = xyplot(omegamax ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor
                   xlim=c(-0.05,0.15)
                   )
 save_image('MeanOmegaMaxTenLociLargeEffectOnly',tajdPlot)
-# 
+
+omax = omax %>%
+    mutate(dist = abs(window-5)) %>%
+    group_by(generation,dist,mu,opt) %>%
+    summarise(momegamax = mean(omegamax)) %>%
+    mutate(scaled_time = (generation-50000)/5000) 
+
+meanplot = xyplot(momegamax ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(X$dist)))),
+                  type='l',data=omax,
+                  par.settings=simpleTheme(col=COLORS),
+                  key=KEY, lwd=3,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",omega[max])),
+                  scales=list(cex=1,alternating=F),
+                  strip=STRIP,
+                  xlim=c(-0.05,0.15)
+                  )
+save_image('MeanOmegaMaxTenLoci',meanplot)
