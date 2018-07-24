@@ -105,6 +105,7 @@ for n,g in gr:
                       space=0)#,joint_kws=dict(bins=len(g.index)))
     p.ax_joint.text(0.4,3000,r'$\mu = $'+'{0:0.5f}\n'.format(n[0]) + r'$z_o = $' +'{0:0.5f}'.format(n[1]))
     p.ax_joint.set_yticks([1] + [i for i in range(500,4000,500)])
+    p.ax_joint.axvline(x= 2*np.sqrt(2.0)*np.sqrt(n[0]),linestyle='dashed')
     plt.subplots_adjust(right=0.9)
     cbaxes = inset_axes(p.ax_joint, width="45%", height="3%", loc=1)
     cbar = plt.colorbar(cax=cbaxes, orientation='horizontal')
