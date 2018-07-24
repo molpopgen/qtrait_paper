@@ -89,15 +89,15 @@ save_image('MeanSweeDLRLargeEffectOnly',Plot)
 # 
 # print(unique(power$sweep_type))
 # print(unique(power$n))
-print(unique(meanLRdata$n))
-Plot = xyplot(s05/ssig05 ~ scaled_time| as.factor(mu)*as.factor(opt), #:as.factor(sweep_type),
-              group=sweep_type,lwd=2,
-                  type='l',data=meanLRdata,
-                  par.settings=bwtheme,
-                  auto.key=KEY,
-                  xlab="Time since optimum shift (units of N generations)",
-                  ylab="Fraction of significant loci with large-effect substitution",
-                  scales=list(x=list(at=seq(-0.4,1.0,0.2),rot=45),alternating=F),
-                  strip=STRIP,xlim=c(-0.5,1)
-                  )
-save_image('FractionSweeDLargeEffect',Plot)
+# print(unique(meanLRdata$n))
+# Plot = xyplot(s05/ssig05 ~ scaled_time| as.factor(mu)*as.factor(opt), #:as.factor(sweep_type),
+#               group=sweep_type,lwd=2,
+#                   type='l',data=meanLRdata,
+#                   par.settings=bwtheme,
+#                   auto.key=KEY,
+#                   xlab="Time since optimum shift (units of N generations)",
+#                   ylab="Fraction of significant loci with large-effect substitution",
+#                   scales=list(x=list(at=seq(-0.4,1.0,0.2),rot=45),alternating=F),
+#                   strip=STRIP,xlim=c(-0.5,1)
+#                   )
+# save_image('FractionSweeDLargeEffect',Plot)
