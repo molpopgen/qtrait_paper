@@ -53,8 +53,10 @@ save_image <- function(stat,img)
 #          lines=list(lwd=rep(3,3)),
 #          just=0.5,
 #          text=list(c("New mutation","Standing var.","None")))
-KEY=list(space="top",columns=3,title="Sweep category",
-         cex.title=2,points=FALSE,just=0.5,lines=list(lwd=rep(3,3),lty=c(1,2,3)),
+KEY=list(space="top",columns=3,title="Type of sweep",
+         cex.title=1,
+         # points=FALSE,
+         just=0.5,lines=list(lwd=rep(3,3),lty=c(1,2,3)),
           text=list(c("New mutation","Standing var.","None")))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))

@@ -175,7 +175,7 @@ for(i in 2:length(ICOLORS))
 }
 nlines = length(unique(psweep_and_sig$sweep_type))
 KEY=list(space="top",columns=3,
-         title="Sweep category",
+         title="Type of sweep",
          cex.title=1,#points=FALSE,
          lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
          just=0.5,
