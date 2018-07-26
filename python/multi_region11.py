@@ -79,6 +79,7 @@ def run_replicate(argtuple):
             'mutrates_s':[args.mu/float(args.nloci)]*args.nloci,
             'mutrates_n':[10*args.theta/float(4*NANC)]*args.nloci,
             'recrates':[10*args.rho/float(4*NANC)]*args.nloci,
+            'prune_selected':False
             }
     params=fp11.model_params.MlocusParamsQ(**pdict)
     ofilename = args.stub + '.rep' + str(repid) + '.pickle.lzma'
