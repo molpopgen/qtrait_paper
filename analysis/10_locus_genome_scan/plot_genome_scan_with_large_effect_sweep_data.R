@@ -72,6 +72,7 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(typ
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean Tajima's D",
                   scales=list(cex=1,alternating=F),
+                  xlim=c(-0.5,4),
                   strip=STRIP
                   )
 save_image('MeanTajdTenLociLargeEffectOnly',tajdPlot)
@@ -84,6 +85,7 @@ hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean H'",
                   scales=list(cex=1,alternating=F),
+                  xlim=c(-0.5,4),
                   strip=STRIP)
 save_image('MeanHprimeTenLociLargeEffectOnly',hprimePlot)
 
@@ -95,8 +97,21 @@ thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt):as.fact
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",hat(theta)[pi])),
                   scales=list(cex=1,alternating=F),
+                  xlim=c(-0.5,4),
                   strip=STRIP)
 save_image('MeanPiTenLociLargeEffectOnly',thetapiPlot)
+
+ReductionPlot = xyplot(thetapi/(1000./11.) ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(type),
+                  group=factor(dist,levels=rev(sort(unique(X$dist)))),
+                  type='l',data=X,
+                  par.settings=simpleTheme(col=COLORS),
+                  key=KEY, lwd=3,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",hat(theta)[pi],"/",theta)),
+                  scales=list(cex=1,alternating=F),
+                  xlim=c(-0.5,4),
+                  strip=STRIP)
+save_image('MeanReductionDiversityTenLociLargeEffectOnly',ReductionPlot)
 
 H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(type),
                   group=factor(dist,levels=rev(sort(unique(X$dist)))),
@@ -139,7 +154,8 @@ mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt):as.fa
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",n[SL])),
                   scales=list(cex=1,alternating=F),
-                  strip=STRIP,xlim=c(-2,4))
+                  xlim=c(-0.5,4),
+                  strip=STRIP)
 save_image('MeannSLTenLociLargeEffectOnly',mean_nSLPlot)
 
 

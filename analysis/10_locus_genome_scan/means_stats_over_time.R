@@ -79,6 +79,7 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt),
                   key=KEY, lwd=3,
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean Tajima's D",
+                  xlim=c(-0.5,4),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
 save_image("MeanTajdTenLoci",tajdPlot)
@@ -91,6 +92,7 @@ hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt),
                   xlab="Time since optimum shift (units of N generations)",
                   ylab="Mean H'",
                   scales=list(cex=1,alternating=F),
+                  xlim=c(-0.5,4),
                   strip=STRIP)
 save_image("MeanHprimeTenLoci",hprimePlot)
 
@@ -104,6 +106,18 @@ thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt),
                   scales=list(cex=1,alternating=F),
                   strip=STRIP)
 save_image('MeanPiTenLoci',thetapiPlot)
+
+reduction = xyplot(thetapi/(1000/11) ~ scaled_time| as.factor(mu)*as.factor(opt),
+                  group=factor(dist,levels=rev(sort(unique(data$dist)))),
+                  type='l',data=data,
+                  par.settings=simpleTheme(col=COLORS),
+                  key=KEY, lwd=3,
+                  xlab="Time since optimum shift (units of N generations)",
+                  ylab=expression(paste("Mean ",hat(theta)[pi],"/",theta)),
+                  scales=list(cex=1,alternating=F),
+                  xlim=c(-0.5,4),
+                  strip=STRIP)
+save_image('MeanReductionDiversityTenLoci',reduction)
 
 H1Plot = xyplot(H1 ~ scaled_time| as.factor(mu)*as.factor(opt),
                   group=factor(dist,levels=rev(sort(unique(data$dist)))),
@@ -146,7 +160,8 @@ mean_nSLPlot = xyplot(mean_nSL ~ scaled_time| as.factor(mu)*as.factor(opt),
                   xlab="Time since optimum shift (units of N generations)",
                   ylab=expression(paste("Mean ",n[SL])),
                   scales=list(cex=1,alternating=F),
-                  strip=STRIP,xlim=c(-2,4))
+                  xlim=c(-0.5,4),
+                  strip=STRIP)
 save_image('MeannSLTenLoci',mean_nSLPlot)
 
 # This one is garbage:
