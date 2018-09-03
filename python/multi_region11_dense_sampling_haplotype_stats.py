@@ -238,8 +238,6 @@ if __name__ == "__main__":
             fixationsDF = pd.DataFrame(np.array(pop.fixations.array()))
             fixationsDF['repid'] = [repid]*len(fixationsDF.index)
             fixationsDF['ftime'] = pop.fixation_times
-            print(statsDF.head())
-            print(fixationsDF.head())
             with sqlite3.connect(args.outfile) as conn:
                 statsDF.to_sql('data', conn, if_exists='append', index=False)
             with sqlite3.connect(args.fixationsfile) as conn:
