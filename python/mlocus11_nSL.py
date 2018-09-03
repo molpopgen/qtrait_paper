@@ -67,6 +67,7 @@ def get_summstats(pop, repid, nsam):
         neut.extend([i for i in sel])
         neut = sorted(neut, key=lambda x: x[0])
         sd = SimData(neut)
+        assert sd.size() == 2 * args.nsam, "sample size error"
         w = Windows(sd, 1.0, 1.0, bi[0], bi[1])
         for i in range(len(w)):
             raw_nSL = nSLiHS(w[i])
@@ -78,8 +79,8 @@ def get_summstats(pop, repid, nsam):
             nSL = np.array(raw_nSL)
             if len(nSL) > 0:
                 if i == 0 or i == len(w) - 1:
-                    reference_values.extend([i for i in nSL[:, 0]])
-                    reference_daf.extend([i for i in nSL[:, 1]])
+                    reference_values.extend(nSL[:, 0].tolist())
+                    reference_daf.extend(nSL[:, 2].tolist())
                 else:
                     temp.append(TempRecord(locus, i, nSL))
         locus += 1
@@ -101,7 +102,7 @@ def get_summstats(pop, repid, nsam):
     rv = []
     # package up the data
     for t in temp:
-        tb = np.digitize(t.values[:, 1],
+        tb = np.digitize(t.values[:, 2],
                          np.arange(0, 2 * args.nsam, 10))
         zscores_win = np.array([])
         for b in set(tb):
