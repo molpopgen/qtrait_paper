@@ -14,6 +14,7 @@ import fwdpy11.multilocus as fp11ml
 import libsequence.polytable
 import libsequence.summstats
 import libsequence.windows
+from libsequence.parallel import Scheduler
 from collections import namedtuple
 import numpy as np
 import pandas as pd
@@ -201,6 +202,10 @@ def run_replicate(argtuple):
              }
     params = fp11.model_params.ModelParams(**pdict)
     recorder = HapStatSampler(repid, NANC, args.nsam)
+    # sched prevents the TBB library 
+    # from over-subscribing a node
+    # when running many sims in parallel
+    sched = Scheduler(1)
     pop = fp11.MlocusPop(NANC, locus_boundaries)
     assert pop.nloci == len(locus_boundaries), "nloci != len(locus_boundaries)"
     fwdpy11.wright_fisher.evolve(rng, pop, params, recorder)
@@ -241,7 +246,7 @@ if __name__ == "__main__":
             # Delete fixation info for neutral variants
             fixationsDF = fixationsDF.drop(fixationsDF[fixationsDF.neutral == 1].index)
             with sqlite3.connect(args.outfile) as conn:
-                statsDF.to_sql('data', conn, if_exists='append', index=False)
+                statsDF.to_sql('data', conn, if_exists='append', index=False, chunksize=1000)
             with sqlite3.connect(args.fixationsfile) as conn:
                 fixationsDF.to_sql(
                     'data', conn, if_exists='append', index=False)
