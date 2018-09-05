@@ -14,7 +14,6 @@ import fwdpy11.multilocus as fp11ml
 import libsequence.polytable
 import libsequence.summstats
 import libsequence.windows
-from libsequence.parallel import Scheduler
 from collections import namedtuple
 import numpy as np
 import pandas as pd
@@ -23,7 +22,12 @@ import argparse
 import sqlite3
 import os
 import concurrent.futures
-# import multiprocessing as mp
+
+HAVESCHED = True
+try:
+    from libsequence.parallel import Scheduler
+except:
+    HAVESCHED = False
 
 assert fwdpy11.__version__ > '0.1.4', "fwdpy11 version too old."
 
@@ -156,15 +160,21 @@ class HapStatSampler(object):
                 tb = np.digitize(t.values[:, 2],
                                  np.arange(0, 2 * args.nsam, 10))
                 zscores_win = np.array([])
-                for b in set(tb):
+                for b in np.unique(tb):
                     w = np.where(tb == b)[0]
                     if b in mean_sd:
                         m = mean_sd[b][0]
                         sdev = mean_sd[b][1]
-                        zscores = (t.values[:, 0][w] - m) / sdev
-                        zscores_win = np.concatenate((zscores_win, zscores))
+                        if np.isfinite(sdev) == 1 and sdev > 0:
+                            zscores = (t.values[:, 0][w] - m) / sdev
+                            zscores_win = np.concatenate(
+                                (zscores_win, zscores))
                 mz = zscores_win.mean()
-                tempData[t.window] = tempData[t.window]._replace(mean_nSLz=mz)
+                idx = [idx for idx in range(len(
+                    tempData)) if tempData[idx].locus == t.locus and tempData[idx].window == t.window]
+                assert len(idx) == 1, "too many values"
+                idx = idx[0]
+                tempData[idx] = tempData[idx]._replace(mean_nSLz=mz)
 
             self.data.extend(tempData)
 
@@ -202,10 +212,12 @@ def run_replicate(argtuple):
              }
     params = fp11.model_params.ModelParams(**pdict)
     recorder = HapStatSampler(repid, NANC, args.nsam)
-    # sched prevents the TBB library 
+    # sched prevents the TBB library
     # from over-subscribing a node
     # when running many sims in parallel
-    sched = Scheduler(1)
+    sched = None
+    if HAVESCHED is True:
+        sched = Scheduler(1)
     pop = fp11.MlocusPop(NANC, locus_boundaries)
     assert pop.nloci == len(locus_boundaries), "nloci != len(locus_boundaries)"
     fwdpy11.wright_fisher.evolve(rng, pop, params, recorder)
@@ -244,9 +256,11 @@ if __name__ == "__main__":
             fixationsDF['repid'] = [repid]*len(fixationsDF.index)
             fixationsDF['ftime'] = pop.fixation_times
             # Delete fixation info for neutral variants
-            fixationsDF = fixationsDF.drop(fixationsDF[fixationsDF.neutral == 1].index)
+            fixationsDF = fixationsDF.drop(
+                fixationsDF[fixationsDF.neutral == 1].index)
             with sqlite3.connect(args.outfile) as conn:
-                statsDF.to_sql('data', conn, if_exists='append', index=False, chunksize=1000)
+                statsDF.to_sql('data', conn, if_exists='append',
+                               index=False, chunksize=1000)
             with sqlite3.connect(args.fixationsfile) as conn:
                 fixationsDF.to_sql(
                     'data', conn, if_exists='append', index=False)
