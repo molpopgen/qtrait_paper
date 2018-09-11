@@ -128,8 +128,10 @@ nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt), data = subset(uncond
             key=NSLKEY, lwd=3,
             xlab="Time since optimum shift (units of N generations)",
             ylab=expression(paste("Mean z-score")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.5,4),
+            scales=list(cex=1,alternating=F,
+                        y=list(at=c(-0.05,0,0.05),
+                               labels=c('-0.05','0.0','0.05'))),
+            xlim=c(-0.5,4),ylim=c(-0.06,0.06),
             strip=STRIP)
 
 save_image("MeannSLTenLoci", nSL)
