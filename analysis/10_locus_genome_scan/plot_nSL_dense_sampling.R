@@ -19,6 +19,8 @@ get_fixations = function(fname)
     db = DBI::dbConnect(RSQLite::SQLite(),paste("../../mlocus_pickle/",fname,sep=""))
     dbt = tbl(db,'data')
     q = dbt %>%
+        # This filter is for rapid protoyping this script :)
+        # filter(repid < 5) %>%
         # Originate < 100 gens after shift
         filter(g < 5e4 + 100) %>%
         # Fix after shift
@@ -40,6 +42,8 @@ get_stats = function(fname)
     db = DBI::dbConnect(RSQLite::SQLite(),paste("../../mlocus_pickle/",fname,sep=""))
     dbt = tbl(db,'data')
     q = dbt %>% 
+        # This filter is for rapid protoyping this script :)
+        # filter(repid < 5) %>%
         mutate(dist = abs(window-5))
     df = collect(q)
     DBI::dbDisconnect(db)
@@ -71,7 +75,8 @@ conditional_means = data %>% filter(opt > 0.1 & ((nhard == 1 & nsoft == 0) | (nh
     summarise(mz = mean(mean_nSLz), mH1 = mean(H1), mH12 = mean(H12), mH2H1 = mean(H2H1)) %>%
     mutate(scaled_time=(generation-5e4)/5e3)
 
-ICOLORS=viridis(length(unique(as.factor(unconditional_means$dist))))
+UDIST=unique(as.factor(unconditional_means$dist))
+ICOLORS=viridis(length(UDIST))
 COLORS=array()
 COLORS[1] = rgb(as.integer(col2rgb(ICOLORS[1])[1,])/255,
             as.integer(col2rgb(ICOLORS[1])[2,])/255,
@@ -90,7 +95,19 @@ KEY=list(space="top",columns=3,
          cex.title=1,#points=FALSE,
          lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
          just=0.5,
-         text=list(as.character(sort(unique(data$dist)))))
+         text=list(as.character(sort(UDIST))))
+
+# the nSL plots skip distance == 5, so 
+# we'll make new colors/key for them:
+NSLCOLORS = COLORS[2:6]
+print(COLORS)
+print(NSLCOLORS)
+NSLKEY=list(space="top",columns=3,
+         title="Distance from window with causal mutations.",
+         cex.title=1,#points=FALSE,
+         lines=list(lwd=rep(3,length(NSLCOLORS)),col=rev(NSLCOLORS)),
+         just=0.5,
+         text=list(as.character(sort(UDIST)[1:5])))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 
@@ -105,10 +122,10 @@ save_image <- function(stat,img)
 # Unconditional nSL plot
 
 nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt), data = subset(unconditional_means, dist<5),
-            group=factor(dist,levels=rev(sort(unique(unconditional_means$dist)))),
+            group=factor(dist,levels=rev(sort(unique(UDIST)))[1:5]),
             type='l',
-            par.settings=simpleTheme(col=COLORS),
-            key=KEY, lwd=3,
+            par.settings=simpleTheme(col=NSLCOLORS),
+            key=NSLKEY, lwd=3,
             xlab="Time since optimum shift (units of N generations)",
             ylab=expression(paste("Mean z-score")),
             scales=list(cex=1,alternating=F),
@@ -117,12 +134,14 @@ nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt), data = subset(uncond
 
 save_image("MeannSLTenLoci", nSL)
 
+# Conditional nSL plot
+
 nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type),
             data = subset(conditional_means, dist<5),
-            group=factor(dist,levels=rev(sort(unique(conditional_means$dist)))),
+            group=factor(dist,levels=rev(sort(unique(UDIST)))[1:5]),
             type='l',
-            par.settings=simpleTheme(col=COLORS),
-            key=KEY, lwd=3,
+            par.settings=simpleTheme(col=NSLCOLORS),
+            key=NSLKEY, lwd=3,
             xlab="Time since optimum shift (units of N generations)",
             ylab=expression(paste("Mean z-score")),
             scales=list(cex=1,alternating=F),
@@ -130,3 +149,85 @@ nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type)
             strip=STRIP)
 
 save_image("MeannSLTenLociLargeEffectOnly", nSL)
+
+# Unconditional plots for H1, H12, and H2/H1
+
+H1plot = xyplot(mH1 ~ scaled_time|as.factor(mu)*as.factor(opt), data = unconditional_means,
+            group=factor(dist,levels=rev(sort(unique(UDIST)))),
+            type='l',
+            par.settings=simpleTheme(col=COLORS),
+            key=KEY, lwd=3,
+            xlab="Time since optimum shift (units of N generations)",
+            ylab=expression(paste("Mean H1")),
+            scales=list(cex=1,alternating=F),
+            xlim=c(-0.1,0.2),
+            strip=STRIP)
+
+save_image("MeanH1TenLoci", H1plot)
+
+H12plot = xyplot(mH12 ~ scaled_time|as.factor(mu)*as.factor(opt), data = unconditional_means,
+            group=factor(dist,levels=rev(sort(unique(UDIST)))),
+            type='l',
+            par.settings=simpleTheme(col=COLORS),
+            key=KEY, lwd=3,
+            xlab="Time since optimum shift (units of N generations)",
+            ylab=expression(paste("Mean H12")),
+            scales=list(cex=1,alternating=F),
+            xlim=c(-0.1,0.2),
+            strip=STRIP)
+
+save_image("MeanH12TenLoci", H12plot)
+
+H2H1plot = xyplot(mH2H1 ~ scaled_time|as.factor(mu)*as.factor(opt), data = unconditional_means,
+            group=factor(dist,levels=rev(sort(unique(UDIST)))),
+            type='l',
+            par.settings=simpleTheme(col=COLORS),
+            key=KEY, lwd=3,
+            xlab="Time since optimum shift (units of N generations)",
+            ylab=expression(paste("Mean H2H1")),
+            scales=list(cex=1,alternating=F),
+            xlim=c(-0.1,0.2),
+            strip=STRIP)
+
+save_image("MeanH2H1TenLoci", H2H1plot)
+
+# Conditional plots for H1, H12, and H2/H1
+
+H1plot = xyplot(mH1 ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type), data = conditional_means,
+            group=factor(dist,levels=rev(sort(unique(UDIST)))),
+            type='l',
+            par.settings=simpleTheme(col=COLORS),
+            key=KEY, lwd=3,
+            xlab="Time since optimum shift (units of N generations)",
+            ylab=expression(paste("Mean H1")),
+            scales=list(cex=1,alternating=F),
+            xlim=c(-0.1,0.2),
+            strip=STRIP)
+
+save_image("MeanH1TenLociLargeEffectOnly", H1plot)
+
+H12plot = xyplot(mH12 ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type), data = conditional_means,
+            group=factor(dist,levels=rev(sort(unique(UDIST)))),
+            type='l',
+            par.settings=simpleTheme(col=COLORS),
+            key=KEY, lwd=3,
+            xlab="Time since optimum shift (units of N generations)",
+            ylab=expression(paste("Mean H12")),
+            scales=list(cex=1,alternating=F),
+            xlim=c(-0.1,0.2),
+            strip=STRIP)
+
+save_image("MeanH12TenLociLargeEffectOnly", H12plot)
+
+H2H1plot = xyplot(mH2H1 ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type), data = conditional_means,
+            group=factor(dist,levels=rev(sort(unique(UDIST)))),
+            type='l',
+            par.settings=simpleTheme(col=COLORS),
+            key=KEY, lwd=3,
+            xlab="Time since optimum shift (units of N generations)",
+            ylab=expression(paste("Mean H2H1")),
+            scales=list(cex=1,alternating=F),
+            xlim=c(-0.1,0.2),
+            strip=STRIP)
+
+save_image("MeanH2H1TenLociLargeEffectOnly", H2H1plot)
