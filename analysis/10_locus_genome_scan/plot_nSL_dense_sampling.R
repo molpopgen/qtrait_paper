@@ -145,7 +145,7 @@ nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type)
             xlab="Time since optimum shift (units of N generations)",
             ylab=expression(paste("Mean z-score")),
             scales=list(cex=1,alternating=F),
-            xlim=c(-0.5,4),
+            xlim=c(-0.5,4), ylim=c(-0.25,0.35),
             strip=STRIP)
 
 save_image("MeannSLTenLociLargeEffectOnly", nSL)
