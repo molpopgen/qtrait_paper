@@ -36,7 +36,7 @@ for fi, i in zip(files, range(len(files))):
     cbaxes = inset_axes(p.ax_joint, width="45%", height="3%", loc=1)
     cbar = plt.colorbar(cax=cbaxes, orientation='horizontal')
     cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
-    p.set_axis_labels("Origin time of fixation (units of N generations)","Time to fixation (units of N generations)")
+    p.set_axis_labels("Origin time of fixation","Time to fixation")
     # p.set_axis_labels(
     #     r'$log_{10}$' + ' frequency at optimum shift', 'Effect size (' + r'$\gamma$' + ')')
     p.ax_joint.text(-3.5, 7, r'$z_o = $' +
