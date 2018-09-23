@@ -57,7 +57,7 @@ data$scaled_origin = (data$origin - 5e4)/5e3
 
 p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
             mu = data$mu,sojourn=data$n/5e3,optima=data$opt,xlim=c(-0.25,0.25),
-            par.settings=simpleTheme(cex=0.5,alpha.points=0.5),
+            par.settings=simpleTheme(cex=1,alpha.points=0.5),
             auto.key=KEY, xlab="Origin time of fixation (units of N generations)",
             ylab=expression(paste("Effect size (",gamma,")")),
             scales=list(cex=1,alternating=F,x=list(rot=45)),
@@ -79,5 +79,6 @@ p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
 
 
 trellis.device(device="pdf",file="OriginTimeVsEsizeFixations.pdf",height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
