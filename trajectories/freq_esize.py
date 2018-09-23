@@ -13,7 +13,7 @@ import numpy as np
 import scipy.stats
 import sys
 
-
+sns.set(font_scale=1.5, style="white")
 files = glob.glob("*_traj_merged_recent_fixations.db")
 
 for fi, i in zip(files, range(len(files))):
@@ -43,7 +43,7 @@ for fi, i in zip(files, range(len(files))):
     cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
     p.set_axis_labels(
         r'$log_{10}$' + ' frequency at optimum shift', 'Effect size (' + r'$\gamma$' + ')')
-    p.ax_joint.text(-3.5, 0.7, r'$z_o = $' +
+    p.ax_joint.text(-3.75, 0.6, r'$z_o = $' +
                     '{0:0.2f}'.format(opt) + '\n' + r'$\mu = $' + '{0:0.5f}'.format(mu))
     p.ax_joint.axhline(y=2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed')
     p.ax_joint.axhline(y=-2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed')

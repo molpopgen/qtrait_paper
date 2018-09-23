@@ -13,6 +13,7 @@ import numpy as np
 import scipy.stats
 import sys
 
+sns.set(font_scale=1.5, style="white")
 
 files = glob.glob("*_traj_merged_recent_fixations.db")
 

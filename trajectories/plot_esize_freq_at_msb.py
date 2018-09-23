@@ -8,6 +8,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import sqlite3
 import glob
 
+sns.set(font_scale=1.5, style="white")
 files = glob.glob('*_traj_merged.db')
 
 dfs = []
