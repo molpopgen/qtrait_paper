@@ -56,8 +56,16 @@ for n, g in gr:
     cbaxes = inset_axes(p.ax_joint, width="45%", height="3%", loc=1)
     cbar = plt.colorbar(cax=cbaxes, orientation='horizontal')
     cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
-    p.set_axis_labels("Effect size (" + r'$\gamma$' + ")",
-                      "Number of haplotypes with mutation.")
+    xlab = "Effect size (" + r'$\gamma$' + ")"
+    ylab = "Number of haplotypes with mutation."
+    if n[1] < 1.0:
+        ylab = ""
+        p.ax_joint.get_yaxis().set_visible(False)
+    if n[0] < 0.005:
+        xlab = ""
+        p.ax_joint.get_xaxis().set_visible(False)
+    p.set_axis_labels(xlab, ylab)
+
     ofname = "NhapsVsEsizeFixationsAtMSB" + str(I) + ".svg"
     p.savefig(ofname, format="svg")
     I += 1
