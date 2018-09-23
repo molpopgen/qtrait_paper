@@ -40,7 +40,7 @@ KEYTEXT = c(expression(paste(mu," = ",2.5 %*% 10^-4)),
 KEY = list(
            space = "top", points =FALSE, lines = TRUE,
            text=KEYTEXT,
-            columns = 2,cex=0.65)
+            columns = 2,cex=1)
 COLORS=viridis(length(KEYTEXT))
 # VGplot=xyplot(VG~scaled_time|opt,groups=mu,data=data,type='l',layout=c(1,3),
 #        xlim=XLIM,
