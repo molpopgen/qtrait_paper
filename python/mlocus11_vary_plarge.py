@@ -101,7 +101,7 @@ class Sampler(object):
                 for gi in [i.first, i.second]:
                     g = np.array(pop.gametes[gi].smutations, copy=False)
                     rv[j] += mutations['s'][g].sum()
-        return rv/pop.N
+        return rv / pop.N
 
     def _selected_mut_keys(self, pop):
         md = {i: 0 for i in range(len(pop.mcounts)) if
@@ -154,7 +154,7 @@ class Sampler(object):
             w0 = sample.window(lb[0], lb[0] + 1)
             w1 = sample.window(lb[1] - 1, lb[1])
             nsl0 = sstats.nsl(w0, 0)
-            nsl1 = sstats.nsl(w1, 1)
+            nsl1 = sstats.nsl(w1, 0)
             if nSL_tips is None:
                 nSL_tips = np.array(nsl0)
                 nSL_tips = np.concatenate(
@@ -193,8 +193,8 @@ class Sampler(object):
                 bins = np.digitize(daf, np.arange(0, sample.nsam, 10))
                 zscores_win = np.array([])
                 for i in np.unique(bins):
-                    w = np.where(bins == i)[0]
                     if i in mean_sd:
+                        w = np.where(bins == i)[0]
                         m = mean_sd[i][0]
                         sdev = mean_sd[i][1]
                         z = (stats[w] - m) / sdev
