@@ -317,6 +317,7 @@ def runsim(args):
     pop = fwdpy11.MlocusPop(args.nloci, locus_boundaries)
     sampler = Sampler(rng, args.nsam)
     fwdpy11.wright_fisher.evolve(rng, pop, params, sampler)
+    sampler.rng = None # Cannot be pickled and is not needed
     return repid, pop, sampler
 
 
