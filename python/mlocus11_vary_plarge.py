@@ -268,7 +268,7 @@ class Sampler(object):
                         D = sstats.tajd(ac[idx])
                         Hp = sstats.hprime(ac[idx], 0)
                         pi = sstats.thetapi(ac[idx])
-                        subw = w.window(left,left+1)
+                        subw = w.window(left, left + 1)
                         g = sstats.garud_statistics(subw)
                         self.gsdata.append(GSData(pop.generation,
                                                   locus, windex, pi, D, Hp,
