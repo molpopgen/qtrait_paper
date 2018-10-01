@@ -317,7 +317,7 @@ def runsim(args):
     pop = fwdpy11.MlocusPop(args.nloci, locus_boundaries)
     sampler = Sampler(rng, args.nsam)
     fwdpy11.wright_fisher.evolve(rng, pop, params, sampler)
-    sampler.rng = None # Cannot be pickled and is not needed
+    sampler.rng = None  # Cannot be pickled and is not needed
     return repid, pop, sampler
 
 
@@ -331,13 +331,15 @@ def classify_fixations(pop, sgv, mu):
     # Remove fixations arising 100 gens after shift
     fdf = fdf[fdf.g <= 10 * pop.N + 100]
     fdf['locus'] = np.array(fdf.pos / 12.0, dtype=np.int32)
-    fdf['type'] = [-1] * len(fdf.index)
-    fdf['large'] = [0] * len(fdf.index)
-    fdf.loc[fdf.g < 10 * pop.N, 'type'] = 0  # From standing var
-    fdf.loc[fdf.g >= 10 * pop.N, 'type'] = 1  # from new mutation
-    # Is fixation of large effect?
-    fdf.loc[fdf.s.abs() >= 2.0 * np.sqrt(2.0 * mu), 'large'] = 1
+    fdf['new'] = [0] * len(fdf.index)
+    fdf['standing'] = [0] * len(fdf.index)
+    ghat = 2.0 * np.sqrt(2.0 * mu)
+    fdf.loc[(fdf.g < 10 * pop.N) & (fdf.s.abs() >= ghat), 'standing'] = 1
+    fdf.loc[(fdf.g >= 10 * pop.N) & (fdf.s.abs() >= ghat), 'new'] = 1
 
+    # Change dtype for smaller databases
+    fdf.standing = np.array(fdf.standing, dtype=np.int32)
+    fdf.new = np.array(fdf.new, dtype=np.int32)
     fdf = fdf.merge(sgvdf, on=['pos', 's', 'g'], how='left',
                     suffixes=('', '_y'))
     fdf['nhaps_at_shift'].fillna(-1, inplace=True)
@@ -350,9 +352,14 @@ def integrate_genome_scan_with_fixations(pop, fdf, gsdata, repid):
     gsdf = pd.DataFrame(gsdata, columns=GSData._fields)
     gsdf['repid'] = [repid] * len(gsdf.index)
 
-    gsdf = gsdf.merge(fdf.ix[:, ['locus', 'type', 'large']], on=[
+    # We need to SUM within locus/type
+    dfg = fdf.groupby(['locus'])['new', 'standing'].sum().reset_index()
+    gsdf = gsdf.merge(dfg.ix[:, ['locus', 'standing', 'new']], on=[
         'locus'], suffixes=("", "_y"),
         how='left')
+    gsdf[['standing', 'new']] = gsdf[['standing', 'new']].fillna(value=0.0)
+    print(gsdf)
+    print(dfg)
     return gsdf
 
 
