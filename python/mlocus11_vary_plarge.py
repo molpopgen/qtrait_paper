@@ -77,7 +77,7 @@ def get_gaussian_sigma(F):
 # namedtuple('QData', ['generation', 'vg', 'zbar', 'g_per_locus'])
 QData = None
 GSData = namedtuple(
-    'GSData', ['generation', 'locus', 'window', 'pi',
+    'GSData', ['generation', 'locus', 'window', 'thetapi',
                'tajd', 'hprime', 'H1', 'H12', 'H2H1', 'meanz'])
 SGV = namedtuple('SGV', ['s', 'g', 'pos', 'nhaps_at_shift'])
 
