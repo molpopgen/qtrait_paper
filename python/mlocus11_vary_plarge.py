@@ -57,6 +57,8 @@ def make_parser():
                         help="Output file name for genome scan data")
     parser.add_argument('--foutfile', type=str,
                         help="Output file name for recent fixation data")
+    parser.add_argument('--gamma', type=float, default=None,
+                        help="Use Gamma DES with specific mean value")
     return parser
 
 
@@ -72,6 +74,10 @@ def generate_gaussian_function_to_minimize(ghat, plarge):
 def get_gaussian_sigma(F):
     res = scipy.optimize.minimize_scalar(F, bounds=(0, 100), method='bounded')
     return res.x
+
+
+def minimize_gamma_cdf(x, mean, ghat, plarge):
+    return (1.0 - gamma.cdf(ghat, a=x, scale=mean / x) - plarge)**2
 
 
 # namedtuple('QData', ['generation', 'vg', 'zbar', 'g_per_locus'])
@@ -281,21 +287,33 @@ class Sampler(object):
 def runsim(args):
     args, repid, repseed = args
     rng = fwdpy11.GSLrng(repseed)
-    NANC = args.N
-    ghat = gamma_hat(1.0, args.mu)
-    F = generate_gaussian_function_to_minimize(ghat, args.plarge)
-    sigma_gamma = get_gaussian_sigma(F)
     locus_boundaries = [(float(i + i * 11), float(i + i * 11 + 11))
                         for i in range(args.nloci)]
+    NANC = args.N
+    ghat = gamma_hat(1.0, args.mu)
+    sregions = None
+    if args.gamma is None:
+        F = generate_gaussian_function_to_minimize(ghat, args.plarge)
+        sigma_gamma = get_gaussian_sigma(F)
+        sregions = [[fwdpy11.GaussianS(j[0] + 5., j[0] + 6.,
+                                       args.mu, sigma_gamma, coupled=False)]
+                    for i, j in zip(range(args.nloci), locus_boundaries)]
+    else:
+        # Get a shape param for the gamma
+        res = scipy.optimize.minimize_scalar(minimize_gamma_cdf, bounds=(
+            0, 100), method='bounded', args=(args.gamma, ghat, args.plarge / 2))
+        sregions = [[fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
+                                    args.mu, -1.0 * args.gamma, res.x, coupled=False),
+                     fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
+                                    args.mu, args.gamma, res.x, coupled=False)]
+                    for i, j in zip(range(args.nloci), locus_boundaries)]
+
     nregions = [[fwdpy11.Region(j[0], j[1],
                                 args.theta / (4. * float(NANC)), coupled=True)]
                 for i, j in zip(range(args.nloci), locus_boundaries)]
     recregions = [[fwdpy11.Region(j[0], j[1],
                                   args.rho / (4. * float(NANC)), coupled=True)]
                   for i, j in zip(range(args.nloci), locus_boundaries)]
-    sregions = [[fwdpy11.GaussianS(j[0] + 5., j[0] + 6.,
-                                   args.mu, sigma_gamma, coupled=False)]
-                for i, j in zip(range(args.nloci), locus_boundaries)]
     interlocus_rec = fwdpy11.multilocus.binomial_rec([0.5] * (args.nloci - 1))
     nlist = np.array([NANC] * 15 * NANC, dtype=np.uint32)
     env = [(0, 0, 1), (10 * NANC, args.opt, 1)]
