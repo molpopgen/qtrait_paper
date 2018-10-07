@@ -376,8 +376,6 @@ def integrate_genome_scan_with_fixations(pop, fdf, gsdata, repid):
         'locus'], suffixes=("", "_y"),
         how='left')
     gsdf[['standing', 'new']] = gsdf[['standing', 'new']].fillna(value=0.0)
-    print(gsdf)
-    print(dfg)
     return gsdf
 
 
