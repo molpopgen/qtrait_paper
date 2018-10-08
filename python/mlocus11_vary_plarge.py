@@ -1,4 +1,5 @@
 import fwdpy11
+
 import fwdpy11.genetic_values
 import fwdpy11.model_params
 import fwdpy11.wright_fisher
@@ -77,7 +78,7 @@ def get_gaussian_sigma(F):
 
 
 def minimize_gamma_cdf(x, mean, ghat, plarge):
-    return (1.0 - gamma.cdf(ghat, a=x, scale=mean / x) - plarge)**2
+    return (1.0 - scipy.stats.gamma.cdf(ghat, a=x, scale=mean / x) - plarge)**2
 
 
 # namedtuple('QData', ['generation', 'vg', 'zbar', 'g_per_locus'])
@@ -393,6 +394,7 @@ if __name__ == "__main__":
     np.random.seed(initial_seed)
     repseeds = np.random.randint(0, 42000000, args.nreps)
     arglist = [(args, i, j) for i, j in zip(range(len(repseeds)), repseeds)]
+
     for i in [args.qoutfile, args.goutfile, args.foutfile]:
         if os.path.exists(i):
             os.remove(i)
