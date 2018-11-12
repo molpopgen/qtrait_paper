@@ -59,7 +59,7 @@ def make_parser():
     parser.add_argument('--foutfile', type=str,
                         help="Output file name for recent fixation data")
     parser.add_argument('--gamma', type=float, default=None,
-                        help="Use Gamma DES with specific mean value")
+                        help="Use Gamma DES with specific shape.")
     return parser
 
 
@@ -77,8 +77,8 @@ def get_gaussian_sigma(F):
     return res.x
 
 
-def minimize_gamma_cdf(x, mean, ghat, plarge):
-    return (1.0 - scipy.stats.gamma.cdf(ghat, a=x, scale=mean / x) - plarge)**2
+def minimize_gamma_cdf(x, shape, ghat, plarge):
+    return (1.0 - scipy.stats.gamma.cdf(ghat, a=shape, scale=x / shape) - plarge)**2
 
 
 # namedtuple('QData', ['generation', 'vg', 'zbar', 'g_per_locus'])
@@ -304,9 +304,9 @@ def runsim(args):
         res = scipy.optimize.minimize_scalar(minimize_gamma_cdf, bounds=(
             0, 100), method='bounded', args=(args.gamma, ghat, args.plarge / 2))
         sregions = [[fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
-                                    args.mu, -1.0 * args.gamma, res.x, coupled=False),
+                                    args.mu, -1.0 * res.x, args.gamma coupled=False),
                      fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
-                                    args.mu, args.gamma, res.x, coupled=False)]
+                                    args.mu, res.x, args.gamma, coupled=False)]
                     for i, j in zip(range(args.nloci), locus_boundaries)]
 
     nregions = [[fwdpy11.Region(j[0], j[1],
