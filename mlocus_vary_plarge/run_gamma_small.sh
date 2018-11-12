@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -q krt2,krti,bsg2
+#$ -q krt2,krti
 #$ -pe openmp 64-128
 
 cd $SGE_O_WORKDIR
@@ -21,4 +21,6 @@ python3 ../python/mlocus11_vary_plarge.py --N 5000 --mu $MU \
     --seed $RANDOM \
     --qoutfile $QO \
     --goutfile $GO \
-    --foutfile $FO
+    --foutfile $FO \
+    --gamma 0.5
+
