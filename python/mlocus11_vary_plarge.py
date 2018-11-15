@@ -302,7 +302,7 @@ def runsim(args):
     else:
         # Get a shape param for the gamma
         res = scipy.optimize.minimize_scalar(minimize_gamma_cdf, bounds=(
-            0, 100), method='bounded', args=(args.gamma, ghat, args.plarge / 2))
+            0, 100), method='bounded', args=(args.gamma, ghat, args.plarge))
         sregions = [[fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
                                     args.mu, -1.0 * res.x, args.gamma, coupled=False),
                      fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
