@@ -18,7 +18,8 @@ process_files <- function(d, param)
         dbt=tbl(db,'data')
         results = collect(dbt) %>%
             group_by(generation) %>%
-            summarise(mz = mean(zbar)) 
+            summarise(mz = mean(zbar),
+                      mvg = mean(vg))
         results=results%>%
             mutate(mu=mu,plarge=plarge,des=param)
         if(is.na(df))
@@ -47,7 +48,7 @@ df = rbind(gauss_df, gamma_df, gamma2_df)
 
 COLORS=rev(viridis(3))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
-                   var.name = c(expression(mu),expression(paste("Pr(",gamma," >= ",hat(gamma),")"))),bg=c("white"))
+                   var.name = c(expression(mu),expression(paste("Pr(|",gamma,"| >= ",hat(gamma),")"))),bg=c("white"))
 key_text=list(c(expression(paste(Gamma,", shape = 1.0")),
               expression(paste(Gamma,", shape = 0.5")),
               expression(paste("gaussian"))))
@@ -71,6 +72,24 @@ p = xyplot(mz~scaled_time|as.factor(mu)*as.factor(plarge),
            ylab="Mean genetic value",
            key=KEY)
 trellis.device('pdf',file='MeanGeneticValueVaryPlarge.pdf',height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
+print(p)
+dev.off()
+
+p = xyplot(mvg~scaled_time|as.factor(mu)*as.factor(plarge),
+           data=df,
+           type='l',
+           par.settings=simpleTheme(col=COLORS),
+           scales=list(cex=1,alternating=F,x=list(rot=45)),
+           strip=STRIP,
+           group=des,
+           lwd=3,
+           xlim=c(-0.1,0.2),
+           ylim=c(0.,0.6),
+           xlab="Time since optimum shift (units of N generations)",
+           ylab="Mean genetic variance",
+           key=KEY)
+trellis.device('pdf',file='MeanGeneticVarianceVaryPlarge.pdf',height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()

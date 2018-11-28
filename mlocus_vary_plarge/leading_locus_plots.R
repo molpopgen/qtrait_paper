@@ -53,7 +53,7 @@ rank1 = df %>% filter(rank==1)
 
 COLORS=rev(viridis(3))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
-                   var.name = c(expression(mu),expression(paste("Pr(",gamma," >= ",hat(gamma),")"))),bg=c("white"))
+                   var.name = c(expression(mu),expression(paste("Pr(|",gamma,"| >= ",hat(gamma),")"))),bg=c("white"))
 key_text=list(c(expression(paste(Gamma,", shape = 1.0")),
               expression(paste(Gamma,", shape = 0.5")),
               expression(paste("gaussian"))))
