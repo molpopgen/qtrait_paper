@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #$ -q krti@compute-4-29
-#$ -pe openmp 32
+#$ -pe openmp 64
 
 i=1
 while [ $i -eq $i ]
