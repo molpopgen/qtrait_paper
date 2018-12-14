@@ -76,7 +76,7 @@ trellis.par.set("fontsize",list(text=18))
 print(p)
 dev.off()
 
-p = xyplot(mvg~scaled_time|as.factor(mu)*as.factor(plarge),
+p = xyplot(log10(mvg)~scaled_time|as.factor(mu)*as.factor(plarge),
            data=df,
            type='l',
            par.settings=simpleTheme(col=COLORS),
@@ -85,9 +85,9 @@ p = xyplot(mvg~scaled_time|as.factor(mu)*as.factor(plarge),
            group=des,
            lwd=3,
            xlim=c(-0.1,0.2),
-           ylim=c(0.,0.6),
+           #ylim=c(0.,0.6),
            xlab="Time since optimum shift (units of N generations)",
-           ylab="Mean genetic variance",
+           ylab="log10(Mean genetic variance)",
            key=KEY)
 trellis.device('pdf',file='MeanGeneticVarianceVaryPlarge.pdf',height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
