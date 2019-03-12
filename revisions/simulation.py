@@ -196,7 +196,7 @@ if __name__ == "__main__":
     for i in range(args.nreps):
         candidate = np.random.randint(np.iinfo(np.uint32).max, dtype=np.uint32)
         while candidate in seeds:
-            candidate = np.random.randint(0, dtype=np.uint32)
+            candidate = np.random.randint(np.iinfo(np.uint32).max, dtype=np.uint32)
         seeds.append(candidate)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
