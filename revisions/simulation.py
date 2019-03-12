@@ -172,7 +172,8 @@ def runsim(argtuple):
     r = Recorder(int(args.time * float(args.popsize)),
                  args.preserve, args.num_ind)
     fwdpy11.wright_fisher_ts.evolve(
-        rng, pop, params, 100, r, suppress_table_indexing=True)
+        rng, pop, params, 100, r, suppress_table_indexing=True,
+        remove_extinct_variants=False)
 
     GSSmo = fp11.genetic_values.GSSmo(
         [(pop.generation, 0, args.VS), (10 * args.popsize, args.opt, args.VS)])
