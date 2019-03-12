@@ -3,6 +3,10 @@ Requires fwdpy11 0.3.0.
 
 This is a "hack" of the simulation found in fwdpy11/examples/gss
 
+NOTE: the usage is a bit wacko.  I allow concurrent futures to
+automate many replicates or running one replicate with a known 
+replicate ID.  These options make the CLI messy.
+
 Evolution of a single genomic region under Gaussian Stabilizing Selection
 with a moving optimum, or "GSSmo".
 
@@ -79,6 +83,8 @@ def make_parser():
                           "ancient samples")
     optional.add_argument("--seed", type=int, default=42,
                           help="Random number seed.")
+    optional.add_argument("--repid", type=int,
+                          default=None, help="Replicate ID")
     optional.add_argument("--nreps", type=int, default=1,
                           help="Number of replicates to run.")
     optional.add_argument("--max_workers", type=int, default=None,
@@ -190,20 +196,25 @@ if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
     validate_arguments(args)
 
-    np.random.seed(args.seed)
+    if args.repid is not None:
+        runsim((args, args.repid, args.seed))
+    else:
+        np.random.seed(args.seed)
 
-    seeds = []
-    for i in range(args.nreps):
-        candidate = np.random.randint(np.iinfo(np.uint32).max, dtype=np.uint32)
-        while candidate in seeds:
-            candidate = np.random.randint(np.iinfo(np.uint32).max, dtype=np.uint32)
-        seeds.append(candidate)
+        seeds = []
+        for i in range(args.nreps):
+            candidate = np.random.randint(
+                np.iinfo(np.uint32).max, dtype=np.uint32)
+            while candidate in seeds:
+                candidate = np.random.randint(
+                    np.iinfo(np.uint32).max, dtype=np.uint32)
+            seeds.append(candidate)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
-        futures = {executor.submit(
-            runsim, (args, i[0], i[1])): i for i in enumerate(seeds)}
+        with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
+            futures = {executor.submit(
+                runsim, (args, i[0], i[1])): i for i in enumerate(seeds)}
 
-        for fut in concurrent.futures.as_completed(futures):
-            result = fut.result()
-            if result is not True:
-                raise RuntimeError("Unexpected return value from process")
+            for fut in concurrent.futures.as_completed(futures):
+                result = fut.result()
+                if result is not True:
+                    raise RuntimeError("Unexpected return value from process")
