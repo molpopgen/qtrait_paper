@@ -182,7 +182,7 @@ def runsim(argtuple):
         [args.popsize] * (1 + 10 * args.popsize), dtype=np.uint32)
     params = fp11.model_params.ModelParams(**p)
     fwdpy11.wright_fisher_ts.evolve(
-        rng, pop, params, 100, r, suppress_table_indexing=False,
+        rng, pop, params, 100, r, suppress_table_indexing=True,
         track_mutation_counts=True)
 
     fname = args.filename + "{}.gz".format(repid)
