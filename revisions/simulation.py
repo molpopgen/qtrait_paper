@@ -198,6 +198,7 @@ if __name__ == "__main__":
     validate_arguments(args)
 
     if args.repid is not None:
+        print("running with fixed replicate id")
         runsim((args, args.repid, args.seed))
     else:
         np.random.seed(args.seed)
