@@ -70,6 +70,7 @@ def process_replicate(argtuple):
         mean_trait_value = amd['g'][sample_indexes_at_time].mean()
         vg = amd['g'][sample_indexes_at_time].var()
         wbar = amd['w'][sample_indexes_at_time].mean()
+        qtraits.append(QtraitRecord(t, mean_trait_value, wbar, vg))
 
         # Get a random subset of the ancient samples
         # for our genome scan
@@ -106,22 +107,26 @@ def process_replicate(argtuple):
         pos = pos[sorted_pos_indexes]
         all_sites = all_sites[sorted_pos_indexes, :]
 
+        # Now, we get a big libsequence object...
+        vm = vmatrix.VariantMatrix(all_sites, pos)
+        # ... and count the alleles
+        ac = vm.count_alleles()
+
+        # Delete object we no longer need
+        del all_sites
+        del vm
         # Now, we create our windows and iterate over them
         # via numpy "fancy" indexing methods:
         for locus, start_stop in enumerate(LOCUS_BOUNDARIES):
             for window, start in enumerate(range(*start_stop)):
                 sites_in_window = np.where((pos >= start) & (
                     pos[sorted_pos_indexes] < start + 1.))[0]
-                vm = vmatrix.VariantMatrix(all_sites[sites_in_window, :],
-                                           pos[sites_in_window])
-
-                ac=vm.count_alleles()
-                pi=sstats.thetapi(ac)
-                tajd=sstats.tajd(ac)
-                hprime=sstats.hprime(ac, 0)
+                acw = ac[sites_in_window]
+                pi = sstats.thetapi(acw)
+                tajd = sstats.tajd(acw)
+                hprime = sstats.hprime(acw, 0)
                 genome_scan.append(GenomeScanRecord(
                     t, locus, window, pi, tajd, hprime))
-                qtraits.append(QtraitRecord(t, mean_trait_value, wbar, vg))
 
     return repid, genome_scan, qtraits
 
