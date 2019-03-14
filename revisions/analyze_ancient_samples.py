@@ -97,6 +97,8 @@ def process_replicate(argtuple):
         # accomplish this, we rely on np.argsort
         gm = fwdpy11.ts.data_matrix_from_tables(
             tables, pop.mutations, remapped, True, True)
+        # TODO: we need to do something here
+        # about LD amongst selected variants
         pos = np.array(gm.neutral.positions + gm.selected.positions)
         sorted_pos_indexes = np.argsort(pos)
         all_sites = np.concatenate(
