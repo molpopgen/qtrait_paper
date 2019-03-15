@@ -40,6 +40,63 @@ def make_parser():
     return parser
 
 
+def pairwise_LD(selected):
+    """
+    Returns D and r^2 for all pairs of sites,
+    along with site metadata
+    """
+    nsites = selected.shape[0]
+    nsam = selected.shape[1]
+    rsq_indexes = np.triu_indices(nsites, 1)
+
+    pos = np.array(selected.positions)
+    data = np.array(selected, copy=False)
+    rsq = np.ones(len(data[rsq_indexes]))
+    D = np.zeros(len(data[rsq_indexes]))
+    pos1 = np.zeros(len(rsq))
+    pos2 = np.zeros(len(rsq))
+    daf1 = np.zeros(len(rsq))
+    daf2 = np.zeros(len(rsq))
+    idx = 0
+    daf = np.sum(data, axis=1) / nsam
+    for i in range(nsites - 1):
+        for j in range(i + 1, nsites):
+            p0 = daf[i]
+            p1 = daf[j]
+            temp = data[i, :] + data[j, :]
+            p11 = len(np.where(temp == 2)[0]) / nsam
+            pos1[idx] = pos[i]
+            pos2[idx] = pos[j]
+            daf1[idx] = daf[i]
+            daf2[idx] = daf[j]
+            D[idx] = p11 - p0 * p1
+            rsq[idx] = np.power(D[idx], 2.0) / \
+                (p0 * (1.0 - p0) * p1 * (1.0 - p1))
+            assert rsq[idx] < 1., "{} {} {}".format(D[idx], p0, p1)
+            idx += 1
+
+    # assign a locus for all sites
+    locus1 = np.zeros(len(rsq), dtype=np.int32)
+    locus2 = np.zeros(len(rsq), dtype=np.int32)
+    for locus, start_stop in enumerate(LOCUS_BOUNDARIES):
+        for window, start in enumerate(range(*start_stop)):
+            w1 = np.where((pos1 >= start) & (pos1 < start + 1.))[0]
+            w2 = np.where((pos2 >= start) & (pos1 < start + 1.))[0]
+            locus1[w1] = locus
+            locus2[w2] = locus
+
+    intralocus = np.zeros(len(rsq), dtype=np.int32)
+    intralocus[np.where(locus1==locus2)[0]] = 1
+    df = pd.DataFrame({'pos1': pos1,
+                       'pos2': pos2,
+                       'daf1': daf1,
+                       'daf2': daf2,
+                       'rsq': rsq,
+                       'D': D,
+                       'intralocus':intralocus})
+
+    return df
+
 def process_replicate(argtuple):
     filename, repid, seed = argtuple
 
@@ -72,6 +129,16 @@ def process_replicate(argtuple):
         wbar = amd['w'][sample_indexes_at_time].mean()
         qtraits.append(QtraitRecord(t, mean_trait_value, wbar, vg))
 
+        # TODO: we need to do something here
+        # about LD amongst selected variants
+        samples = amd['nodes'][sample_indexes_at_time].flatten()
+        tables, idmap = fwdpy11.ts.simplify(pop, samples)
+        gm = fwdpy11.ts.data_matrix_from_tables(
+            tables, pop.mutations, idmap[samples], False, True)
+
+        ld = pairwise_LD(gm.selected)
+        print(ld.head())
+
         # Get a random subset of the ancient samples
         # for our genome scan
         random_sample = np.random.choice(
@@ -97,8 +164,7 @@ def process_replicate(argtuple):
         # accomplish this, we rely on np.argsort
         gm = fwdpy11.ts.data_matrix_from_tables(
             tables, pop.mutations, remapped, True, True)
-        # TODO: we need to do something here
-        # about LD amongst selected variants
+
         pos = np.array(gm.neutral.positions + gm.selected.positions)
         sorted_pos_indexes = np.argsort(pos)
         all_sites = np.concatenate(
