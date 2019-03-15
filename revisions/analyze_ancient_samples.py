@@ -5,6 +5,9 @@ import sqlite3
 import argparse
 import sys
 import os
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
 import concurrent.futures
 import libsequence.variant_matrix as vmatrix
 import libsequence.summstats as sstats
@@ -23,6 +26,7 @@ QtraitRecord = namedtuple('QtraitRecord', ['generation', 'zbar', 'wbar', 'vg'])
 # NOTE: this implies that we'll be taking means of means later on!
 LDRecord = namedtuple('LDRecord', ['generation', 'intralocus_zns', 'interlocus_zns',
                                    'intralocus_D', 'interlocus_D'])
+
 
 
 def make_parser():
@@ -202,7 +206,6 @@ def process_replicate(argtuple):
         tables, idmap = fwdpy11.ts.simplify(pop, samples)
 
         ld.append(pairwise_LD(t, pop, tables, samples, idmap))
-        print(ld[-1])
         genome_scan.extend(genome_scan_stats(
             t, pop.mutations, tables, idmap, amd, sample_indexes_at_time))
 
@@ -234,7 +237,7 @@ if __name__ == "__main__":
         if os.path.exists(i):
             raise RuntimeError("File {} exists!".format(i))
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=64) as executor:
         futures = {executor.submit(process_replicate, i) for i in inputs}
         for fut in concurrent.futures.as_completed(futures):
             repid, genome_scan, qtraits, ld = fut.result()
