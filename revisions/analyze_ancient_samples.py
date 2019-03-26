@@ -89,7 +89,6 @@ def pairwise_LD(t, pop, tables, samples, idmap):
             D[idx] = p11 - p0 * p1
             rsq[idx] = np.power(D[idx], 2.0) / \
                 (p0 * (1.0 - p0) * p1 * (1.0 - p1))
-            assert rsq[idx] < 1., "{} {} {}".format(D[idx], p0, p1)
             idx += 1
 
     # assign a locus for all sites
@@ -106,8 +105,19 @@ def pairwise_LD(t, pop, tables, samples, idmap):
     intralocus[np.where(locus1 == locus2)[0]] = 1
     intralocus_pairs = np.where(intralocus == 1)[0]
     interlocus_pairs = np.where(intralocus == 0)[0]
-    return LDRecord(t, rsq[intralocus_pairs].mean(), rsq[interlocus_pairs].mean(),
-                    D[intralocus_pairs].mean(), rsq[interlocus_pairs].mean())
+    rsq_intra = np.nan
+    rsq_inter = np.nan
+    D_intra = np.nan
+    D_inter = np.nan
+    if len(intralocus_pairs) > 0:
+        rsq_intra = rsq[intralocus_pairs].mean()
+        D_intra = D[intralocus_pairs].mean()
+
+    if len(interlocus_pairs) > 0:
+        rsq_inter = rsq[interlocus_pairs].mean()
+        D_inter = D[interlocus_pairs].mean()
+
+    return LDRecord(t, rsq_intra, rsq_inter, D_intra, D_inter)
 
 
 def genome_scan_stats(t, mutations, tables, idmap, amd, sample_indexes_at_time):
@@ -140,8 +150,9 @@ def genome_scan_stats(t, mutations, tables, idmap, amd, sample_indexes_at_time):
 
     pos = np.array(gm.neutral.positions + gm.selected.positions)
     sorted_pos_indexes = np.argsort(pos)
-    all_sites = np.concatenate(
-        (np.array(gm.neutral, copy=False), np.array(gm.selected, copy=False)))
+    all_sites = np.array(gm.neutral, copy=False)
+    if len(gm.selected.positions) > 0:
+        all_sites = np.concatenate((all_sites, np.array(gm.selected, copy=False)))
     # We no longer need this object, and it is big.
     # reorder the arrays
     pos = pos[sorted_pos_indexes]
