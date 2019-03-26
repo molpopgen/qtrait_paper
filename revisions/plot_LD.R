@@ -5,7 +5,7 @@ library(lattice)
 library(viridis)
 
 outer = c("main_results", "lowrec", "hirec")
-rho = c(1e2,1e3,1e4)
+rho = c(1e3,1e2,1e4)
 inner = c("lomu", "midmu", "himu")
 mu = c(2.5e-4, 1e-3, 5e-3)
 
@@ -64,7 +64,7 @@ plt = xyplot(mintraD ~ tsince|as.factor(mu), data=data,
                 for (ur in unique(rs))
                 {
                     theseindexes = which(rs == ur)
-                    thiscolor = unique(color[subscripts][theseindexes])
+                    thiscolor = unique(cs[theseindexes])
                     panel.xyplot(x[theseindexes],y[theseindexes],type='l',lwd=3,
                                  col.line=thiscolor)
                     panel.xyplot(x[theseindexes],minterD[theseindexes],type='l',lwd=3,

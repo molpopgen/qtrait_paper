@@ -4,7 +4,7 @@ library(lattice)
 library(viridis)
 
 outer = c("main_results", "lowrec", "hirec")
-rho = c(1e2,1e3,1e4)
+rho = c(1e3,1e2,1e4)
 inner = c("lomu", "midmu", "himu")
 mu = c(2.5e-4, 1e-3, 5e-3)
 
