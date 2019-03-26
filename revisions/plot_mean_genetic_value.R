@@ -34,7 +34,7 @@ COLORS=viridis(3)
 KEY=list(space="top",columns=3,
          title=expression(paste("Scaled recombination rate, ",rho)),
          cex.title=0.75,#points=FALSE,
-         lines=list(lwd=rep(3,length(COLORS)),col=rev(COLORS)),
+         lines=list(lwd=rep(3,length(COLORS)),col=COLORS),
          just=0.5,
          text=list(as.character(sort(rho))))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
