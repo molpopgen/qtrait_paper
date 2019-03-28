@@ -55,8 +55,8 @@ for fi, i in zip(files, range(len(files))):
     cbar.outline.set_linewidth(2)
     cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(),
                             rotation=90, color='black')
-    ax.axhline(y=2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed',color='royalblue')
-    ax.axhline(y=-2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed',color='royalblue')
+    # ax.axhline(y=2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed',color='royalblue')
+    # ax.axhline(y=-2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed',color='royalblue')
     ax.axvline(x=np.log10(0.05), linestyle='dashed',color='royalblue')
     if mu < 1e-3:
         ax.text(-3.75, 0.6, r'$z_o = $' +

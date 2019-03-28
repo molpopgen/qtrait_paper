@@ -69,10 +69,12 @@ p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
             panel.xyplot(x[x<0 & x+panel_sojourn>0 ],y[x<0 & x+panel_sojourn>0],col="red",pch=16)
             panel.xyplot(x[x>0],y[x>0],pch=15)#,col="blue")
             panel_mu = unique(mu[subscripts])
-            ghat = 2*sqrt(2)*sqrt(panel_mu)
-            panel.abline(h=ghat,lwd=2)
-            panel.abline(h=-ghat,lwd=2)
-            panel.abline(h=gamma_overshoots,lty="dotdash",lwd=2)
+            # ghat = 2*sqrt(2)*sqrt(panel_mu)
+            # for (gcrit in c(10, 100, 1000)){
+            #     big = sqrt(gcrit/(5000))
+            #     panel.abline(h=big,lwd=2,lty='dotdash')
+            #     panel.abline(h=-big,lwd=2,lty='dotdash')
+            # }
             panel.abline(v=0.0,lty="dotted",lwd=2)
 })
 
