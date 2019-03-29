@@ -14,14 +14,14 @@ hard_only = dbt %>%
     group_by(generation,dist,opt,mu) %>%
     #group_by(generation,window,dist,opt,mu) %>%
     summarise_all(funs(mean)) %>% 
-    mutate(scaled_time = (generation-50000)/5000) 
+    mutate(scaled_time = (generation-50000)) 
 soft_only = dbt %>%
     select(-c(repid, locus)) %>%
     filter(nhard==0,nsoft>0,opt>0.1) %>%
     mutate(dist = abs(window-5)) %>%
     group_by(generation,dist,opt,mu) %>%
     summarise_all(funs(mean)) %>% 
-    mutate(scaled_time = (generation-50000)/5000) 
+    mutate(scaled_time = (generation-50000)) 
 
 hard_only=collect(hard_only)
 soft_only=collect(soft_only)
@@ -69,10 +69,10 @@ tajdPlot = xyplot(tajd ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor(typ
                   type='l',data=X,
                   par.settings=simpleTheme(col=COLORS),
                   key=KEY, lwd=3,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab="Mean Tajima's D",
-                  scales=list(cex=1,alternating=F),
-                  xlim=c(-0.5,4),
+                  scales=list(cex=1,alternating=F,x=list(rot=45)),
+                  xlim=c(-0.5,4)*5e3,
                   strip=STRIP
                   )
 save_image('MeanTajdTenLociLargeEffectOnly',tajdPlot)
@@ -82,10 +82,10 @@ hprimePlot = xyplot(hprime ~ scaled_time| as.factor(mu)*as.factor(opt):as.factor
                   type='l',data=X,
                   par.settings=simpleTheme(col=COLORS),
                   key=KEY, lwd=3,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab="Mean H'",
-                  scales=list(cex=1,alternating=F),
-                  xlim=c(-0.5,4),
+                  scales=list(cex=1,alternating=F,x=list(rot=45)),
+                  xlim=c(-0.5,4)*5e3,
                   strip=STRIP)
 save_image('MeanHprimeTenLociLargeEffectOnly',hprimePlot)
 
@@ -94,10 +94,10 @@ thetapiPlot = xyplot(thetapi ~ scaled_time| as.factor(mu)*as.factor(opt):as.fact
                   type='l',data=X,
                   par.settings=simpleTheme(col=COLORS),
                   key=KEY, lwd=3,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab=expression(paste("Mean ",hat(theta)[pi])),
-                  scales=list(cex=1,alternating=F),
-                  xlim=c(-0.5,4),
+                  scales=list(cex=1,alternating=F,x=list(rot=45)),
+                  xlim=c(-0.5,4)*5e3,
                   strip=STRIP)
 save_image('MeanPiTenLociLargeEffectOnly',thetapiPlot)
 
@@ -106,9 +106,9 @@ ReductionPlot = xyplot(thetapi/(1000./11.) ~ scaled_time| as.factor(mu)*as.facto
                   type='l',data=X,
                   par.settings=simpleTheme(col=COLORS),
                   key=KEY, lwd=3,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab=expression(paste("Mean ",hat(theta)[pi],"/",theta)),
-                  scales=list(cex=1,alternating=F),
-                  xlim=c(-0.5,4),
+                  scales=list(cex=1,alternating=F,x=list(rot=45)),
+                  xlim=c(-0.5,4)*5e3,
                   strip=STRIP)
 save_image('MeanReductionDiversityTenLociLargeEffectOnly',ReductionPlot)
