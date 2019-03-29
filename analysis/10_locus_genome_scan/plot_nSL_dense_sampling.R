@@ -26,10 +26,10 @@ get_fixations = function(fname)
         # Fix after shift
         filter(ftime >= 5e4) %>%
         # Is of large effect
-        filter(abs(s) >= ghat) %>%
         mutate(sweep_type = ifelse(g < 5e4,"stand","new"),
                locus = as.integer(pos/12)) 
     df = collect(q) %>%
+        filter(abs(s) >= sqrt(100/5e3)) %>%
         group_by(repid,locus) %>%
         summarise(nhard = as.integer(length(which(sweep_type=="new"))),
                   nsoft = as.integer(length(which(sweep_type=="stand"))))
@@ -67,13 +67,13 @@ for(i in 1:length(fixfiles))
 
 unconditional_means = data %>% group_by(generation, dist, mu, opt) %>%
     summarise(mz = mean(mean_nSLz), mH1 = mean(H1), mH12 = mean(H12), mH2H1 = mean(H2H1)) %>%
-    mutate(scaled_time=(generation-5e4)/5e3)
+    mutate(scaled_time=(generation-5e4))
 
 conditional_means = data %>% filter(opt > 0.1 & ((nhard == 1 & nsoft == 0) | (nhard == 0 & nsoft == 1))) %>%
     mutate(sweep_type = ifelse(nsoft == 1,"Standing Var.","New mutation")) %>% 
     group_by(generation, dist, mu, opt, sweep_type) %>%
     summarise(mz = mean(mean_nSLz), mH1 = mean(H1), mH12 = mean(H12), mH2H1 = mean(H2H1)) %>%
-    mutate(scaled_time=(generation-5e4)/5e3)
+    mutate(scaled_time=(generation-5e4))
 
 UDIST=unique(as.factor(unconditional_means$dist))
 ICOLORS=viridis(length(UDIST))
@@ -126,12 +126,12 @@ nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt), data = subset(uncond
             type='l',
             par.settings=simpleTheme(col=NSLCOLORS),
             key=NSLKEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean z-score")),
-            scales=list(cex=1,alternating=F,
+            scales=list(cex=0.75,alternating=F,x=list(rot=45),
                         y=list(at=c(-0.05,0,0.05),
                                labels=c('-0.05','0.0','0.05'))),
-            xlim=c(-0.5,4),ylim=c(-0.06,0.06),
+            xlim=c(-0.5,4)*5e3,ylim=c(-0.06,0.06),
             strip=STRIP)
 
 save_image("MeannSLTenLoci", nSL)
@@ -144,10 +144,10 @@ nSL = xyplot(mz ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_type)
             type='l',
             par.settings=simpleTheme(col=NSLCOLORS),
             key=NSLKEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean z-score")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.5,4), ylim=c(-0.25,0.35),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.5,4)*5e3, ylim=c(-0.25,0.35),
             strip=STRIP)
 
 save_image("MeannSLTenLociLargeEffectOnly", nSL)
@@ -159,10 +159,10 @@ H1plot = xyplot(mH1 ~ scaled_time|as.factor(mu)*as.factor(opt), data = unconditi
             type='l',
             par.settings=simpleTheme(col=COLORS),
             key=KEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean H1")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.1,0.2),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.1,0.2)*5e3,
             strip=STRIP)
 
 save_image("MeanH1TenLoci", H1plot)
@@ -172,10 +172,10 @@ H12plot = xyplot(mH12 ~ scaled_time|as.factor(mu)*as.factor(opt), data = uncondi
             type='l',
             par.settings=simpleTheme(col=COLORS),
             key=KEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean H12")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.1,0.2),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.1,0.2)*5e3,
             strip=STRIP)
 
 save_image("MeanH12TenLoci", H12plot)
@@ -185,10 +185,10 @@ H2H1plot = xyplot(mH2H1 ~ scaled_time|as.factor(mu)*as.factor(opt), data = uncon
             type='l',
             par.settings=simpleTheme(col=COLORS),
             key=KEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean H2H1")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.1,0.2),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.1,0.2)*5e3,
             strip=STRIP)
 
 save_image("MeanH2H1TenLoci", H2H1plot)
@@ -200,10 +200,10 @@ H1plot = xyplot(mH1 ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep_t
             type='l',
             par.settings=simpleTheme(col=COLORS),
             key=KEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean H1")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.1,0.2),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.1,0.2)*5e3,
             strip=STRIP)
 
 save_image("MeanH1TenLociLargeEffectOnly", H1plot)
@@ -213,10 +213,10 @@ H12plot = xyplot(mH12 ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(sweep
             type='l',
             par.settings=simpleTheme(col=COLORS),
             key=KEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean H12")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.1,0.2),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.1,0.2)*5e3,
             strip=STRIP)
 
 save_image("MeanH12TenLociLargeEffectOnly", H12plot)
@@ -226,10 +226,10 @@ H2H1plot = xyplot(mH2H1 ~ scaled_time|as.factor(mu)*as.factor(opt):as.factor(swe
             type='l',
             par.settings=simpleTheme(col=COLORS),
             key=KEY, lwd=3,
-            xlab="Time since optimum shift (units of N generations)",
+            xlab="Generations since optimum shift",
             ylab=expression(paste("Mean H2H1")),
-            scales=list(cex=1,alternating=F),
-            xlim=c(-0.1,0.2),
+            scales=list(cex=0.75,alternating=F,x=list(rot=45)),
+            xlim=c(-0.1,0.2)*5e3,
             strip=STRIP)
 
 save_image("MeanH2H1TenLociLargeEffectOnly", H2H1plot)
