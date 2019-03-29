@@ -25,8 +25,8 @@ for (m in muvals)
 }
 
 #Lattice graphics, FTW
-data$scaled_time = (data$generation-50000)/50000.0
-XLIM=c(-0.02,0.05)
+data$scaled_time = (data$generation-50000)
+XLIM=c(-0.02,0.05)*5e3
 STRIP=strip.custom(strip.names=TRUE,var.name=expression(z[0]),
                    strip.levels=c(T,T),sep=" = ",bg=0,fg=0,style=1)
 
@@ -54,7 +54,7 @@ COLORS=viridis(length(KEYTEXT))
 #        )
 VGplot=xyplot(VG~scaled_time|as.factor(opt),groups=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
-       scales=list(x=list(tick.number=10),alternating=F),
+       scales=list(cex=0.75,x=list(rot=45,tick.number=10),alternating=F),
        xlab=XLAB,
        ylab="Genetic variance",
        par.settings=simpleTheme(col=COLORS,lwd=3),
@@ -79,7 +79,7 @@ dev.off()
 
 zbar=xyplot(tbar~scaled_time|as.factor(opt),group=mu,data=data,type='l',layout=c(1,3),
        xlim=XLIM,
-       scales=list(x=list(tick.number=10),alternating=F),
+       scales=list(cex=0.75,x=list(rot=45,tick.number=10),alternating=F),
        xlab=XLAB,
        ylab=expression(bar(z)),
        par.settings=simpleTheme(col=COLORS,lwd=3),
