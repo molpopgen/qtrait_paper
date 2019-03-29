@@ -43,7 +43,7 @@ MIDS=[_M1,_M2,_M3]
 BOTTOMS=[_B1,_B2,_B3]
 
 # Set xlims and ylims
-_T1.set_xlim(-0.1,1)
+_T1.set_xlim(-500,5000)
 _T1.set_ylim(-0.05,1.25)
 _M1.set_ylim(-0.05,1)
 _B1.set_ylim(-0.05,1)
@@ -52,7 +52,7 @@ _B1.set_ylim(-0.05,1)
 _T1.set_ylabel("Value")
 for ax in [_M1,_B1]:
     ax.set_ylabel("Mutation frequency")
-_B2.set_xlabel("Time since optimum shift (units of N generations)")
+_B2.set_xlabel("Generations since optimum shift")
 
 # Disable axis ticks on internal panels
 for ax in TOPS + MIDS:
@@ -86,13 +86,13 @@ for statfile, trajfile,mu in zip(reversed(popstatFiles), reversed(trajFiles), re
     con = sqlite3.connect(statfile)
     pstats=pd.read_sql('select * from data where rep == 42 and generation >= 45000 and generation <= 55000',con)
     con.close()
-    pstats['scaled_time'] = pd.Series((pstats.generation - 50000),dtype=np.float64)/5000.0
+    pstats['scaled_time'] = pd.Series((pstats.generation - 50000),dtype=np.float64)#/5000.0
 
     # Read in trajectories for this rep
     con = sqlite3.connect(trajfile)
     data=pd.read_sql('select * from freqs where repid == 42 and origin >= 45000 and origin <= 55000',con)
     con.close()
-    data['scaled_time'] = pd.Series((data.generation - 50000),dtype=np.float64)/5000.0
+    data['scaled_time'] = pd.Series((data.generation - 50000),dtype=np.float64)#/5000.0
 
     g = data.groupby(['esize','origin','pos'])
 
@@ -132,7 +132,7 @@ for statfile, trajfile,mu in zip(reversed(popstatFiles), reversed(trajFiles), re
 
         label = "_nolabel_"
         if math.fabs(esize) > ghat and ENTRIES < 5:
-            label=r'$\gamma = $'+'{0:.2f}'.format(esize)+ r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
+            label=r'$\gamma = $'+'{0:.2f}'.format(esize)+ r', $o = $'+'{0:.0f}'.format(origin-int(5e4))
             ENTRIES += 1
         axMID.plot(fix_i.scaled_time,fix_i.freq,#color=fix_color,
                      alpha=min(1.0,4.0*math.fabs(esize)),
@@ -159,7 +159,7 @@ for statfile, trajfile,mu in zip(reversed(popstatFiles), reversed(trajFiles), re
         origin=i.origin.mean()
         label = "_nolegend_"
         if math.fabs(esize) > ghat and ENTRIES < 5:
-            label=r'$\gamma = $'+'{0:0.2f}'.format(esize)+r', $o = $'+'{0:0.4f}'.format((origin-5e4)/5e3)
+            label=r'$\gamma = $'+'{0:0.2f}'.format(esize)+r', $o = $'+'{0:.0f}'.format(origin-int(5e4))
             ENTRIES += 1
         axBOTTOM.plot(i.scaled_time,i.freq,
                      linewidth=1.5,
