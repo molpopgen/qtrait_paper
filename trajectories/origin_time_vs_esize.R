@@ -53,12 +53,12 @@ STRIP=strip.custom(strip.names = TRUE,sep=" = ",
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 #COLORS=c("black")
 
-data$scaled_origin = (data$origin - 5e4)/5e3
+data$scaled_origin = (data$origin - 5e4)# /5e3
 
 p = xyplot(esize~scaled_origin|as.factor(mu)*as.factor(opt),data=data,
-            mu = data$mu,sojourn=data$n/5e3,optima=data$opt,xlim=c(-0.25,0.25),
+            mu = data$mu,sojourn=data$n,optima=data$opt,xlim=c(-1250,1250),
             par.settings=simpleTheme(cex=1,alpha.points=0.5),
-            auto.key=KEY, xlab="Origin time of fixation (units of N generations)",
+            auto.key=KEY, xlab="Origin time of fixation (generations since optimum shift)",
             ylab=expression(paste("Effect size (",gamma,")")),
             scales=list(cex=1,alternating=F,x=list(rot=45)),
             strip=STRIP,

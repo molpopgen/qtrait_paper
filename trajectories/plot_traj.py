@@ -63,9 +63,9 @@ for ax in TOPS[1:] + MIDS[1:] + BOTTOMS[1:]:
     ax.get_yaxis().set_visible(False)
 
 # Row titles
-_T3.set_title(r'$\mu = 0.005, z_0 = 1, \hat\gamma = $'+'{0:0.3f}'.format(2.0*math.sqrt(2)*math.sqrt(0.005)))
-_T2.set_title(r'$\mu = 0.001, z_0 = 1, \hat\gamma = $'+'{0:0.3f}'.format(2.0*math.sqrt(2)*math.sqrt(0.001)))
-_T1.set_title(r'$\mu = 2.5\times 10^{-4}, z_0 = 1, \hat\gamma = $'+'{0:0.3f}'.format(2.0*math.sqrt(2)*math.sqrt(0.00025)))
+_T3.set_title(r'$\mu = 0.005, z_0 = 1$')
+_T2.set_title(r'$\mu = 0.001, z_0 = 1$')
+_T1.set_title(r'$\mu = 2.5\times 10^{-4}, z_0 = 1$')
 
 # Row counters
 TOP=0
