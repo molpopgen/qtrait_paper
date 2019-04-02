@@ -140,7 +140,10 @@ class Recorder(object):
 
     def getld(self, pop):
         mc = np.array(pop.mcounts)
-        segregating = ((mc > 0) & (mc < 2 * pop.N)).nonzero()[0]
+        # Apply a filter on MAF >= 1e-3
+        mincount = int(1e-3 * 2 * pop.N)
+        maxcount = 2 * pop.N - mincount
+        segregating = ((mc >= mincount) & (mc <= maxcount)).nonzero()[0]
         sorted_key_map = defaultdict(lambda: 0)
         for i, j in enumerate(segregating):
             sorted_key_map[j] = i
@@ -173,12 +176,12 @@ class Recorder(object):
                 p1 = daf[j]
                 pos1[idx] = pos[i]
                 pos2[idx] = pos[j]
-                if p0 >= 1e-3 and p1 >= 1e-3:
-                    temp = genotypes[i, :] + genotypes[j, :]
-                    p11 = len(np.where(temp == 2)[0]) / genotypes.shape[1]
-                    D[idx] = p11 - p0 * p1
-                    rsq[idx] = np.power(D[idx], 2.0) / \
-                        (p0 * (1.0 - p0) * p1 * (1.0 - p1))
+                # if p0 >= 1e-3 and p1 >= 1e-3:
+                temp = genotypes[i, :] + genotypes[j, :]
+                p11 = len(np.where(temp == 2)[0]) / genotypes.shape[1]
+                D[idx] = p11 - p0 * p1
+                rsq[idx] = np.power(D[idx], 2.0) / \
+                    (p0 * (1.0 - p0) * p1 * (1.0 - p1))
                 idx += 1
         locus1 = np.zeros(len(rsq), dtype=np.int32)
         locus2 = np.zeros(len(rsq), dtype=np.int32)
