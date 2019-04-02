@@ -48,7 +48,7 @@ from collections import namedtuple
 # LDRecord = namedtuple('LDRecord', ['generation', 'intralocus_zns', 'interlocus_zns',
 #                                    'intralocus_D', 'interlocus_D'])
 LDRecord = namedtuple(
-    'LDRecord', ['generation', 'pos1', 'pos2', 'c1', 'c2', 'e1', 'e2', 'D', 'rsq'])
+    'LDRecord', ['generation', 'pos1', 'pos2', 'c1', 'c2', 'g1','g2', 'e1', 'e2', 'D', 'rsq'])
 
 
 def make_parser():
@@ -171,6 +171,8 @@ class Recorder(object):
                 idx += 1
                 self.ld.append(LDRecord(pop.generation,
                                         pos[i], pos[j], dcounts[i], dcounts[j],
+                                        pop.mutations[segregating[i]].g,
+                                        pop.mutations[segregating[j]].g,
                                         pop.mutations[segregating[i]].s,
                                         pop.mutations[segregating[j]].s,
                                         D, rsq))
