@@ -65,8 +65,6 @@ def make_parser():
                           help="Prefix of output file name.  The population will be"
                           "pickled to this file, and the file will be"
                           "compressed using the gzip algorithm")
-    required.add_argument("--ldfile", type=str, default=None,
-                          help="sqlite3 database for LD data")
 
     optional = parser.add_argument_group("Optional arguments")
     required.add_argument("--sigma", "-s", type=float, default=None,
@@ -184,7 +182,7 @@ class Recorder(object):
                 p1 = daf[j]
                 pos1[idx] = pos[i]
                 pos2[idx] = pos[j]
-                if p0 >= 1e-2 and p1 >= 1e-2:
+                if p0 >= 1e-3 and p1 >= 1e-3:
                     temp = genotypes[i, :] + genotypes[j, :]
                     p11 = len(np.where(temp == 2)[0]) / genotypes.shape[1]
                     D[idx] = p11 - p0 * p1
@@ -285,6 +283,12 @@ def runsim(argtuple):
     with gzip.open(fname, 'wb') as f:
         pop.pickle_to_file(f)
 
+    fname = args.filename + "{}_ld.sqlite3".format(repid)
+    df = pd.DataFrame(r.ld, columns = LDRecord._fields)
+    df['repid'] = [repid]*len(df.index)
+    with sqlite3.connect(fname) as conn:
+        df.to_sql('data',conn,if_exists='append',index=False)
+
     return repid, r.ld
 
 
@@ -295,11 +299,7 @@ if __name__ == "__main__":
 
     if args.repid is not None:
         print("running with fixed replicate id")
-        repid, ld = runsim((args, args.repid, args.seed))
-        df = pd.DataFrame(ld, columns = LDRecord._fields)
-        df['repid'] = [repid]*len(df.index)
-        with sqlite3.connect(args.ldfile) as conn:
-            df.to_sql('data', conn, index=False)
+        rv = runsim((args, args.repid, args.seed))
     else:
         np.random.seed(args.seed)
 
@@ -317,9 +317,4 @@ if __name__ == "__main__":
                 runsim, (args, i[0], i[1])): i for i in enumerate(seeds)}
 
             for fut in concurrent.futures.as_completed(futures):
-                repid, ld = fut.result()
-                df = pd.DataFrame(ld, columns = LDRecord._fields)
-                df['repid'] = [repid]*len(df.index)
-                with sqlite3.connect(args.ldfile) as conn:
-                    df.to_sql('data', conn, index=False)
-
+                rv = fut.result()
