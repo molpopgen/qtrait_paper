@@ -4,7 +4,7 @@ Requires fwdpy11 0.3.0.
 This is a "hack" of the simulation found in fwdpy11/examples/gss
 
 NOTE: the usage is a bit wacko.  I allow concurrent futures to
-automate many replicates or running one replicate with a known 
+automate many replicates or running one replicate with a known
 replicate ID.  These options make the CLI messy.
 
 Evolution of a single genomic region under Gaussian Stabilizing Selection
@@ -139,21 +139,12 @@ class Recorder(object):
         self.ld = []
 
     def getld(self, pop):
-        # Get the LD
-        keys = defaultdict(lambda: 0)
-        for g in pop.gametes:
-            if g.n > 0:
-                for k in g.smutations:
-                    keys[k] += g.n
-
-        segregating = [key for key, value in keys.items() if value >
-                       0 and value < 2 * pop.N]
-        pos = np.array(sorted([pop.mutations[i].pos for i in segregating]))
-        sorted_key_map = {}
-        for i in segregating:
-            idx = np.where(pos == pop.mutations[i].pos)[0][0]
-            sorted_key_map[i] = idx
-
+        mc = np.array(pop.mcounts)
+        segregating = ((mc > 0) & (mc < 2 * pop.N)).nonzero()[0]
+        sorted_key_map = defaultdict(lambda: 0)
+        for i, j in enumerate(segregating):
+            sorted_key_map[j] = i
+        pos = np.array([pop.mutations[i].pos for i in segregating])
         rsq_indexes = np.triu_indices(len(pos), 1)
         rsq = np.ones(len(rsq_indexes[0]))
         D = np.ones(len(rsq_indexes[0]))
@@ -189,7 +180,6 @@ class Recorder(object):
                     rsq[idx] = np.power(D[idx], 2.0) / \
                         (p0 * (1.0 - p0) * p1 * (1.0 - p1))
                 idx += 1
-
         locus1 = np.zeros(len(rsq), dtype=np.int32)
         locus2 = np.zeros(len(rsq), dtype=np.int32)
         for locus, start_stop in enumerate(self.locus_boundaries):
@@ -284,10 +274,11 @@ def runsim(argtuple):
         pop.pickle_to_file(f)
 
     fname = args.filename + "{}_ld.sqlite3".format(repid)
-    df = pd.DataFrame(r.ld, columns = LDRecord._fields)
-    df['repid'] = [repid]*len(df.index)
+    df = pd.DataFrame(r.ld, columns=LDRecord._fields)
+    df['repid'] = [repid] * len(df.index)
+
     with sqlite3.connect(fname) as conn:
-        df.to_sql('data',conn,if_exists='append',index=False)
+        df.to_sql('data', conn, if_exists='append', index=False)
 
     return repid, r.ld
 
