@@ -210,7 +210,8 @@ class Recorder(object):
             rsq_inter = np.nan
             D_inter = np.nan
 
-        return rsq_intra, rsq_inter, D_intra, D_inter
+        self.ld.append(LDRecord(pop.generation, rsq_intra,
+                                rsq_inter, D_intra, D_inter))
 
     def __call__(self, pop, recorder):
         if self.interval > 0 and pop.generation >= 10 * pop.N:
@@ -222,8 +223,7 @@ class Recorder(object):
 
                 recorder.assign(s)
         if pop.generation >= 10 * pop.N and pop.generation <= 10 * pop.N + 4 * pop.N:
-            ld = self.getld(pop)
-            self.ld.append(LDRecord(pop.generation, *ld))
+            self.getld(pop)
 
 
 def runsim(argtuple):
