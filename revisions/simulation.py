@@ -35,6 +35,10 @@ import fwdpy11.ts
 import fwdpy11.tsrecorders
 import fwdpy11.wright_fisher_ts
 import math
+import os
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
 import numpy as np
 import gzip
 import sys
