@@ -199,7 +199,8 @@ class Recorder(object):
 
                 recorder.assign(s)
         if pop.generation >= 10 * pop.N and pop.generation <= 10 * pop.N + 4 * pop.N:
-            self.getld(pop)
+            if pop.generation % 10 == 0.0:
+                self.getld(pop)
 
 
 def runsim(argtuple):
@@ -260,6 +261,9 @@ def runsim(argtuple):
     with gzip.open(fname, 'wb') as f:
         pop.pickle_to_file(f)
 
+    fname = args.filename + "{}_done.txt".format(repid)
+    with open(fname, 'w') as f:
+        f.write('1\n')
     # df = pd.DataFrame(r.ld, columns=LDRecord._fields)
     # df['repid'] = [repid] * len(df.index)
 
