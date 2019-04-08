@@ -176,9 +176,9 @@ class Recorder(object):
 
         dcounts = np.sum(genotypes, axis=1).astype(np.int32)
         idx = 0
-        for i in range(genotypes.shape[0] - 1):
-            for j in range(i + 1, genotypes.shape[0]):
-                if is_tracked[i] == 1 or is_tracked[j] == 1:
+        for i in np.where(is_tracked==1)[0]:
+            for j in range(genotypes.shape[0]):
+                if i != j or (is_tracked[j] == 1 and i != j):
                     p0 = dcounts[i] / (2 * pop.N)
                     p1 = dcounts[j] / (2 * pop.N)
                     temp = genotypes[i, :] + genotypes[j, :]
