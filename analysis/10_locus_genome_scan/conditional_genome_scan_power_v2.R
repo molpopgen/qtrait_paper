@@ -22,7 +22,8 @@ fixations = read_delim("raw_fixations.txt.gz",delim=" ") %>%
     # filter on origin time of mutation, removing sweeps
     # fixing prior to opt. shift, and filtering on fixations
     # of large effect
-    filter((g-5e4)/5e3<1e2/5e3,sweep_type != 'none',abs(s)>=2*sqrt(2)*sqrt(mu)) %>%
+    #filter((g-5e4)/5e3<1e2/5e3,sweep_type != 'none',abs(s)>=2*sqrt(2)*sqrt(mu)) %>%
+    filter((g-5e4)/5e3<1e2/5e3,sweep_type != 'none',abs(s)>=sqrt(100/5e3)) %>%
     group_by(mu,opt,repid,locus,sweep_type) %>% tally() %>%
     spread(sweep_type,n) %>% #This turns the sweep type into a column and assigns how many sweeps of each type to the locus
     right_join(dummy,by=c("mu","opt","locus","repid")) %>%
@@ -151,7 +152,7 @@ psweep_and_sig = psweep_and_sig %>%
                                   #                                      sweep_type == "Both" ~ pboth,
                                   #                                      sweep_type == "None" ~ pnone)[1],
               pHsig_given_sweep = sum(Hsig)/n()) %>%
-    mutate(scaled_time = (generation-5e4)/5e3)
+    mutate(scaled_time = (generation-5e4))
 
 
 # p = xyplot(pDsig_given_sweep~scaled_time | as.factor(mu)*as.factor(opt),group=sweep_type,data=psweep_and_sig,type='l',auto.key=TRUE)
@@ -183,7 +184,7 @@ KEY=list(space="top",columns=3,
 
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
-XLIM=c(-0.5,4)
+XLIM=c(-0.5,4)*5e3
 # Set up our plots
 save_image <- function(stat,img)
 {
@@ -204,7 +205,7 @@ PLOT = xyplot(pDsig_given_sweep~scaled_time | as.factor(mu)*as.factor(opt),
               #auto.key=TRUE,
               scales=list(cex=1,alternating=F),
               strip=STRIP,
-              xlab="Time since optimum shift (units of N generations)",
+              xlab="Generations since optimum shift",
               ylab=expression("Pr(significant|sweep type)"))
 save_image("TajDFractionSigLargeEffect",PLOT)
 PLOT = xyplot(pHsig_given_sweep~scaled_time | as.factor(mu)*as.factor(opt),
@@ -217,6 +218,6 @@ PLOT = xyplot(pHsig_given_sweep~scaled_time | as.factor(mu)*as.factor(opt),
               #auto.key=TRUE,
               scales=list(cex=1,alternating=F),
               strip=STRIP,
-              xlab="Time since optimum shift (units of N generations)",
+              xlab="Generations since optimum shift",
               ylab=expression("Pr(significant|sweep type)"))
 save_image("HprimeFractionSigLargeEffect",PLOT)
