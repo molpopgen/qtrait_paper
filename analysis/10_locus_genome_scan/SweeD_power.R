@@ -40,7 +40,7 @@ power = x %>%
            power00001 = sum(sig00001)/n()) %>%
     gather(alpha_rej,power,c(power05,power01,power00001)) %>%
     mutate(alpha_rej=as.numeric(sub('power0', '0.0', alpha_rej)),
-           scaled_time=(generation-50000)/5000)
+           scaled_time=(generation-50000))
 
 COLORS=viridis(length(cvals))
 KEY=list(space="top",columns=3,title="Significance level (Bonferroni correction)",
@@ -51,10 +51,10 @@ powerPlot = xyplot(power ~ scaled_time| as.factor(mu)*as.factor(opt),group=alpha
                   type='l',data=power,
                   par.settings=simpleTheme(col=COLORS),
                   auto.key=KEY,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab="Power of composite likelihood ratio test",
-                  scales=list(x=list(at=seq(-0.4,1.0,0.2),rot=45),alternating=F),
-                  strip=STRIP,xlim=c(-0.5,1))
+                  scales=list(x=list(at=seq(-0.4,0.8,0.2)*5e3,rot=45),alternating=F),
+                  strip=STRIP,xlim=c(-0.5,1)*5000)
 
 trellis.device(device="pdf",file=paste("SweeDRawPower.pdf",sep=""),height=10,width=10)
 trellis.par.set("fontsize",list(text=18))

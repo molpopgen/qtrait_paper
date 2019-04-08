@@ -37,7 +37,7 @@ soft_only = sweed_plus_fixations %>%
 meanLRdata=rbind(hard_only,soft_only) %>%
     group_by(generation,opt,mu,sweep_type) %>%
     summarise(mLR=mean(LR),s05=sum(sig05),n=n()) %>%
-    mutate(scaled_time=(generation-5e4)/5e3) %>%
+    mutate(scaled_time=(generation-5e4)) %>%
     full_join(power,by=c('generation','mu','opt'))
 
 # print(head(subset(meanLRdata,sweep_type=='New mutation')))
@@ -68,10 +68,10 @@ Plot = xyplot(mLR ~ scaled_time| as.factor(mu)*as.factor(opt),#:as.factor(sweep_
                   type='l',data=meanLRdata,
                   par.settings=bwtheme,
                   auto.key=KEY,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab="Mean composite LR statistic",
-                  scales=list(x=list(at=seq(-0.4,1.0,0.2),rot=45),alternating=F),
-                  strip=STRIP,xlim=c(-0.5,1.0)
+                  scales=list(x=list(at=seq(-0.4,0.8,0.2)*5e3,rot=45),alternating=F),
+                  strip=STRIP,xlim=c(-0.5,1.0)*5e3
                   )
 save_image('MeanSweeDLRLargeEffectOnly',Plot)
 

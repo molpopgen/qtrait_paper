@@ -36,8 +36,8 @@ power_by_sweep_type = sweed %>% left_join(fixations,by=c("mu","opt","repid","loc
                             (hard+soft == 0) ~ 3)) %>%
             group_by(mu,opt,generation,sweep_type) %>%
             summarise(psig_given_sweep = sum(sig05)/n()) %>%
-            mutate(scaled_time = (generation-5e4)/5e3) %>%
-            filter(scaled_time >= -0.4, scaled_time <= 1.0, sweep_type != 2)
+            mutate(scaled_time = (generation-5e4)) %>%
+            filter(scaled_time >= -0.4*5e3, scaled_time <= 1.0*5e3, sweep_type != 2)
 
 
 save_image <- function(stat,img)
@@ -67,10 +67,10 @@ Plot = xyplot(psig_given_sweep~scaled_time| as.factor(mu)*as.factor(opt), #:as.f
                   type='l',data=power_by_sweep_type,
                   par.settings=bwtheme,
                   key=KEY,
-                  xlab="Time since optimum shift (units of N generations)",
+                  xlab="Generations since optimum shift",
                   ylab="Pr(significant|sweep category)",
-                  scales=list(x=list(at=seq(-0.4,1.0,0.2),rot=45),alternating=F),
+                  scales=list(x=list(at=seq(-0.4,0.8,0.2)*5e3,rot=45),alternating=F),
                   strip=STRIP,
-                  xlim=c(-0.5,1)
+                  xlim=c(-0.5,1)*5e3
                   )
 save_image('FractionSweeDLargeEffect',Plot)
