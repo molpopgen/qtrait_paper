@@ -46,13 +46,14 @@ import argparse
 import concurrent.futures
 import pandas as pd
 import sqlite3
+import pickle
 from collections import defaultdict
 from collections import namedtuple
 
 # LDRecord = namedtuple('LDRecord', ['generation', 'intralocus_zns', 'interlocus_zns',
 #                                    'intralocus_D', 'interlocus_D'])
 LDRecord = namedtuple(
-    'LDRecord', ['generation', 'pos1', 'pos2', 'c1', 'c2', 'g1','g2', 'e1', 'e2', 'D', 'rsq'])
+    'LDRecord', ['generation', 'pos1', 'pos2', 'c1', 'c2', 'g1', 'g2', 'e1', 'e2', 'D', 'rsq'])
 
 
 def make_parser():
@@ -76,6 +77,9 @@ def make_parser():
     required.add_argument("--sigma", "-s", type=float, default=None,
                           help="Standard deviation of Gaussian"
                           "distribution of mutational effects")
+    optional.add_argument('--load_fixations', type=str, default=None)
+    optional.add_argument('--dump_fixations',
+                          action="store_true", default=False)
     optional.add_argument("--rho", type=float, default=1000.0,
                           help="Scaled recombination rate, rho=4Nr")
     optional.add_argument("--VS", type=float, default=1.0,
@@ -128,14 +132,7 @@ def validate_arguments(args):
 
 
 class Recorder(object):
-    """
-    fwdpy11 allows you to define objects that record data
-    from populations during simulation.  Such objects must
-    be callable, and the easiest way to do things is to
-    create a class with a __call__ function.
-    """
-
-    def __init__(self, maxtime, interval, nsam, dbname, repid):
+    def __init__(self, maxtime, interval, nsam, dbname, repid, fixations):
         self.data = []
         self.maxtime = maxtime
         self.interval = interval
@@ -143,10 +140,26 @@ class Recorder(object):
         self.ld = []
         self.dbname = dbname
         self.repid = repid
+        self.fixations = None
+        if fixations is not None:
+            self.fixations = [i.key for i in fixations]
 
     def getld(self, pop):
+        # Check if any mutations are in our fixations
+        have_key = False
+        for i, m in enumerate(pop.mutations):
+            if m.key in self.fixations:
+                if pop.mcounts[i] < 2 * pop.N:
+                    have_key = True
+                    break
+        if have_key is False:
+            return
         mc = np.array(pop.mcounts)
         segregating = ((mc > 0) & (mc < 2 * pop.N)).nonzero()[0]
+        is_tracked = np.zeros(len(segregating), dtype=np.int32)
+        for i, s in enumerate(segregating):
+            if pop.mutations[s].key in self.fixations:
+                is_tracked[i] = 1
         sorted_key_map = defaultdict(lambda: 0)
         for i, j in enumerate(segregating):
             sorted_key_map[j] = i
@@ -165,21 +178,22 @@ class Recorder(object):
         idx = 0
         for i in range(genotypes.shape[0] - 1):
             for j in range(i + 1, genotypes.shape[0]):
-                p0 = dcounts[i] / (2 * pop.N)
-                p1 = dcounts[j] / (2 * pop.N)
-                temp = genotypes[i, :] + genotypes[j, :]
-                p11 = len(np.where(temp == 2)[0]) / genotypes.shape[1]
-                D = p11 - p0 * p1
-                rsq = np.power(D, 2.0) / \
-                    (p0 * (1.0 - p0) * p1 * (1.0 - p1))
-                idx += 1
-                self.ld.append(LDRecord(pop.generation,
-                                        pos[i], pos[j], dcounts[i], dcounts[j],
-                                        pop.mutations[segregating[i]].g,
-                                        pop.mutations[segregating[j]].g,
-                                        pop.mutations[segregating[i]].s,
-                                        pop.mutations[segregating[j]].s,
-                                        D, rsq))
+                if is_tracked[i] == 1 or is_tracked[j] == 1:
+                    p0 = dcounts[i] / (2 * pop.N)
+                    p1 = dcounts[j] / (2 * pop.N)
+                    temp = genotypes[i, :] + genotypes[j, :]
+                    p11 = len(np.where(temp == 2)[0]) / genotypes.shape[1]
+                    D = p11 - p0 * p1
+                    rsq = np.power(D, 2.0) / \
+                        (p0 * (1.0 - p0) * p1 * (1.0 - p1))
+                    idx += 1
+                    self.ld.append(LDRecord(pop.generation,
+                                            pos[i], pos[j], dcounts[i], dcounts[j],
+                                            pop.mutations[segregating[i]].g,
+                                            pop.mutations[segregating[j]].g,
+                                            pop.mutations[segregating[i]].s,
+                                            pop.mutations[segregating[j]].s,
+                                            D, rsq))
         if len(self.ld) > 200000:
             temp = pd.DataFrame(self.ld, columns=LDRecord._fields)
             temp['repid'] = np.array(
@@ -198,8 +212,8 @@ class Recorder(object):
                     s = np.arange(pop.N, dtype=np.int32)
 
                 recorder.assign(s)
-        if pop.generation >= 10 * pop.N and pop.generation <= 10 * pop.N + 4 * pop.N:
-            if pop.generation % 10 == 0.0:
+        if self.dbname is not None:
+            if pop.generation >= 10 * pop.N and pop.generation <= 10 * pop.N + 4 * pop.N:
                 self.getld(pop)
 
 
@@ -207,7 +221,7 @@ def runsim(argtuple):
     """
     Run the simulation and deliver output to files.
     """
-    args, repid, seed = argtuple
+    args, repid, seed, fixations = argtuple
     locus_boundaries = [(i, i + 11) for i in range(0, args.nloci * 11, 11)]
     pop = fp11.SlocusPop(args.popsize, locus_boundaries[-1][1])
     sregions = [fwdpy11.GaussianS(i[0] + 5, i[0] + 6, 1, args.sigma)
@@ -233,9 +247,13 @@ def runsim(argtuple):
          }
     params = fp11.model_params.ModelParams(**p)
 
-    dbname = args.filename + "{}_ld.sqlite3".format(repid)
-    r = Recorder(int(args.time * float(args.popsize)),
-                 args.preserve, args.num_ind, dbname, repid)
+    if args.dump_fixations is True:
+        r = Recorder(int(args.time * float(args.popsize)),
+                     args.preserve, args.num_ind, None, repid, fixations)
+    else:
+        dbname = args.filename + "{}_ld.sqlite3".format(repid)
+        r = Recorder(int(args.time * float(args.popsize)),
+                     args.preserve, args.num_ind, dbname, repid, fixations)
     fwdpy11.wright_fisher_ts.evolve(
         rng, pop, params, 100, r, suppress_table_indexing=True,
         remove_extinct_variants=False)
@@ -249,6 +267,12 @@ def runsim(argtuple):
     fwdpy11.wright_fisher_ts.evolve(
         rng, pop, params, 100, r, suppress_table_indexing=True,
         track_mutation_counts=True)
+
+    if args.dump_fixations is True:
+        fname = args.filename + "{}_fixations.pickle.gz".format(repid)
+        with gzip.open(fname, 'wb') as f:
+            pickle.dump((args, pop.fixations, pop.fixation_times), f)
+        return
 
     if len(r.ld) > 0:
         df = pd.DataFrame(r.ld, columns=LDRecord._fields)
@@ -276,11 +300,17 @@ def runsim(argtuple):
 if __name__ == "__main__":
     parser = make_parser()
     args = parser.parse_args(sys.argv[1:])
+    if args.load_fixations is not None:
+        with gzip.open(args.load_fixations, 'rb') as f:
+            args, fixations, fixation_times = pickle.load(f)
+            args.dump_fixations = False
+    else:
+        fixations, fixation_times = None, None
     validate_arguments(args)
 
     if args.repid is not None:
         print("running with fixed replicate id")
-        rv = runsim((args, args.repid, args.seed))
+        rv = runsim((args, args.repid, args.seed, fixations))
     else:
         np.random.seed(args.seed)
 
@@ -295,7 +325,7 @@ if __name__ == "__main__":
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=args.max_workers) as executor:
             futures = {executor.submit(
-                runsim, (args, i[0], i[1])): i for i in enumerate(seeds)}
+                runsim, (args, i[0], i[1], fixations)): i for i in enumerate(seeds)}
 
             for fut in concurrent.futures.as_completed(futures):
                 rv = fut.result()
