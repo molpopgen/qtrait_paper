@@ -146,20 +146,14 @@ class Recorder(object):
 
     def getld(self, pop):
         # Check if any mutations are in our fixations
-        have_key = False
-        for i, m in enumerate(pop.mutations):
-            if m.key in self.fixations:
-                if pop.mcounts[i] < 2 * pop.N:
-                    have_key = True
-                    break
-        if have_key is False:
-            return
         mc = np.array(pop.mcounts)
         segregating = ((mc > 0) & (mc < 2 * pop.N)).nonzero()[0]
         is_tracked = np.zeros(len(segregating), dtype=np.int32)
         for i, s in enumerate(segregating):
             if pop.mutations[s].key in self.fixations:
                 is_tracked[i] = 1
+        if np.sum(is_tracked) == 0:
+            return
         sorted_key_map = defaultdict(lambda: 0)
         for i, j in enumerate(segregating):
             sorted_key_map[j] = i
