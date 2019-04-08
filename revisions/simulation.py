@@ -285,6 +285,9 @@ def runsim(argtuple):
     with gzip.open(fname, 'wb') as f:
         pop.pickle_to_file(f)
 
+    fname = args.filename + "{}_done.txt".format(repid)
+    with open(fname, 'w') as f:
+        f.write('1\n')
     # df = pd.DataFrame(r.ld, columns=LDRecord._fields)
     # df['repid'] = [repid] * len(df.index)
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #$ -q krt2
-#$ -t 11-256
+#$ -t 1-256
 
 MU=$1
 SIGMA=$2
