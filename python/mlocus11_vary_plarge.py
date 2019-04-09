@@ -291,7 +291,12 @@ def runsim(args):
     locus_boundaries = [(float(i + i * 11), float(i + i * 11 + 11))
                         for i in range(args.nloci)]
     NANC = args.N
-    ghat = gamma_hat(1.0, args.mu)
+    # In revision, change from using gamma_hat
+    # to (2Ngamma^2)/(2VS) >= 100.
+    # Keep the variable name to minimize 
+    # the refactoring...
+    # ghat = gamma_hat(1.0, args.mu)
+    ghat = sqrt(100./5000.)
     sregions = None
     if args.gamma is None:
         F = generate_gaussian_function_to_minimize(ghat, args.plarge)
