@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#$ -q krt2,krti,bsg2,krt,bio
-#$ -pe openmp 64-128
+#$ -q krt2
+#$ -pe openmp 128
 
 cd $SGE_O_WORKDIR
 module load krthornt/anaconda
