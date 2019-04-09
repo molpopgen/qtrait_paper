@@ -296,7 +296,7 @@ def runsim(args):
     # Keep the variable name to minimize 
     # the refactoring...
     # ghat = gamma_hat(1.0, args.mu)
-    ghat = sqrt(100./5000.)
+    ghat = np.sqrt(100./5000.)
     sregions = None
     if args.gamma is None:
         F = generate_gaussian_function_to_minimize(ghat, args.plarge)
