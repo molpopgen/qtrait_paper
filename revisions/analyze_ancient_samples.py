@@ -42,6 +42,7 @@ def make_parser():
     parser.add_argument('ld_dbfile', type=str,
                         help="sqlite3 file name for quant get output")
     parser.add_argument('seed', type=int, default=None, help="RNG seed")
+    parser.add_argument('cores', type=int, default=None, help="cores requested")
 
     parser.add_argument('--theta', type=float,
                         default=1e3, help="4Nu per locus")
@@ -248,7 +249,7 @@ if __name__ == "__main__":
         if os.path.exists(i):
             raise RuntimeError("File {} exists!".format(i))
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=64) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=int(args.cores/2)) as executor:
         futures = {executor.submit(process_replicate, i) for i in inputs}
         for fut in concurrent.futures.as_completed(futures):
             repid, genome_scan, qtraits, ld = fut.result()

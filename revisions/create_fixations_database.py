@@ -18,6 +18,7 @@ def make_parser():
     parser.add_argument('lo',type=int)
     parser.add_argument('hi',type=int)
     parser.add_argument('outfile',type=str)
+    parser.add_argument('cores',type=int)
 
     return parser
 
@@ -52,7 +53,7 @@ if __name__ == "__main__":
                 raise ValueError("{} does not exist".format(fname))
             inputs.append((fname, i, value))
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=64) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=int(args.cores/2)) as executor:
         futures = {executor.submit(process_file, i) for i in inputs}
 
         for fut in concurrent.futures.as_completed(futures):
