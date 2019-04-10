@@ -16,7 +16,7 @@ python3 ../python/mlocus11_vary_plarge.py --N 5000 --mu $MU \
     --plarge $PLARGE \
     --nsam 50 \
     --nreps 128 \
-    --ncores $CORES \
+    --ncores 64 \
     --opt 1.0 \
     --seed $RANDOM \
     --qoutfile $QO \

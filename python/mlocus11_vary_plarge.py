@@ -313,7 +313,7 @@ def runsim(args):
                      fwdpy11.GammaS(j[0] + 5., j[0] + 6.,
                                     args.mu, res.x, args.gamma, coupled=False)]
                     for i, j in zip(range(args.nloci), locus_boundaries)]
-
+    print(sregions)
     nregions = [[fwdpy11.Region(j[0], j[1],
                                 args.theta / (4. * float(NANC)), coupled=True)]
                 for i, j in zip(range(args.nloci), locus_boundaries)]
