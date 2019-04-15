@@ -31,7 +31,7 @@ process_files <- function(d, param)
         }
         DBI::dbDisconnect(db)
     }
-    df=df%>% mutate(scaled_time=(generation-5e4)/5e3)
+    df=df%>% mutate(scaled_time=(generation-5e4))
     df
 }
 gamma_small_files = dir('.',pattern='qtrait_gamma_small\\..+sqlite3')
@@ -62,13 +62,13 @@ p = xyplot(mz~scaled_time|as.factor(mu)*as.factor(plarge),
            data=df,
            type='l',
            par.settings=simpleTheme(col=COLORS),
-           scales=list(cex=1,alternating=F,x=list(rot=45)),
+           scales=list(cex=1,alternating=F,x=list(rot=45,at=c(-250,0,250,500,750))),
            strip=STRIP,
            group=des,
            lwd=3,
-           xlim=c(-0.1,0.2),
+           xlim=c(-0.1,0.2)*5e3,
            ylim=c(0.,1.1),
-           xlab="Time since optimum shift (units of N generations)",
+           xlab="Generations since optimim shift",
            ylab="Mean genetic value",
            key=KEY)
 trellis.device('pdf',file='MeanGeneticValueVaryPlarge.pdf',height=10,width=10)
@@ -80,13 +80,13 @@ p = xyplot(log10(mvg)~scaled_time|as.factor(mu)*as.factor(plarge),
            data=df,
            type='l',
            par.settings=simpleTheme(col=COLORS),
-           scales=list(cex=1,alternating=F,x=list(rot=45)),
+           scales=list(cex=1,alternating=F,x=list(rot=45,at=c(-250,0,250,500,750))),
            strip=STRIP,
            group=des,
            lwd=3,
-           xlim=c(-0.1,0.2),
-           #ylim=c(0.,0.6),
-           xlab="Time since optimum shift (units of N generations)",
+           xlim=c(-0.1,0.2)*5e3,
+           # ylim=c(0.,0.6),
+           xlab="Generations since optimim shift",
            ylab="log10(Mean genetic variance)",
            key=KEY)
 trellis.device('pdf',file='MeanGeneticVarianceVaryPlarge.pdf',height=10,width=10)

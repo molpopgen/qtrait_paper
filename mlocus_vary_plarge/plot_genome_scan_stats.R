@@ -37,7 +37,7 @@ process_files <- function(d, param)
     }
     DBI::dbDisconnect(db)
 }    
-    df=df%>% mutate(scaled_time=(generation-5e4)/5e3,
+    df=df%>% mutate(scaled_time=(generation-5e4),
                     des=param)
     df
 }
@@ -75,8 +75,8 @@ p = xyplot(mD~scaled_time|as.factor(mu)*as.factor(plarge),
            strip=STRIP,
            group=des,
            lwd=3,
-           xlim=c(-0.1,4),
-           xlab="Time since optimum shift (units of N generations)",
+           xlim=c(-0.1,4)*5e3,
+           xlab="Generations since optimum shift",
            ylab="Mean Tajima's D in central window",
            key=KEY)
 trellis.device('pdf',file='MeanTajimasDVaryPlargeDist0.pdf',height=10,width=10)
@@ -93,8 +93,8 @@ p = xyplot(mHp~scaled_time|as.factor(mu)*as.factor(plarge),
            strip=STRIP,
            group=des,
            lwd=3,
-           xlim=c(-0.1,4),
-           xlab="Time since optimum shift (units of N generations)",
+           xlim=c(-0.1,4)*5e3,
+           xlab="Generations since optimum shift",
            ylab="Mean H' in central window",
            key=KEY)
 trellis.device('pdf',file='MeanHprimeVaryPlargeDist0.pdf',height=10,width=10)
@@ -154,8 +154,8 @@ plotD <- function(df, name)
                    par.settings=simpleTheme(col=COLORS),
                    key=KEY,
                    lwd=3,
-                   scales=list(cex=1,alternating=F),
-                   xlab="Time since optimum shift (units of N generations)",
+                   scales=list(cex=1,alternating=F,x=list(rot=45)),
+                   xlab="Generations since optimum shift",
                    ylab="Mean Tajima's D",
                    strip=STRIP)
 
@@ -174,8 +174,8 @@ plotH <- function(df, name)
                    key=KEY,
                    par.settings=simpleTheme(col=COLORS),
                    lwd=3,
-                   scales=list(cex=1,alternating=F),
-                   xlab="Time since optimum shift (units of N generations)",
+                   scales=list(cex=1,alternating=F,x=list(rot=45)),
+                   xlab="Generations since optimum shift",
                    ylab="Mean H'",
                    strip=STRIP)
     save_image(name,Hplot)
@@ -192,10 +192,10 @@ q("no")
                par.settings=simpleTheme(col=COLORS),
                key=KEY,
                lwd=3,
-               scales=list(cex=1,alternating=F),
-               xlab="Time since optimum shift (units of N generations)",
+               scales=list(cex=1,alternating=F,x=list(rot=45)),
+               xlab="Generations since optimum shift",
                ylab=expression(paste("Mean ",H[1])),
-               xlim=c(-0.025,0.1),
+               xlim=c(-0.025,0.1)*5e3,
                strip=STRIP)
 save_image("H1VaryPlargeGamma",H1plot)
 H12plot = xyplot(mH12~scaled_time|as.factor(mu)*as.factor(plarge),data=df,
@@ -204,10 +204,10 @@ H12plot = xyplot(mH12~scaled_time|as.factor(mu)*as.factor(plarge),data=df,
                par.settings=simpleTheme(col=COLORS),
                key=KEY,
                lwd=3,
-               scales=list(cex=1,alternating=F),
-               xlab="Time since optimum shift (units of N generations)",
+               scales=list(cex=1,alternating=F,x=list(rot=45)),
+               xlab="Generations since optimum shift",
                ylab=expression(paste("Mean ",H[12])),
-               xlim=c(-0.025,0.1),
+               xlim=c(-0.025,0.1)*5e3,
                strip=STRIP)
 save_image("H12VaryPlargeGamma",H12plot)
 H2H1plot = xyplot(mH2H1~scaled_time|as.factor(mu)*as.factor(plarge),data=df,
@@ -216,10 +216,10 @@ H2H1plot = xyplot(mH2H1~scaled_time|as.factor(mu)*as.factor(plarge),data=df,
                par.settings=simpleTheme(col=COLORS),
                key=KEY,
                lwd=3,
-               scales=list(cex=1,alternating=F),
-               xlab="Time since optimum shift (units of N generations)",
+               scales=list(cex=1,alternating=F,x=list(rot=45)),
+               xlab="Generations since optimum shift",
                ylab=expression(paste("Mean ",H[2],'/',H[1])),
-               xlim=c(-0.025,0.1),
+               xlim=c(-0.025,0.1)*5e3,
                strip=STRIP)
 save_image("H2H1VaryPlargeGamma",H2H1plot)
 Zplot = xyplot(mz~scaled_time|as.factor(mu)*as.factor(plarge),data=subset(df,dist<5),
@@ -228,9 +228,9 @@ Zplot = xyplot(mz~scaled_time|as.factor(mu)*as.factor(plarge),data=subset(df,dis
                par.settings=simpleTheme(col=NSLCOLORS),
                key=NSLKEY,
                lwd=3,
-               scales=list(cex=1,alternating=F),
+               scales=list(cex=1,alternating=F,x=list(rot=45)),
                strip=STRIP,
                xlab="Time since optimum shift (units of N generations)",
                ylab="Mean z-score",
-               xlim=c(-1.,2))
+               xlim=c(-1.,2)*5e3)
 save_image("ZscoreVaryPlargeGamma",Zplot)
