@@ -1,7 +1,8 @@
 #!/bin/bash
 
 I=1
-for dir in main_results lowrec # hirec
+# for dir in main_results lowrec # hirec
+for dir in hirec
 do
     for sdir in lomu midmu himu
     do
