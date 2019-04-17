@@ -2,7 +2,8 @@
 
 for mu in 0.005 0.001 0.00025
 do
-    for plarge in 0.05 0.5 0.9
+    #for plarge in 0.1 # 0.5 0.9
+    for plarge in 0.75 # 0.5 0.9
     do
         SUFFIX=mu$mu".plarge"$plarge".opt1.sqlite3"
         echo $SUFFIX
