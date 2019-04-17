@@ -34,7 +34,7 @@ process_files <- function(d, param)
         }
         DBI::dbDisconnect(db)
     }
-    df=df%>% mutate(scaled_time=(generation-5e4)/5e3)
+    df=df%>% mutate(scaled_time=(generation-5e4))
     df
 }
 gamma_small_files = dir('.',pattern='qtrait_gamma_small\\..+sqlite3')
@@ -71,9 +71,9 @@ p = xyplot(mg~scaled_time|as.factor(mu)*as.factor(plarge),
            strip=STRIP,
            group=des,
            lwd=3,
-           xlim=c(-0.1,0.2),
-           ylim=c(0.,1.1),
-           xlab="Time since optimum shift (units of N generations)",
+           xlim=c(-0.1,0.2)*5e3,
+           ylim=c(0.,1.2),
+           xlab="Generations since optimum shift",
            ylab="Mean genetic value due to largest-effect locus",
            key=KEY)
 trellis.device('pdf',file='MeanGeneticValueDueToLeadingLocus.pdf',height=10,width=10)
@@ -88,9 +88,9 @@ p=xyplot(mg~scaled_time|as.factor(mu)*as.factor(plarge),data=gamma2_df,group=ran
         lwd=3,
         scales=list(cex=1,alternating=F,x=list(rot=45)),
         strip=STRIP,
-        xlim=c(-0.1,0.2),
-        ylim=c(0.,1.1),
-        xlab="Time since optimum shift (units of N generations)",
+        xlim=c(-0.1,0.2)*5e3,
+        ylim=c(0.,1.2),
+        xlab="Generations since optimum shift",
         ylab="Mean genetic value due to locus")
 trellis.device('pdf',file='MeanGeneticValueDueToLocusVaryPlargeGammaSmall.pdf',height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
@@ -103,9 +103,9 @@ p=xyplot(mg~scaled_time|as.factor(mu)*as.factor(plarge),data=gamma_df,group=rank
         lwd=3,
         scales=list(cex=1,alternating=F,x=list(rot=45)),
         strip=STRIP,
-        xlim=c(-0.1,0.2),
-        ylim=c(0.,1.1),
-        xlab="Time since optimum shift (units of N generations)",
+        xlim=c(-0.1,0.2)*5e3,
+        ylim=c(0.,1.2),
+        xlab="Generations since optimum shift",
         ylab="Mean genetic value due to locus")
 trellis.device('pdf',file='MeanGeneticValueDueToLocusVaryPlargeGamma.pdf',height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
@@ -118,9 +118,9 @@ p=xyplot(mg~scaled_time|as.factor(mu)*as.factor(plarge),data=gauss_df,group=rank
         lwd=3,
         scales=list(cex=1,alternating=F,x=list(rot=45)),
         strip=STRIP,
-        xlim=c(-0.1,0.2),
-        ylim=c(0.,1.1),
-        xlab="Time since optimum shift (units of N generations)",
+        xlim=c(-0.1,0.2)*5e3,
+        ylim=c(0.,1.2),
+        xlab="Generations since optimum shift",
         ylab="Mean genetic value due to locus")
 trellis.device('pdf',file='MeanGeneticValueDueToLocusVaryPlargeGaussian.pdf',height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
