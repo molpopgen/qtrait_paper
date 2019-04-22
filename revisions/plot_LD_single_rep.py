@@ -76,4 +76,4 @@ for i,j in zip(freqaxes, [1e2,1e3,1e4]):
     i.set_title(r'$\rho = {}$'.format(j))
 
 fig.align_ylabels()
-plt.savefig('test.pdf')
+plt.savefig('LDsinglerep.pdf')
