@@ -30,7 +30,7 @@ XLIM=c(-0.02,0.05)*5e3
 STRIP=strip.custom(strip.names=TRUE,var.name=expression(z[0]),
                    strip.levels=c(T,T),sep=" = ",bg=0,fg=0,style=1)
 
-XLAB="Time since optimum shift (units of N generations)"
+XLAB="Generations since optimum shift"
 LWD=c(3,3,3)
 LTY=c("solid","dashed","dotdash")
 #Seriously, fuckR:
