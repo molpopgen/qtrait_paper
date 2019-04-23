@@ -62,7 +62,7 @@ for (f in files)
 psig = genome_scan_data %>%
     group_by(mu,opt,generation,dist) %>%
     summarise(pDsig = sum(Dsig)/n(),pHsig = sum(Hsig)/n() ,n=n()) %>%
-    mutate(scaled_time=(generation-5e4)/5e3)
+    mutate(scaled_time=(generation-5e4))
 
 # Set up our plots
 save_image <- function(stat,img)
@@ -78,7 +78,7 @@ save_image <- function(stat,img)
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
                    var.name = c(expression(mu),expression(z[o])),bg=c("white"))
 
-XLIM=c(-0.5,4)
+XLIM=c(-0.5,4)*5e3
 
 ICOLORS=viridis(length(unique(as.factor(psig$dist))))
 COLORS=array()
@@ -111,7 +111,7 @@ PLOT = xyplot(pDsig~scaled_time | as.factor(mu)*as.factor(opt),
               key=KEY,
               scales=list(cex=1,alternating=F),
               strip=STRIP,
-              xlab="Time since optimum shift (units of N generations)",
+              xlab="Generations since optimum shift",
               ylab=expression(paste("Power at ",alpha," = 0.05")))
 save_image("PowerTAJD",PLOT)
 PLOT = xyplot(pHsig~scaled_time | as.factor(mu)*as.factor(opt),
@@ -123,7 +123,7 @@ PLOT = xyplot(pHsig~scaled_time | as.factor(mu)*as.factor(opt),
               key=KEY,
               scales=list(cex=1,alternating=F),
               strip=STRIP,
-              xlab="Time since optimum shift (units of N generations)",
+              xlab="Generations since optimum shift",
               ylab=expression(paste("Power at ",alpha," = 0.05")))
 save_image("PowerHPRIME",PLOT)
 # p = xyplot(pDsig ~ generation|as.factor(mu)*as.factor(opt), data=psig, group=dist,auto.key=TRUE,type='l')

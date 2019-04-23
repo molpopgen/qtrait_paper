@@ -93,7 +93,7 @@ print(head(g))
 d = d %>% full_join(g,by=c('repid','locus','generation','opt','mu')) %>%
     group_by(generation,rank,opt,mu) %>%
     summarise(meanD=mean(tajd),meanH=mean(hprime)) %>%
-    mutate(scaled_time = (generation-5e4)/5e3)
+    mutate(scaled_time = (generation-5e4))
 
 # print(head(d))
 
@@ -115,7 +115,7 @@ p = xyplot(meanD~scaled_time|as.factor(mu)*as.factor(opt),
            scales=list(cex=1,alternating=F),
            xlab="Time since optimum shift (units of N generations)",
            ylab="Mean Tajima's D",
-           xlim=c(-0.1,3),
+           xlim=c(-0.1,3)*5e3,
            data=d)
 trellis.device(device="pdf",file="MeanTajDPerRankedLocus.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
@@ -131,7 +131,7 @@ p = xyplot(meanH~scaled_time|as.factor(mu)*as.factor(opt),
            scales=list(cex=1,alternating=F),
            xlab="Time since optimum shift (units of N generations)",
            ylab="Mean H'",
-           xlim=c(-0.1,3),
+           xlim=c(-0.1,3)*5e3,
            data=d)
 trellis.device(device="pdf",file="MeanHprimePerRankedLocus.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
