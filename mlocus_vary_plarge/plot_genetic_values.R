@@ -48,7 +48,7 @@ df = rbind(gauss_df, gamma_df, gamma2_df)
 
 COLORS=rev(viridis(3))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
-                   var.name = c(expression(mu),expression(paste("Pr(|",gamma,"| >= ",hat(gamma),")"))),bg=c("white"))
+                   var.name = c(expression(mu),expression(paste("Pr(N",gamma^2," >= ",100,")"))),bg=c("white"))
 key_text=list(c(expression(paste(Gamma,", shape = 1.0")),
               expression(paste(Gamma,", shape = 0.5")),
               expression(paste("gaussian"))))

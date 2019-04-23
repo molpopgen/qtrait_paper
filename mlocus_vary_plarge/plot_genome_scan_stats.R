@@ -56,7 +56,7 @@ d0 = df %>% filter(dist == 0)
 # Plot stats for the middle window
 COLORS=rev(viridis(3,alpha=0.5))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
-                   var.name = c(expression(mu),expression(paste("Pr(|",gamma,"| >= ",hat(gamma),")"))),bg=c("white"))
+                   var.name = c(expression(mu),expression(paste("Pr(N",gamma^2," >= ",100,")"))),bg=c("white"))
 key_text=list(c(expression(paste(Gamma,", shape = 1.0")),
               expression(paste(Gamma,", shape = 0.5")),
               expression(paste("gaussian"))))
@@ -137,7 +137,7 @@ NSLKEY=list(space="top",columns=3,
          just=0.5,
          text=list(as.character(sort(UDIST)[1:5])))
 STRIP=strip.custom(strip.names = TRUE,sep=" = ", 
-                   var.name = c(expression(mu),expression(paste("Pr(|",gamma,"| >= ",hat(gamma),")"))),bg=c("white"))
+                   var.name = c(expression(mu),expression(paste("Pr(N",gamma^2," >= ",100,")"))),bg=c("white"))
 save_image <- function(stat,img)
 {
     trellis.device(device="pdf",file=paste(stat,".pdf",sep=""),height=10,width=10)
