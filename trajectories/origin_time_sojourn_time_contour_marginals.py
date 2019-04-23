@@ -33,7 +33,7 @@ for fi, i in zip(files, range(len(files))):
     x = pd.read_sql(
         'select * from freqs where freq == 1.0', conn)
     x['sojourn_time'] = (x.generation - x.origin + 1.0) / 5e3
-    x['scaled_origin'] = (x.origin - 5e4) / 5e3
+    x['scaled_origin'] = (x.origin - 5e4)
     print(opt, mu, x.esize.min(), x.esize.max())
     conn.close()
 
@@ -41,7 +41,7 @@ for fi, i in zip(files, range(len(files))):
     ax = plt.subplot(gs[2 * I + 1, 2 * J])
     axes.append(ax)
     cs = ax.hexbin(x.scaled_origin,x.sojourn_time,gridsize=25,cmap='Blues')
-    ax.set_xlim(-4,4.01)
+    ax.set_xlim(-4*5e3,5e3*4.01)
     ax.set_ylim(0,8.01)
     cbaxes = inset_axes(ax, width="45%", height="3%", loc=1)
     cbar = plt.colorbar(cs, cax=cbaxes, orientation='horizontal')
@@ -62,7 +62,7 @@ for fi, i in zip(files, range(len(files))):
     # Plot the marginals
     ax = plt.subplot(gs[2 * I, 2 * J])
     n, b, p = ax.hist(x.scaled_origin, 50, color='lightsteelblue')
-    ax.set_xlim(-4, 4)
+    ax.set_xlim(-4*5e3, 5e3*4)
     ax.axis('off')
     for k in ax.get_xticklabels():
         k.set_visible(False)
@@ -107,10 +107,10 @@ for i in [3, 6]:
 # external panels
 for i in range(3):
     ax = axes[i]
-    ax.set_xlabel('Origin time of fixation')
+    ax.set_xlabel('Origin time of fixation (generations since optimum shift)')
 for i in range(0,7,3):
     ax = axes[i]
-    ax.set_ylabel('Fixation time')
+    ax.set_ylabel('Fixation time (units of N generations)')
 
 
 plt.tight_layout()
