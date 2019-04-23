@@ -40,7 +40,8 @@ DATUM=namedtuple('DATUM',['repid','mu','opt','generation','segsmall','seglarge',
 def process_replicate(argtuple):
     args, infile = argtuple
     mu, opt = get_params(infile)
-    ghat=2.*np.sqrt(2.)*np.sqrt(mu)
+    #ghat=2.*np.sqrt(2.)*np.sqrt(mu)
+    ghat = np.sqrt(100./5e3)
     tf = tarfile.open(args.tarfile, 'r')
     ti = tf.getmember(infile)
     lzma_file = tf.extract(ti)
