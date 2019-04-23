@@ -109,7 +109,7 @@ for i in range(3):
     ax = axes[i]
     for t in ax.get_xticklabels():
         t.set_rotation(45)
-axes[1].set_xlabel('Origin time of fixation\n(generations since optimum shift)')
+axes[1].set_xlabel('Origin time of fixations (generations since optimum shift)')
 for i in range(0,7,3):
     ax = axes[i]
 axes[3].set_ylabel('Fixation time, in units of N generations')
