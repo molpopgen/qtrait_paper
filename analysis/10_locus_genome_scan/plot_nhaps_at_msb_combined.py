@@ -81,8 +81,8 @@ for mu in [5e-3,1e-3,2.5e-4]:
                     '{0:0.2f}'.format(n[1]) + '\n' + r'$\mu = $' +
                     '{0:0.3f}'.format(n[0]),
                     color='black')
-        ax.axvline(x=2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed',color='royalblue',
-                linewidth=3)
+        #ax.axvline(x=2 * np.sqrt(2.0) * np.sqrt(mu), linestyle='dashed',color='royalblue',
+        #        linewidth=3)
         # Plot the marginals
         ax = plt.subplot(gs[2 * I, 2 * J])
         n, b, p = ax.hist(g.esize, 50, color='lightsteelblue')

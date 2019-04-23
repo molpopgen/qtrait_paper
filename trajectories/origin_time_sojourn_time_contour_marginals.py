@@ -48,7 +48,7 @@ for fi, i in zip(files, range(len(files))):
     cbar.outline.set_edgecolor('black')
     cbar.outline.set_linewidth(2)
     cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(),
-                            rotation=90, color='black')
+                            rotation=45, color='black')
     if mu < 1e-3:
         ax.text(-3.5, 6.5, r'$z_o = $' +
                 '{0:0.2f}'.format(opt) + '\n' + r'$\mu = $' +
@@ -107,10 +107,12 @@ for i in [3, 6]:
 # external panels
 for i in range(3):
     ax = axes[i]
-    ax.set_xlabel('Origin time of fixation (generations since optimum shift)')
+    for t in ax.get_xticklabels():
+        t.set_rotation(45)
+axes[1].set_xlabel('Origin time of fixation\n(generations since optimum shift)')
 for i in range(0,7,3):
     ax = axes[i]
-    ax.set_ylabel('Fixation time (units of N generations)')
+axes[3].set_ylabel('Fixation time, in units of N generations')
 
 
 plt.tight_layout()
