@@ -33,7 +33,7 @@ write_delim(z[with(z,order(mu, opt, sweep_type)),],"mean_numbers_of_sweeps.txt",
 xlabels=c("(0,10]","(10,100]","(100,1000]",">= 1000")
 number = ggplot(z, aes(x=r,y=msweeps)) +
     facet_grid(opt ~ mu,
-               labeller=label_bquote(rows=z[w]~"="~.(opt),cols=mu~"="~.(mu))) +
+               labeller=label_bquote(rows=z[o]~"="~.(opt),cols=mu~"="~.(mu))) +
     geom_point(alpha=0.5,aes(color=sweep_type)) +
     xlab(expression(paste('N',gamma^2,' range'))) +
     ylab("Mean number of fixations per locus") +
