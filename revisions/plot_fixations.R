@@ -60,10 +60,11 @@ KEY=list(space="top",columns=2,
 plt = xyplot(sojourn_time/5e3 ~ s|as.factor(mu)*as.factor(rho), data=data, 
              group=as.factor(strength),
              par.settings=simpleTheme(col=COLORS),
-             pch='.',cex=2,
+             pch='.',cex=5,
               scales=list(cex=1,alternating=F),
              xlab=expression(paste("Effect size(",gamma,")")),
              ylab="Fixation time (units of N generations)",
+             ylim=c(0,2.6),
              key=KEY,
              strip=STRIP)
 
