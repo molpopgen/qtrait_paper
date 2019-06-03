@@ -18,7 +18,7 @@ for (i in 1:length(outer))
         t = tbl(db, "data")
 
         df = collect(t) %>% group_by(generation) %>%
-            summarise(mz = mean(zbar)) %>%
+            summarise(mz = mean(zbar), vz = var(zbar)) %>%
             mutate(mu=mu[j], rho=rho[i])
 
         data = bind_rows(data, df)
@@ -48,6 +48,18 @@ plt = xyplot(mz~tsince|as.factor(mu), data=data, groups=as.factor(rho), type='l'
              xlab="Generations since optimum shift",
              ylab="Mean trait value")
 trellis.device(device="pdf",file="MeanGeneticValueVaryRho.pdf",height=10,width=10)
+trellis.par.set("fontsize",list(text=18))
+print(plt)
+dev.off()
+plt = xyplot(vz~tsince|as.factor(mu), data=data, groups=as.factor(rho), type='l',
+             par.settings=simpleTheme(col=COLORS),
+             lwd=3, xlim=c(-10,110),
+             scales=list(cex=0.75,alternating=F,x=list(rot=45,at=seq(0,100,20))),
+             layout=c(3,1),
+             key=KEY, strip=STRIP,
+             xlab="Generations since optimum shift",
+             ylab="Mean genetic variance")
+trellis.device(device="pdf",file="MeanVGVaryRho.pdf",height=10,width=10)
 trellis.par.set("fontsize",list(text=18))
 print(plt)
 dev.off()
