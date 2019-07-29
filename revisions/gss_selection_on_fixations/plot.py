@@ -61,6 +61,7 @@ for i in range(len(datasets)):
                              linewidth=1)
 
             distance = (g[1].G-1.0)  # /np.sqrt(g[1].VG)
+            distance = (g[1].G-g[1].Gbar) /np.sqrt(g[1].VG)
             distanceaxes[i].plot(xdata, distance, linewidth=1)
             s = (g[1].W - g[1].Wbar)/g[1].Wbar  # VS = 1
             saxes[i].plot(xdata, s, linewidth=1)
@@ -102,10 +103,11 @@ for axes in freqaxes[1:] + distanceaxes[1:] + saxes[1:]:
 
 saxes[1].set_xlabel("Generations since optimum shift")
 saxes[0].set_ylabel(r'$\frac{\bar{w}_{a-} - \bar{w}}{\bar{w}}$')
-distanceaxes[0].set_ylabel(r'$\bar{z}_{a-} - z_o$')
+# distanceaxes[0].set_ylabel(r'$\bar{z}_{a-} - z_o$')
+distanceaxes[0].set_ylabel(r'$\frac{\bar{z}_{a-} - \bar{z}}{\sigma_z}$')
 freqaxes[0].set_ylabel("Frequency")
 
-distanceaxes[0].set_ylim(-1, 0.3)
+distanceaxes[0].set_ylim(distanceaxes[0].get_ylim()[0], 10)
 saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.5)
 
 fig.align_ylabels([i[0] for i in [freqaxes, distanceaxes, saxes]])
