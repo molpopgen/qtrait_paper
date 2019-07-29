@@ -85,7 +85,11 @@ for axes in saxes_inset:
     axes.set_xlim(20, 125)
     axes.set_ylim(0.5*saxes[0].get_ylim()[0], 200./TWON)
     for item in axes.get_xticklabels() + axes.get_yticklabels():
-        item.set_fontsize(6)
+        item.set_fontsize(6) 
+    axes.xaxis.set_tick_params(width=0.25)
+    axes.yaxis.set_tick_params(width=0.25)
+    for loc in ['top', 'bottom', 'left', 'right']:
+        axes.spines[loc].set_linewidth(0.25)
 
 # Hide some axes!!!
 for axes in freqaxes + distanceaxes:
@@ -95,8 +99,8 @@ for axes in freqaxes[1:] + distanceaxes[1:] + saxes[1:]:
     axes.get_yaxis().set_visible(False)
 
 saxes[1].set_xlabel("Generations since optimum shift")
-saxes[0].set_ylabel("Mean " + r'$s_{a-}$')
-distanceaxes[0].set_ylabel("Mean distance")
+saxes[0].set_ylabel(r'$\bar{s}_{a-}$')
+distanceaxes[0].set_ylabel(r'$\bar{z}_{a-} - z_o$')
 freqaxes[0].set_ylabel("Frequency")
 
 distanceaxes[0].set_ylim(-1, 0.3)
