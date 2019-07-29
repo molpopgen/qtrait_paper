@@ -61,7 +61,7 @@ for i in range(len(datasets)):
 
         distance = (g[1].G-1.0)  # /np.sqrt(g[1].VG)
         distanceaxes[i].plot(xdata, distance, linewidth=1)
-        s = ((g[1].G - 1.0)**2)/2  # VS = 1
+        s = (g[1].W - g[1].Wbar)/g[1].Wbar # VS = 1
         saxes[i].plot(xdata, s, linewidth=1)
         saxes_inset[i].plot(xdata, s, linewidth=1)
 
@@ -83,7 +83,7 @@ freqaxes[-1].legend(loc='upper right', prop={'size': 5},
 for axes in saxes_inset:
     # axes.set_xlim(saxes[0].get_xlim()[0],75)
     axes.set_xlim(20, 125)
-    axes.set_ylim(0.5*saxes[0].get_ylim()[0], 200./TWON)
+    axes.set_ylim(0.5*saxes[0].get_ylim()[0], 500./TWON)
     for item in axes.get_xticklabels() + axes.get_yticklabels():
         item.set_fontsize(6) 
     axes.xaxis.set_tick_params(width=0.25)
@@ -99,12 +99,12 @@ for axes in freqaxes[1:] + distanceaxes[1:] + saxes[1:]:
     axes.get_yaxis().set_visible(False)
 
 saxes[1].set_xlabel("Generations since optimum shift")
-saxes[0].set_ylabel(r'$\bar{s}_{a-}$')
+saxes[0].set_ylabel(r'$\frac{\bar{w}_{a-} - \bar{w}}{\bar{w}}$')
 distanceaxes[0].set_ylabel(r'$\bar{z}_{a-} - z_o$')
 freqaxes[0].set_ylabel("Frequency")
 
 distanceaxes[0].set_ylim(-1, 0.3)
-saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.4)
+saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.45)
 
 fig.align_ylabels([i[0] for i in [freqaxes, distanceaxes, saxes]])
 plt.savefig("StrengthOfSelection.pdf")
