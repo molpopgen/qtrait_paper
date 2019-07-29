@@ -54,30 +54,32 @@ for i in range(len(datasets)):
         ftime = int(g[1].ftime.unique()[0] - TIME_OFFSET)
         origin = int(g[1].origin.unique()[0] - TIME_OFFSET)
         esize = g[1].esize.unique()[0]
-        xdata = g[1].generation-TIME_OFFSET
-        label = r'$\gamma$'+f"={esize:.3}, {origin}, {ftime}"
-        freqaxes[i].plot(xdata, g[1].nsamples/TWON, label=label,
-                         linewidth=1)
+        if 5e3*esize*esize >= 100:
+            xdata = g[1].generation-TIME_OFFSET
+            label = r'$\gamma$'+f"={esize:.3}, {origin}, {ftime}"
+            freqaxes[i].plot(xdata, g[1].nsamples/TWON, label=label,
+                             linewidth=1)
 
-        distance = (g[1].G-1.0)  # /np.sqrt(g[1].VG)
-        distanceaxes[i].plot(xdata, distance, linewidth=1)
-        s = (g[1].W - g[1].Wbar)/g[1].Wbar  # VS = 1
-        saxes[i].plot(xdata, s, linewidth=1)
-        saxes_inset[i].plot(xdata, s, linewidth=1)
+            distance = (g[1].G-1.0)  # /np.sqrt(g[1].VG)
+            distanceaxes[i].plot(xdata, distance, linewidth=1)
+            s = (g[1].W - g[1].Wbar)/g[1].Wbar  # VS = 1
+            saxes[i].plot(xdata, s, linewidth=1)
+            saxes_inset[i].plot(xdata, s, linewidth=1)
 
-        freqaxes[i].axvline(tadapted, color="grey", ls="dashed", linewidth=1)
-        distanceaxes[i].axvline(tadapted, color="grey",
-                                ls="dashed", linewidth=1)
-        saxes[i].axvline(tadapted, color="grey", ls="dashed", linewidth=1)
-        saxes[i].axhline(2./TWON, color="grey", ls="dotted", linewidth=1)
-        saxes_inset[i].axvline(tadapted, color="grey",
-                               ls="dashed", linewidth=1)
-        saxes_inset[i].axhline(2./TWON, color="grey", ls="dotted", linewidth=1)
+            freqaxes[i].axvline(tadapted, color="grey", ls="dashed", linewidth=1)
+            distanceaxes[i].axvline(tadapted, color="grey",
+                                    ls="dashed", linewidth=1)
+            saxes[i].axvline(tadapted, color="grey", ls="dashed", linewidth=1)
+            saxes[i].axhline(2./TWON, color="grey", ls="dotted", linewidth=1)
+            saxes_inset[i].axvline(tadapted, color="grey",
+                                   ls="dashed", linewidth=1)
+            saxes_inset[i].axhline(2./TWON, color="grey", ls="dotted", linewidth=1)
 
-for axes in freqaxes[:2]:
+for axes in freqaxes[:1]:
     axes.legend(loc='lower right', prop={'size': 5},
                 frameon=False)
-freqaxes[-1].legend(loc='upper right', prop={'size': 5},
+for axes in freqaxes[1:]:
+        axes.legend(loc='upper center', prop={'size': 5},
                     frameon=False)
 
 for axes in saxes_inset:
@@ -104,7 +106,7 @@ distanceaxes[0].set_ylabel(r'$\bar{z}_{a-} - z_o$')
 freqaxes[0].set_ylabel("Frequency")
 
 distanceaxes[0].set_ylim(-1, 0.3)
-saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.45)
+saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.5)
 
 fig.align_ylabels([i[0] for i in [freqaxes, distanceaxes, saxes]])
 plt.savefig("StrengthOfSelection.pdf")

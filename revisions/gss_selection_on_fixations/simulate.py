@@ -25,12 +25,10 @@ def make_parser():
     optional.add_argument("--sigma", "-s", type=float, default=0.25,
                           help="Standard deviation of Gaussian"
                           "distribution of mutational effects")
-    optional.add_argument("--rho", type=float,
-                          default=1e3, help="4Nr per locus")
+    optional.add_argument("--recrate", '-r', type=float,
+                          default=0.5, help="Recombination rate")
     optional.add_argument("--opt", type=float, default=1.0,
                           help="Value of new phenotypic optimum")
-    optional.add_argument('--nloci', type=int, default=10,
-                          help="Number of independently-assorting loci")
 
     return parser
 
@@ -48,14 +46,9 @@ class Recorder(object):
 
 def runsim(args):
     popsizes = np.array([args.popsize]*20*args.popsize, dtype=np.int32)
-    locus_boundaries = [(i, i + 11) for i in range(0, args.nloci * 11, 11)]
-    pop = fwdpy11.DiploidPopulation(args.popsize, locus_boundaries[-1][1])
-    sregions = [fwdpy11.GaussianS(i[0] + 5, i[0] + 6, 1, args.sigma)
-                for i in locus_boundaries]
-    recregions = [fwdpy11.PoissonInterval(
-        *i, args.rho / (4 * args.popsize)) for i in locus_boundaries]
-    recregions.extend([fwdpy11.BinomialPoint(i[1], 0.5)
-                       for i in locus_boundaries[:-1]])
+    pop = fwdpy11.DiploidPopulation(args.popsize, 1.0)
+    sregions = [fwdpy11.GaussianS(0, 1, 1, args.sigma)]
+    recregions = [fwdpy11.PoissonInterval(0, 1, args.recrate)]
 
     optima = fwdpy11.GSSmo([(0, 0, 1), (10*args.popsize, args.opt, 1)])
     p = {'nregions': [],  # No neutral mutations -- add them later!
