@@ -29,6 +29,8 @@ def make_parser():
                           default=0.5, help="Recombination rate")
     optional.add_argument("--opt", type=float, default=1.0,
                           help="Value of new phenotypic optimum")
+    optional.add_argument("--VS", type=float, default=1.,
+                          help="VS, duh.")
 
     return parser
 
@@ -50,7 +52,8 @@ def runsim(args):
     sregions = [fwdpy11.GaussianS(0, 1, 1, args.sigma)]
     recregions = [fwdpy11.PoissonInterval(0, 1, args.recrate)]
 
-    optima = fwdpy11.GSSmo([(0, 0, 1), (10*args.popsize, args.opt, 1)])
+    optima = fwdpy11.GSSmo(
+        [(0, 0, args.VS), (10*args.popsize, args.opt, args.VS)])
     p = {'nregions': [],  # No neutral mutations -- add them later!
          'gvalue': fwdpy11.Additive(2.0, optima),
          'sregions': sregions,

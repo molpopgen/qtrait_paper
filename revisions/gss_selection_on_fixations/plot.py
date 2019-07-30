@@ -11,7 +11,7 @@ TIME_OFFSET = 5e4
 
 
 datasets = []
-for i in glob.glob('*.sqlite3'):
+for i in ['pop.sqlite3', 'pop2.sqlite3', 'pop3.sqlite3']:
     with sqlite3.connect(i) as conn:
         df = pd.read_sql("select * from data", conn)
         datasets.append(df)
