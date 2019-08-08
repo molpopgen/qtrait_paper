@@ -29,7 +29,7 @@ def make_parser():
                           default=1000, help="Recombination rate")
     optional.add_argument("--opt", type=float, default=1.0,
                           help="Value of new phenotypic optimum")
-    optional.add_argument("--VS",type=float)
+    optional.add_argument("--VS", type=float)
 
     return parser
 
@@ -41,19 +41,23 @@ class Recorder(object):
 
     def __call__(self, pop, recorder):
         if pop.generation >= 10 * self.N:
-            if pop.generation <= 10*self.N + 200:
+            if pop.generation <= 10 * self.N + 200:
                 recorder.assign(self.individuals)
 
 
 def runsim(args):
-    popsizes = np.array([args.popsize]*20*args.popsize, dtype=np.int32)
+    popsizes = np.array([args.popsize] * 20 * args.popsize, dtype=np.int32)
     locus_boundaries = [(i, i + 11) for i in range(0, 10 * 11, 11)]
-    sregions = [fwdpy11.GaussianS(i[0]+5, i[0]+6, 1, args.sigma) for i in locus_boundaries]
+    sregions = [fwdpy11.GaussianS(i[0] + 5, i[0] + 6, 1, args.sigma)
+                for i in locus_boundaries]
     recregions = [fwdpy11.PoissonInterval(
         *i, args.rho / (4 * args.popsize)) for i in locus_boundaries]
+    recregions.extend([fwdpy11.BinomialPoint(i[1], 0.5)
+                       for i in locus_boundaries[:-1]])
     pop = fwdpy11.DiploidPopulation(args.popsize, locus_boundaries[-1][1])
 
-    optima = fwdpy11.GSSmo([(0, 0, args.VS), (10*args.popsize, args.opt, args.VS)])
+    optima = fwdpy11.GSSmo(
+        [(0, 0, args.VS), (10 * args.popsize, args.opt, args.VS)])
     p = {'nregions': [],  # No neutral mutations -- add them later!
          'gvalue': fwdpy11.Additive(2.0, optima),
          'sregions': sregions,
