@@ -1,0 +1,11 @@
+all: pop10loci_100.gz  pop10loci_1000.gz pop10loci_10000.gz
+
+pop10loci_100.gz: simulate_10loci.py
+	python3 $< --popsize 1000 --filename $@ --rho 100 --VS 1 --seed 25461
+
+pop10loci_1000.gz: simulate_10loci.py
+	python3 $< --popsize 1000 --filename $@ --rho 1000 --VS 1 --seed 10520
+
+pop10loci_10000.gz: simulate_10loci.py
+	python3 $< --popsize 1000 --filename $@ --rho 10000 --VS 1 --seed 6914
+
