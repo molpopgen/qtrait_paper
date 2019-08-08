@@ -1,11 +1,62 @@
-all: pop10loci_100.gz  pop10loci_1000.gz pop10loci_10000.gz
+lowmu:=pop_lomu_100.gz pop_lomu_1000.gz pop_lomu_10000.gz
+midmu:=pop_midmu_100.gz pop_midmu_1000.gz pop_midmu_10000.gz
+himu:=pop_himu_100.gz pop_himu_1000.gz pop_himu_10000.gz
+lowmudb:=pop_lomu_100.sqlite3 pop_lomu_1000.sqlite3 pop_lomu_10000.sqlite3
+midmudb:=pop_midmu_100.sqlite3 pop_midmu_1000.sqlite3 pop_midmu_10000.sqlite3
+himudb:=pop_himu_100.sqlite3 pop_himu_1000.sqlite3 pop_himu_10000.sqlite3
 
-pop10loci_100.gz: simulate_10loci.py
-	python3 $< --popsize 1000 --filename $@ --rho 100 --VS 1 --seed 25461
+all: $(lowmu) $(midmu) $(himu)  $(lowmudb) $(midmudb) $(himudb) 
 
-pop10loci_1000.gz: simulate_10loci.py
-	python3 $< --popsize 1000 --filename $@ --rho 1000 --VS 1 --seed 10520
+pop_lomu_100.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 100 --VS 1 --mu 0.00025 --seed 5132512
 
-pop10loci_10000.gz: simulate_10loci.py
-	python3 $< --popsize 1000 --filename $@ --rho 10000 --VS 1 --seed 6914
+pop_lomu_1000.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 1000 --VS 1 --mu 0.00025 --seed 3579823
 
+pop_lomu_10000.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 10000 --VS 1 --mu 0.00025 --seed 1479814
+
+pop_midmu_100.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 100 --VS 1 --mu 0.001 --seed 529523
+
+pop_midmu_1000.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 1000 --VS 1 --mu 0.001 --seed 3584198
+
+pop_midmu_10000.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 10000 --VS 1 --mu 0.001 --seed 23253532
+
+pop_himu_100.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 100 --VS 1 --mu 0.005 --seed 8235
+
+pop_himu_1000.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 1000 --VS 1 --mu 0.005 --seed 529532
+
+pop_himu_10000.gz: simulate_10loci.py
+	python3 $< --popsize 5000 --filename $@ --rho 10000 --VS 1 --mu 0.005 --seed 8974114
+
+pop_lomu_100.sqlite3: process_10_loci.py pop_lomu_100.gz
+	python3 $? $@ 532875
+
+pop_lomu_1000.sqlite3: process_10_loci.py pop_lomu_1000.gz
+	python3 $? $@ 23852389
+
+pop_lomu_10000.sqlite3: process_10_loci.py pop_lomu_10000.gz
+	python3 $? $@ 352385
+
+pop_midmu_100.sqlite3: process_10_loci.py pop_midmu_100.gz
+	python3 $? $@ 532875
+
+pop_midmu_1000.sqlite3: process_10_loci.py pop_midmu_1000.gz
+	python3 $? $@ 23852389
+
+pop_midmu_10000.sqlite3: process_10_loci.py pop_midmu_10000.gz
+	python3 $? $@ 352385
+
+pop_himu_100.sqlite3: process_10_loci.py pop_himu_100.gz
+	python3 $? $@ 532875
+
+pop_himu_1000.sqlite3: process_10_loci.py pop_himu_1000.gz
+	python3 $? $@ 23852389
+
+pop_himu_10000.sqlite3: process_10_loci.py pop_himu_10000.gz
+	python3 $? $@ 352385
