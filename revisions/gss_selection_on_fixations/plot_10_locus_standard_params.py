@@ -17,7 +17,7 @@ LOCUS_LENGTH = 11
 LOCUS_BOUNDARIES = [(i, i + 11) for i in range(0, 10 * 11, 11)]
 SREGIONS = [(i[0] + 5, i[0] + 6) for i in LOCUS_BOUNDARIES]
 
-POPSIZE = 1000
+POPSIZE = 5000
 
 fig = plt.figure(figsize=(25, 15))
 gs = gridspec.GridSpec(3, 3)
