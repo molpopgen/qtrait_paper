@@ -8,8 +8,8 @@ import matplotlib.gridspec as gridspec
 matplotlib.rcParams.update({'font.size': 22})
 
 CMAP = matplotlib.cm.get_cmap('viridis')
-LINECOLORS=[j for j in reversed([CMAP(1.-i/3) for i in range(1,4)])]
-LINECOLORS=[CMAP(1.-i/3) for i in range(1,4)]
+LINECOLORS = [j for j in reversed([CMAP(1. - i / 3) for i in range(1, 4)])]
+LINECOLORS = [CMAP(1. - i / 3) for i in range(1, 4)]
 
 NLOCI = 10
 LOCUS_LENGTH = 11
@@ -81,13 +81,26 @@ for i, f in enumerate(files):
     c = 1
     for n, g in grps:
         lcolor = CMAP(1. - c / 3.)
-        lcolor = CMAP( c / 3.)
-        lcolor = LINECOLORS[c-1]
+        lcolor = CMAP(c / 3.)
+        lcolor = LINECOLORS[c - 1]
         lalpha = 1.2 - c / 5.
-        Daxes[i].plot(g.left_edge, g.pi, alpha=lalpha, color=lcolor, linewidth=1)
-        Haxes[i].plot(g.left_edge, g.Hp, alpha=lalpha, color=lcolor, linewidth=1)
-        Hdivaxes[i].plot(g.left_edge, g.hdiv, alpha=lalpha,
-                         color=lcolor, label=n, linewidth=1)
+        loc = np.unique(g.locus)
+        for lli, ll in enumerate(loc):
+            idx = np.where(g.locus == ll)[0]
+            le = np.array(g.left_edge)
+            pi = np.array(g.pi)
+            Hp = np.array(g.Hp)
+            hd = np.array(g.hdiv)
+            Daxes[i].plot(le[idx], pi[idx],
+                          alpha=lalpha, color=lcolor, linewidth=1)
+            Haxes[i].plot(le[idx], Hp[idx],
+                          alpha=lalpha, color=lcolor, linewidth=1)
+            if lli == 0:
+                Hdivaxes[i].plot(le[idx], hd[idx], alpha=lalpha,
+                                 color=lcolor, label=n, linewidth=1)
+            else:
+                Hdivaxes[i].plot(le[idx], hd[idx], alpha=lalpha,
+                                 color=lcolor, label='_nolegend_', linewidth=1)
         c += 1
 
         for s in SREGIONS:
@@ -131,7 +144,7 @@ Haxes[0].set_ylabel("H'")
 Hdivaxes[0].set_ylabel("Haplotype diversity")
 
 for ax in Hdivaxes:
-    ax.set_xticks([i[0]+5.5 for i in LOCUS_BOUNDARIES])
+    ax.set_xticks([i[0] + 5.5 for i in LOCUS_BOUNDARIES])
     ax.set_xticklabels([i for i in range(len(LOCUS_BOUNDARIES))])
 
 Hdivaxes[1].set_xlabel('Locus mid-point')
