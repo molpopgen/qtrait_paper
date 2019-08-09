@@ -116,13 +116,16 @@ for i, f in enumerate(files):
     fixations['alpha'] = esize_to_alpha(fixations)
     fixations['color'] = esize_to_color(fixations)
 
-    for p, a, c in zip(fixations.position, fixations.alpha, fixations.color):
+    for p, a, c, o in zip(fixations.position, fixations.alpha, fixations.color, fixations.origin):
+        marker = 'v'
+        if o < 10 * POPSIZE:
+            marker = '^'
         lim = Daxes[0].get_ylim()
-        Daxes[i].plot(p, Daxes[0].dataLim.y1, color=c, marker='v')
+        Daxes[i].plot(p, Daxes[0].dataLim.y1, color=c, marker=marker, markersize=12)
         lim = Haxes[0].get_ylim()
-        Haxes[i].plot(p, Haxes[0].dataLim.y1, color=c, marker='v')
+        Haxes[i].plot(p, Haxes[0].dataLim.y1, color=c, marker=marker, markersize=12)
         lim = Hdivaxes[0].get_ylim()
-        Hdivaxes[i].plot(p, 1.0, color=c, marker='v')
+        Hdivaxes[i].plot(p, 1.0, color=c, marker=marker, markersize=12)
 
 for i, j in zip(Daxes, [2.5e-4, 1e-3, 5e-3]):
     i.set_title(r'$\mu =$' + '{:.2}'.format(j))
@@ -145,7 +148,7 @@ Hdivaxes[0].set_ylabel("Haplotype diversity")
 
 for ax in Hdivaxes:
     ax.set_xticks([i[0] + 5.5 for i in LOCUS_BOUNDARIES])
-    ax.set_xticklabels([i+1 for i in range(len(LOCUS_BOUNDARIES))])
+    ax.set_xticklabels([i + 1 for i in range(len(LOCUS_BOUNDARIES))])
 
 Hdivaxes[1].set_xlabel('Locus mid-point')
 
