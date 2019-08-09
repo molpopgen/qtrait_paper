@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.gridspec as gridspec
+import matplotlib.lines
 
 matplotlib.rcParams.update({'font.size': 22})
 
@@ -114,8 +115,8 @@ for fset, mu in zip(enumerate(filessets), mutrates):
                 label = n
                 if lli > 0:
                     label = '_nolegend_'
-                axes[fsetindex][i].plot(le[idx], hd[idx], label=label,
-                                        color=lcolor, linewidth=1)
+                axes[fsetindex][i].scatter(le[idx], hd[idx], label=label,
+                                           color=lcolor, marker='.')
                 # Haxes[i].plot(g.left_edge, g.Hp, alpha=lalpha,
                 #               color=lcolor, linewidth=1)
                 # Hdivaxes[i].plot(g.left_edge, g.hdiv, alpha=lalpha,
@@ -140,7 +141,8 @@ for fset, mu in zip(enumerate(filessets), mutrates):
             marker = 'v'
             if o <= 10 * POPSIZE:
                 marker = '^'
-            axes[fsetindex][i].plot(p, 1.05, color=c, marker=marker, markersize=12)
+            axes[fsetindex][i].plot(
+                p, 1.05, color=c, marker=marker, markersize=12)
 
 for i, j in zip(Daxes,  [1e2, 1e3, 1e4]):
     i.set_title(r'$\rho =$' + '{:.2}'.format(j))
@@ -154,11 +156,16 @@ for ax in Daxes[1:] + Haxes[1:]:
 for ax in Hdivaxes[1:]:
     ax.get_yaxis().set_visible(False)
 
+thresholds = [0.1, 0.5, 0.9]
+handles = [matplotlib.lines.Line2D([0], [0], marker='.', markersize=18, label=thresholds[i - 1],
+                                   linestyle='',
+                                   color=CMAP(1 - i / 3)) for i in range(1, 4)]
 for a, m in zip(axes, mutrates):
     for ax in a:
         ax.text(-3, 0.025, r'$\mu = $' + '{:.2}'.format(m))
         ax.legend(loc='best', bbox_to_anchor=(
-            0.0, 0.0, 0.25, 0.5), frameon=False)
+            0.0, 0.0, 0.25, 0.5), frameon=False,
+            handles=handles)
 
 
 # for ax in Hdivaxes:

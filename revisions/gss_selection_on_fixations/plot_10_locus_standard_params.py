@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.gridspec as gridspec
+import matplotlib.lines
 
 matplotlib.rcParams.update({'font.size': 22})
 
@@ -91,16 +92,16 @@ for i, f in enumerate(files):
             pi = np.array(g.pi)
             Hp = np.array(g.Hp)
             hd = np.array(g.hdiv)
-            Daxes[i].plot(le[idx], pi[idx],
-                          alpha=lalpha, color=lcolor, linewidth=1)
-            Haxes[i].plot(le[idx], Hp[idx],
-                          alpha=lalpha, color=lcolor, linewidth=1)
+            Daxes[i].scatter(le[idx], pi[idx],
+                             alpha=lalpha, color=lcolor, marker='.')
+            Haxes[i].scatter(le[idx], Hp[idx],
+                          alpha=lalpha, color=lcolor, marker='.')
             if lli == 0:
-                Hdivaxes[i].plot(le[idx], hd[idx], alpha=lalpha,
-                                 color=lcolor, label=n, linewidth=1)
+                label=n
             else:
-                Hdivaxes[i].plot(le[idx], hd[idx], alpha=lalpha,
-                                 color=lcolor, label='_nolegend_', linewidth=1)
+                label='_nolegend_'
+            Hdivaxes[i].scatter(le[idx], hd[idx], alpha=lalpha,
+                             color=lcolor, label=label, marker='.')
         c += 1
 
         for s in SREGIONS:
@@ -121,9 +122,11 @@ for i, f in enumerate(files):
         if o < 10 * POPSIZE:
             marker = '^'
         lim = Daxes[0].get_ylim()
-        Daxes[i].plot(p, Daxes[0].dataLim.y1, color=c, marker=marker, markersize=12)
+        Daxes[i].plot(p, Daxes[0].dataLim.y1, color=c,
+                      marker=marker, markersize=12)
         lim = Haxes[0].get_ylim()
-        Haxes[i].plot(p, Haxes[0].dataLim.y1, color=c, marker=marker, markersize=12)
+        Haxes[i].plot(p, Haxes[0].dataLim.y1, color=c,
+                      marker=marker, markersize=12)
         lim = Hdivaxes[0].get_ylim()
         Hdivaxes[i].plot(p, 1.0, color=c, marker=marker, markersize=12)
 
@@ -139,8 +142,12 @@ for ax in Daxes[1:] + Haxes[1:]:
 for ax in Hdivaxes[1:]:
     ax.get_yaxis().set_visible(False)
 
+thresholds = [0.1, 0.5, 0.9]
+handles = [matplotlib.lines.Line2D([0], [0], marker='.', markersize=18, label=thresholds[i - 1],
+                                   linestyle='',
+                                   color=CMAP(1 - i / 3)) for i in range(1, 4)]
 for ax in Hdivaxes:
-    ax.legend(loc='best', frameon=False)
+    ax.legend(loc='best', frameon=False, handles=handles)
 
 Daxes[0].set_ylabel(r'$\pi$')
 Haxes[0].set_ylabel("H'")
