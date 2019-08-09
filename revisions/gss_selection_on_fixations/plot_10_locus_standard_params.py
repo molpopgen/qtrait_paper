@@ -145,7 +145,7 @@ Hdivaxes[0].set_ylabel("Haplotype diversity")
 
 for ax in Hdivaxes:
     ax.set_xticks([i[0] + 5.5 for i in LOCUS_BOUNDARIES])
-    ax.set_xticklabels([i for i in range(len(LOCUS_BOUNDARIES))])
+    ax.set_xticklabels([i+1 for i in range(len(LOCUS_BOUNDARIES))])
 
 Hdivaxes[1].set_xlabel('Locus mid-point')
 
