@@ -1,8 +1,8 @@
 #!/bin/bash
 
-parallel python3 ../simulate_10loci.py --popsize 5000 --VS 1 --mu 0.005 --filename himu.{}.gz --seed {} :::: himu
-parallel python3 ../simulate_10loci.py --popsize 5000 --VS 1 --mu 0.001 --filename midmu.{}.gz --seed {} :::: midmu
-parallel python3 ../simulate_10loci.py --popsize 5000 --VS 1 --mu 0.00025 --filename lowmu.{}.gz --seed {} :::: lowmu
+# parallel python3 ../simulate_10loci.py --popsize 5000 --VS 1 --mu 0.005 --filename himu.{}.gz --seed {} :::: himu &
+# parallel python3 ../simulate_10loci.py --popsize 5000 --VS 1 --mu 0.001 --filename midmu.{}.gz --seed {} :::: midmu &
+# parallel python3 ../simulate_10loci.py --popsize 5000 --VS 1 --mu 0.00025 --filename lowmu.{}.gz --seed {} :::: lowmu
 
 ls -1 himu.*.gz midmu.*.gz lowmu.*.gz > infiles
 cat infiles | sed 's/gz/sqlite3/' > outfiles
