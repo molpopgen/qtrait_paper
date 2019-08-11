@@ -79,7 +79,8 @@ for statfile, trajfile,mu in zip(reversed(popstatFiles), reversed(trajFiles), re
     axMID = MIDS[MID]
     axBOTTOM = BOTTOMS[BOTTOM]
 
-    ghat = 2.0*math.sqrt(2.0)*math.sqrt(mu)
+    # ghat = 2.0*math.sqrt(2.0)*math.sqrt(mu)
+    ghat = math.sqrt(100./5e3)
     print("starting",ghat)
 
     # Read in trait value data for this rep
