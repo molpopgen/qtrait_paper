@@ -10,7 +10,7 @@ matplotlib.rcParams.update({'font.size': 22})
 
 TWON = 1e4
 TIME_OFFSET = 5e4
-ALPHA = 0.6
+ALPHA = 0.8
 LINEWIDTH = 2
 
 
@@ -55,8 +55,7 @@ for i in range(len(saxes)):
 tadapted_per_dataset = []
 
 for i in range(len(datasets)):
-    dset = datasets[i][5000*datasets[i].esize ** 2 >= 100]
-    grps = dset.groupby('position')
+    grps = datasets[i].groupby('position')
 
     # Get the time when the replicate first reaches 0.9*z_o and 0.975*z_o
     first_group = list(grps)[0]
@@ -67,27 +66,35 @@ for i in range(len(datasets)):
         ftime = int(g[1].ftime.unique()[0] - TIME_OFFSET)
         origin = int(g[1].origin.unique()[0] - TIME_OFFSET)
         esize = g[1].esize.unique()[0]
-        ls = '-'
-        if esize < 0:
-            ls = ':'
-        if 5e3*esize*esize >= 100:
+        Ng2 = 0.5*TWON*esize*esize
+        if Ng2 >= 1:
+            print("fixed: ", i, origin, esize, g[1].nsamples.iloc[0],
+                  (g[1].G.iloc[0]-g[1].Gbar.iloc[0])/np.sqrt(g[1].VG.iloc[0]))
+
             xdata = g[1].generation-TIME_OFFSET
-            Ng2 = 0.5*TWON*esize*esize
             label = r'$N\gamma^2$'+f"={Ng2:.3},\n{origin}, {ftime}"
             label = r'$N\gamma^2$'+f"={int(Ng2)},\n({origin}, {ftime})"
             if 5e3*esize*esize < 10:
                 label = '_nolegend_'
+            alpha = ALPHA
+            ls = '-'
+            if Ng2 < 100 and Ng2 >= 10:
+                ls = '--'
+                alpha = ALPHA/2.
+            elif Ng2 < 10:
+                ls = ":"
+                alpha = ALPHA/2.
             freqaxes[i].plot(xdata, g[1].nsamples/TWON, label=label,
-                             linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+                             linewidth=LINEWIDTH, ls=ls, alpha=alpha)
 
             distance = (g[1].G-1.0)  # /np.sqrt(g[1].VG)
             distance = (g[1].G-g[1].Gbar) / np.sqrt(g[1].VG)
             distanceaxes[i].plot(
-                xdata, distance, linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+                xdata, distance, linewidth=LINEWIDTH, ls=ls, alpha=alpha)
             s = (g[1].W - g[1].Wbar)/g[1].Wbar  # VS = 1
-            saxes[i].plot(xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+            saxes[i].plot(xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=alpha)
             saxes_inset[i].plot(
-                xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+                xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=alpha)
 
     freqaxes[i].axvline(tadapted, color="grey",
                         ls="dashed", linewidth=LINEWIDTH, alpha=0.3)
@@ -170,14 +177,11 @@ saxes_notfixed.append(plt.subplot(gs[2, 0], sharey=saxes[0]))
 saxes_notfixed.append(plt.subplot(gs[2, 1], sharex=saxes[0], sharey=saxes[0]))
 saxes_notfixed.append(plt.subplot(gs[2, 2], sharex=saxes[0], sharey=saxes[0]))
 # Plot notfixed
-freq_thresh = 0.1*5000  # 5%
+freq_thresh = 0.05 * TWON  # 5%
 for i in range(len(datasets_notfixed)):
     tadapted = tadapted_per_dataset[i]
-    print(tadapted)
     dset = datasets_notfixed[i][datasets_notfixed[i].origin <
                                 tadapted + TIME_OFFSET]
-    print(type(dset))
-    print(len(dset.index), len(datasets_notfixed[i].index))
     grps = dset.groupby('position')
     # Get the time when the replicate first reaches 0.9*z_o and 0.975*z_o
     first_group = list(grps)[0]
@@ -189,21 +193,33 @@ for i in range(len(datasets_notfixed)):
         ls = '-'
         if esize < 0:
             ls = ':'
-        if 5e3*esize*esize >= 100:
+        if 5e3*esize*esize >= 1:
+            if 5e3*esize**2 > 50:
+                print('lost: ', i, esize, origin, g[1].nsamples.iloc[0],
+                      (g[1].G.iloc[0]-g[1].Gbar.iloc[0])/np.sqrt(g[1].VG.iloc[0]))
             xdata = g[1].generation-TIME_OFFSET
             Ng2 = 0.5*TWON*esize*esize
             label = r'$N\gamma^2$'+f"={Ng2:.1}, {origin}, NA"
             label = '_nolegend_'
+            alpha = ALPHA
+            ls = '-'
+            if Ng2 < 100 and Ng2 >= 10:
+                ls = '--'
+                alpha = ALPHA/2.
+            elif Ng2 < 10:
+                ls = ":"
+                alpha = ALPHA/2.
+
             freqaxes_notfixed[i].plot(xdata, g[1].nsamples/TWON, label=label,
-                                      linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+                                      linewidth=LINEWIDTH, ls=ls, alpha=alpha)
 
             distance = (g[1].G-1.0)  # /np.sqrt(g[1].VG)
             distance = (g[1].G-g[1].Gbar) / np.sqrt(g[1].VG)
             distanceaxes_notfixed[i].plot(
-                xdata, distance, linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+                xdata, distance, linewidth=LINEWIDTH, ls=ls, alpha=alpha)
             s = (g[1].W - g[1].Wbar)/g[1].Wbar  # VS = 1
             saxes_notfixed[i].plot(
-                xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
+                xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=alpha)
             # saxes_inset[i].plot(
             #     xdata, s, linewidth=LINEWIDTH, ls=ls, alpha=ALPHA)
 
