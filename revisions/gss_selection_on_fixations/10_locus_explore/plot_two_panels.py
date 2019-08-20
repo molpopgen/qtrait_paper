@@ -68,7 +68,7 @@ for i in range(len(datasets)):
         esize = g[1].esize.unique()[0]
         Ng2 = 0.5*TWON*esize*esize
         if Ng2 >= 1:
-            print("fixed: ", i, origin, esize, g[1].nsamples.iloc[0],
+            print("fixed: ", i, origin, esize, g[1].nsamples.iloc[0], g[1].position.iloc[0],
                   (g[1].G.iloc[0]-g[1].Gbar.iloc[0])/np.sqrt(g[1].VG.iloc[0]))
 
             xdata = g[1].generation-TIME_OFFSET
@@ -195,7 +195,8 @@ for i in range(len(datasets_notfixed)):
             ls = ':'
         if 5e3*esize*esize >= 1:
             if 5e3*esize**2 > 50:
-                print('lost: ', i, esize, origin, g[1].nsamples.iloc[0],
+                print('lost: ', i,  origin, esize, g[1].nsamples.iloc[0],
+                      g[1].position.iloc[0],
                       (g[1].G.iloc[0]-g[1].Gbar.iloc[0])/np.sqrt(g[1].VG.iloc[0]))
             xdata = g[1].generation-TIME_OFFSET
             Ng2 = 0.5*TWON*esize*esize
