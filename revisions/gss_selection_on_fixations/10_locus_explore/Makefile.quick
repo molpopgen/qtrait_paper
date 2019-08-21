@@ -1,0 +1,7 @@
+dbfiles=lowmu.22371142.genome_scan.sqlite3 midmu.1231116.genome_scan.sqlite3 himu.30884989.genome_scan.sqlite3
+
+all: $(dbfiles)
+
+%.genome_scan.sqlite3: %.gz genome_scan.py
+	python3 genome_scan.py --infile $< --outfile $@ --seed 666
+
