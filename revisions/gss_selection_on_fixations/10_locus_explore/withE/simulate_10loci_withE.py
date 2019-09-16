@@ -56,9 +56,12 @@ def runsim(args):
                        for i in locus_boundaries[:-1]])
     pop = fwdpy11.DiploidPopulation(args.popsize, locus_boundaries[-1][1])
 
+    EVG = 4*args.mu*args.VS
+    H2 = 0.5
+    VE = EVG
     optima = fwdpy11.GSSmo(
-        [(0, 0, args.VS/2), (10 * args.popsize, args.opt, args.VS/2)])
-    random = fwdpy11.GaussianNoise(sd=np.sqrt(args.VS/2))
+        [(0, 0, args.VS-VE), (10 * args.popsize, args.opt, args.VS-VE)])
+    random = fwdpy11.GaussianNoise(sd=np.sqrt(VE))
     p = {'nregions': [],  # No neutral mutations -- add them later!
          'gvalue': fwdpy11.Additive(2.0, optima, random),
          'sregions': sregions,
