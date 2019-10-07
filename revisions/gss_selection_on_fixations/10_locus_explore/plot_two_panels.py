@@ -140,8 +140,8 @@ saxes[0].set_ylabel(r'$\frac{\bar{w}_{a-} - \bar{w}}{\bar{w}}$')
 distanceaxes[0].set_ylabel(r'$\frac{\bar{z}_{a-} - \bar{z}}{\sigma_z}$')
 freqaxes[0].set_ylabel("Frequency")
 
-distanceaxes[0].set_ylim(distanceaxes[0].get_ylim()[0], 12)
-saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.5)
+distanceaxes[0].set_ylim(-1, 12)
+saxes[0].set_ylim(-0.1, 0.6)
 
 for ax in saxes:
     ax.set_xticks([0, 100, 200])
@@ -260,6 +260,8 @@ distanceaxes_notfixed[0].set_ylabel(
     r'$\frac{\bar{z}_{a-} - \bar{z}}{\sigma_z}$')
 freqaxes_notfixed[0].set_ylabel("Frequency")
 
+distanceaxes_notfixed[0].set_ylim(-1, 12)
+saxes_notfixed[0].set_ylim(-0.1, 0.6)
 # Titles
 for ax, m in zip(freqaxes_notfixed, mu):
     ax.set_title(r'$\mu = $' + m, fontdict={'fontsize': 19})
