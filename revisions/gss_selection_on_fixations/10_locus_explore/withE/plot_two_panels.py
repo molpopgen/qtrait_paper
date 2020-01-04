@@ -16,7 +16,7 @@ LINEWIDTH = 2
 
 datasets = []
 datasets_notfixed = []
-for i in ['lowmu.22371142.sqlite3', 'midmu.1231116.sqlite3', 'himu.30884989.sqlite3']:
+for i in ['lowmu.27436551.sqlite3', 'midmu.21709241.sqlite3', 'himu.30474250.sqlite3']:
     with sqlite3.connect(i) as conn:
         df = pd.read_sql("select * from data", conn)
         datasets.append(df)
@@ -140,8 +140,8 @@ saxes[0].set_ylabel(r'$\frac{\bar{w}_{a-} - \bar{w}}{\bar{w}}$')
 distanceaxes[0].set_ylabel(r'$\frac{\bar{z}_{a-} - \bar{z}}{\sigma_z}$')
 freqaxes[0].set_ylabel("Frequency")
 
-distanceaxes[0].set_ylim(-1, 12)
-saxes[0].set_ylim(-0.1, 0.6)
+distanceaxes[0].set_ylim(distanceaxes[0].get_ylim()[0], 12)
+saxes[0].set_ylim(saxes[0].get_ylim()[0], 0.5)
 
 for ax in saxes:
     ax.set_xticks([0, 100, 200])
@@ -260,8 +260,6 @@ distanceaxes_notfixed[0].set_ylabel(
     r'$\frac{\bar{z}_{a-} - \bar{z}}{\sigma_z}$')
 freqaxes_notfixed[0].set_ylabel("Frequency")
 
-distanceaxes_notfixed[0].set_ylim(-1, 12)
-saxes_notfixed[0].set_ylim(-0.1, 0.6)
 # Titles
 for ax, m in zip(freqaxes_notfixed, mu):
     ax.set_title(r'$\mu = $' + m, fontdict={'fontsize': 19})
